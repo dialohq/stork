@@ -1,0 +1,44 @@
+{
+  "name": "stork",
+  "esy": {
+    "build": "dune build -p #{self.name}",
+    "buildDev": "dune build --root . --only-package #{self.name}",
+    "buildEnv": {
+      "ODOC_SYNTAX": "ml"
+    }
+  },
+  "dependencies": {
+    "@opam/atd": "2.2.1",
+    "@opam/atdgen": "2.2.1",
+    "@opam/atdgen-runtime": "2.2.1",
+    "@opam/biniou": "1.2.1",
+    "@opam/cmdliner": "*",
+    "@opam/dune": ">= 2.0",
+    "@opam/fmt": "*",
+    "@opam/logs": "*",
+    "@opam/ppx_deriving": "5.2.1",
+    "@opam/ppx_string_interpolation": "1.0.1",
+    "@opam/yojson": "1.7.0",
+    "ocaml": ">= 4.8.0"
+  },
+  "devDependencies": {
+    "@opam/dune-release": "*",
+    "@opam/merlin": "*",
+    "@opam/ocaml-lsp-server": "1.4.0",
+    "@opam/ocamlformat": "*",
+    "@opam/odoc": "*",
+    "@opam/utop": "*",
+    "@reason-native/rely": "*",
+    "ocaml": "~4.10.0"
+  },
+  "scripts": {
+    "start": "esy x stork",
+    "test": "esy dune exec test/test_runner.exe",
+    "doc": "esy dune build @doc",
+    "doc-path": "esy echo #{self.target_dir}/default/_doc/_html/index.html",
+    "format": "esy dune build @fmt --auto-promote",
+    "watch": "esy dune build -p #{self.name} --watch",
+    "utop": "esy dune utop lib -- -implicit-bindings",
+    "release": "./script/release.sh"
+  }
+}

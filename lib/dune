@@ -1,0 +1,10 @@
+(library
+ (name stork)
+ (public_name stork)
+ (libraries atd atdgen biniou)
+ (preprocess
+  (pps ppx_string_interpolation ppx_deriving.show))
+ (flags
+  (:standard -open StdLabels -w -4)))
+
+(include_subdirs unqualified)

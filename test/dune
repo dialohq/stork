@@ -1,0 +1,21 @@
+(library
+ (name stork_test)
+ (libraries rely.lib stork)
+ (modules
+  (:standard \ test_runner))
+ (flags
+  (:standard -linkall -g -open StdLabels -w +A-48-42-40)))
+
+(executable
+ (name test_runner)
+ (libraries rely.lib stork_test)
+ (modules test_runner)
+ (flags
+  (:standard -open StdLabels -w +A-48-42-40)))
+
+(rule
+ (alias runtest)
+ (action
+  (run ./test_runner.exe -q --color=always)))
+
+(include_subdirs unqualified)

@@ -1,0 +1,8 @@
+(executable
+ (name main)
+ (public_name stork)
+ (libraries stork cmdliner fmt fmt.tty logs.fmt logs.cli)
+ (flags
+  (:standard -open StdLabels)))
+
+(include_subdirs unqualified)
