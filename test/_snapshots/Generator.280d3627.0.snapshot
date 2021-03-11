@@ -1,0 +1,11 @@
+Generator › simple transitive change - impl list snapshot
+module From_1_to_2 = struct
+module OldVersion = Simple_transitive_change_1_t
+module NewVersion = Simple_transitive_change_2_t
+include Simple_transitive_change_user_fns.From_1_to_2
+let convert_employee (old_record: OldVersion.employee)  (old_doc: OldVersion.employee ) : NewVersion.employee = { version = old_record.version;
+age = old_record.age;
+name = old_record.name;
+ company = convert_company old_doc old_record.company ;
+ }
+end

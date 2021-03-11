@@ -21,3 +21,9 @@ _export/
 npm-debug.log
 yarn-error.log
 node_modules/
+
+# Stork generated files
+*_to_*_upgrader.ml
+*_to_*_upgrader.mli
+*_to_*_user_fns.mli
+serializers/

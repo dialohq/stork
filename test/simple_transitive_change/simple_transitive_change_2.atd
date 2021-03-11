@@ -1,0 +1,11 @@
+type company = {
+    name: string;
+    ?turnover: int option;
+}
+
+type employee = {
+    name: string;
+    age: int;
+    company: company;
+    version: int;
+}

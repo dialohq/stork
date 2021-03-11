@@ -27,7 +27,21 @@ let term =
   Logs.set_reporter (Logs_fmt.reporter ~app:Fmt.stdout ());
   0
 
-let error_to_code = function `Missing_env_var _ -> 4 | `Invalid_path _ -> 5
+let error_to_code = function
+  | `Missing_env_var _ ->
+    4
+  | `Invalid_path _ ->
+    5
+  | `Empty_list ->
+    6
+  | `Invalid_atd_file _ ->
+    7
+  | `Invalid_version _ ->
+    8
+  | `Different_prefix _ ->
+    9
+  | `Atd_error _ ->
+    10
 
 let handle_errors = function
   | Ok () ->
@@ -42,4 +56,16 @@ let exits =
   Term.exit_info 4 ~doc:"on missing required environment variable."
   ::
   Term.exit_info 5 ~doc:"on invalid path given as argument."
+  ::
+  Term.exit_info 6 ~doc:"on empty file list given as argument."
+  ::
+  Term.exit_info 7 ~doc:"on invalid atd file given as argument."
+  ::
+  Term.exit_info
+    8
+    ~doc:"on file not having a correct version number given as argument."
+  ::
+  Term.exit_info 9 ~doc:"on files with different prefixes given as argument."
+  ::
+  Term.exit_info 10 ~doc:"on ATD error when generating serializers"
   :: Term.default_exits
