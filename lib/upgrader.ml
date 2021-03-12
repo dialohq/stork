@@ -231,59 +231,63 @@ let make_t_module_name prefix version =
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_doc_type = load_sort_map old_file in
-  let new_sorted_items, new_type_map, _doc_type = load_sort_map new_file in
-  let impl_list, intf_list, user_intf_list, _ =
-    List.fold_left
-      ~f:
-        (fun (impl_list, intf_list, user_intf_list, classified_type_map)
-             (((name, _, _), _) as new_item) ->
-        let classified_item =
-          classify_item
-            ~old_type_map
-            ~new_type_map
-            ~classified_type_map
-            new_item
-        in
-        let impl_list, intf_list, user_intf_list =
-          classified_type_to_strings
-            ~intf_list
-            ~impl_list
-            ~user_intf_list
-            ~old_doc_type
-            ~new_type_map
-            classified_item
-        in
-        let classified_type_map =
-          StringMap.add name classified_item classified_type_map
-        in
-        impl_list, intf_list, user_intf_list, classified_type_map)
-      ~init:([], [], [], StringMap.empty)
-      new_sorted_items
-  in
-  let module_name =
-    [%string
-      "From_$(string_of_int old_file_version)_to_$(string_of_int \
-       new_file_version)"]
-  in
-  let old_version_t = make_t_module_name prefix old_file_version in
-  let new_version_t = make_t_module_name prefix new_file_version in
-  let user_fns_module =
-    [%string "$(user_fns_module_name prefix).$module_name"]
-  in
-  let impl_header =
-    [%string
-      {|module $old_version = $old_version_t
+  let new_sorted_items, new_type_map, new_doc_type = load_sort_map new_file in
+  if new_doc_type <> old_doc_type then
+    Error (`Different_main_type (old_doc_type, new_doc_type))
+  else
+    let impl_list, intf_list, user_intf_list, _ =
+      List.fold_left
+        ~f:
+          (fun (impl_list, intf_list, user_intf_list, classified_type_map)
+               (((name, _, _), _) as new_item) ->
+          let classified_item =
+            classify_item
+              ~old_type_map
+              ~new_type_map
+              ~classified_type_map
+              new_item
+          in
+          let impl_list, intf_list, user_intf_list =
+            classified_type_to_strings
+              ~intf_list
+              ~impl_list
+              ~user_intf_list
+              ~old_doc_type
+              ~new_type_map
+              classified_item
+          in
+          let classified_type_map =
+            StringMap.add name classified_item classified_type_map
+          in
+          impl_list, intf_list, user_intf_list, classified_type_map)
+        ~init:([], [], [], StringMap.empty)
+        new_sorted_items
+    in
+    let module_name =
+      [%string
+        "From_$(string_of_int old_file_version)_to_$(string_of_int \
+         new_file_version)"]
+    in
+    let old_version_t = make_t_module_name prefix old_file_version in
+    let new_version_t = make_t_module_name prefix new_file_version in
+    let user_fns_module =
+      [%string "$(user_fns_module_name prefix).$module_name"]
+    in
+    let impl_header =
+      [%string
+        {|module $old_version = $old_version_t
 module $new_version = $new_version_t
 include $user_fns_module|}]
-  in
-  let intf_header =
-    [%string
-      {|module $old_version := $old_version_t
+    in
+    let intf_header =
+      [%string
+        {|module $old_version := $old_version_t
 module $new_version := $new_version_t|}]
-  in
-  { impl_list =
-      enclose_module ~module_name ~impl:true ~header:impl_header impl_list
-  ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
-  ; user_intf_list =
-      enclose_module ~module_name ~header:intf_header user_intf_list
-  }
+    in
+    Ok
+      { impl_list =
+          enclose_module ~module_name ~impl:true ~header:impl_header impl_list
+      ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
+      ; user_intf_list =
+          enclose_module ~module_name ~header:intf_header user_intf_list
+      }

@@ -42,6 +42,8 @@ let error_to_code = function
     9
   | `Atd_error _ ->
     10
+  | `Different_main_type _ ->
+    11
 
 let handle_errors = function
   | Ok () ->
@@ -68,4 +70,5 @@ let exits =
   Term.exit_info 9 ~doc:"on files with different prefixes given as argument."
   ::
   Term.exit_info 10 ~doc:"on ATD error when generating serializers"
-  :: Term.default_exits
+  ::
+  Term.exit_info 11 ~doc:"on using different main types" :: Term.default_exits

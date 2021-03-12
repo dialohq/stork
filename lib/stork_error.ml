@@ -6,6 +6,7 @@ type t =
   | `Invalid_version of string
   | `Different_prefix of string * string
   | `Atd_error of int * string
+  | `Different_main_type of string * string
   ]
 
 let to_string = function
@@ -41,6 +42,11 @@ let to_string = function
       "ATD exited with error %i when generating serializers for file %s"
       error
       file
+  | `Different_main_type (old_main_type, new_main_type) ->
+    Printf.sprintf
+      "The main type should always be the same, but %s is different from %s"
+      new_main_type
+      old_main_type
 
 let missing_env env = `Missing_env_var env
 

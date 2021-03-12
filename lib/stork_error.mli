@@ -6,6 +6,7 @@ type t =
   | `Invalid_version of string
   | `Different_prefix of string * string
   | `Atd_error of int * string
+  | `Different_main_type of string * string
   ]
 
 val to_string : t -> string

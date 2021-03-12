@@ -65,7 +65,7 @@ let make_upgraders = function
         | Error e ->
           Error e)
     in
-    let+ versions = get_versions [] files in
+    let* versions = get_versions [] files in
     let file_versions = List.sort ~cmp:Int.compare versions in
     let recreate_path version =
       [%string "$folder/$(prefix)_$( string_of_int version).$atd_extension"]
@@ -74,20 +74,25 @@ let make_upgraders = function
       | [] ->
         assert false
       | [ newest_version ] ->
-        newest_version, acc
+        Ok (newest_version, acc)
       | old_file_version :: new_file_version :: tail ->
-        let acc =
-          Upgrader.make
-            ~prefix
-            ~old_file:(recreate_path old_file_version)
-            ~new_file:(recreate_path new_file_version)
-            ~old_file_version
-            ~new_file_version
-          :: acc
-        in
-        make_upgraders ~acc (new_file_version :: tail)
+        (match
+           Upgrader.make
+             ~prefix
+             ~old_file:(recreate_path old_file_version)
+             ~new_file:(recreate_path new_file_version)
+             ~old_file_version
+             ~new_file_version
+         with
+        | Ok upgrader ->
+          let acc = upgrader :: acc in
+          make_upgraders ~acc (new_file_version :: tail)
+        | Error e ->
+          Error e)
     in
-    let newest_version, upgraders_list = make_upgraders ~acc:[] file_versions in
+    let* newest_version, upgraders_list =
+      make_upgraders ~acc:[] file_versions
+    in
     let rec flatten ~acc = function
       | [] ->
         acc
@@ -118,7 +123,7 @@ let make_upgraders = function
         ; impl_list = types_module :: upgraders.impl_list
         }
     in
-    folder, prefix, upgraders
+    Ok (folder, prefix, upgraders)
 
 let main files =
   let+ folder, prefix, upgraders = make_upgraders files in
