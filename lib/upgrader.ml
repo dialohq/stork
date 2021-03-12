@@ -226,6 +226,9 @@ let enclose_module ~header ~module_name ?(impl = false) = function
     [%string "module $module_name $delimiter"]
     :: header :: List.rev ("end" :: lines)
 
+let make_t_module_name prefix version =
+  [%string "$(String.capitalize_ascii prefix)_$(string_of_int version)_t"]
+
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_doc_type = load_sort_map old_file in
   let new_sorted_items, new_type_map, _doc_type = load_sort_map new_file in
@@ -262,14 +265,8 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
       "From_$(string_of_int old_file_version)_to_$(string_of_int \
        new_file_version)"]
   in
-  let old_version_t =
-    [%string
-      "$(String.capitalize_ascii prefix)_$(string_of_int old_file_version)_t"]
-  in
-  let new_version_t =
-    [%string
-      "$(String.capitalize_ascii prefix)_$(string_of_int new_file_version)_t"]
-  in
+  let old_version_t = make_t_module_name prefix old_file_version in
+  let new_version_t = make_t_module_name prefix new_file_version in
   let user_fns_module =
     [%string "$(user_fns_module_name prefix).$module_name"]
   in

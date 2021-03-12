@@ -71,8 +71,10 @@ let make_upgraders = function
       [%string "$folder/$(prefix)_$( string_of_int version).$atd_extension"]
     in
     let rec make_upgraders ~acc = function
-      | [] | [ _ ] ->
-        acc
+      | [] ->
+        assert false
+      | [ newest_version ] ->
+        newest_version, acc
       | old_file_version :: new_file_version :: tail ->
         let acc =
           Upgrader.make
@@ -85,7 +87,7 @@ let make_upgraders = function
         in
         make_upgraders ~acc (new_file_version :: tail)
     in
-    let upgraders_list = make_upgraders ~acc:[] file_versions in
+    let newest_version, upgraders_list = make_upgraders ~acc:[] file_versions in
     let rec flatten ~acc = function
       | [] ->
         acc
@@ -99,11 +101,24 @@ let make_upgraders = function
         in
         flatten ~acc tail
     in
-    ( folder
-    , prefix
-    , flatten
+    let upgraders =
+      flatten
         ~acc:Upgrader.{ intf_list = []; impl_list = []; user_intf_list = [] }
-        upgraders_list )
+        upgraders_list
+    in
+    let newest_module_t = Upgrader.make_t_module_name prefix newest_version in
+    let types_module = [%string "module Types = $newest_module_t\n"] in
+    let types_module_sig =
+      [%string "module Types: module type of $newest_module_t\n"]
+    in
+    let upgraders =
+      Upgrader.
+        { upgraders with
+          intf_list = types_module_sig :: upgraders.intf_list
+        ; impl_list = types_module :: upgraders.impl_list
+        }
+    in
+    folder, prefix, upgraders
 
 let main files =
   let+ folder, prefix, upgraders = make_upgraders files in

@@ -1,4 +1,6 @@
 Generator › simple transitive change - impl list snapshot
+module Types = Simple_transitive_change_2_t
+
 module From_1_to_2 = struct
 module OldVersion = Simple_transitive_change_1_t
 module NewVersion = Simple_transitive_change_2_t
