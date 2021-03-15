@@ -147,7 +147,7 @@ let user_fns_module_name prefix =
   [%string "$(String.capitalize_ascii prefix)_user_fns"]
 
 let classified_type_to_strings
-    ~intf_list ~impl_list ~user_intf_list ~old_doc_type ~new_type_map
+    ~intf_list ~impl_list ~user_intf_list ~main_type ~new_type_map
   = function
   | Same name ->
     let impl =
@@ -162,22 +162,63 @@ let classified_type_to_strings
   | New name ->
     let intf =
       [%string
-        "val $(make)_$name: $old_version.$old_doc_type -> $new_version.$name"]
+        "val $(make)_$name: $old_version.$main_type -> $new_version.$name"]
     in
     impl_list, intf :: intf_list, intf :: user_intf_list
   | Modified name ->
     let intf =
       [%string
         "val\n\
-        \   $(convert)_$name: $old_version.$old_doc_type -> $old_version.$name \
-         -> $new_version.$name"]
+        \   $(convert)_$name: $old_version.$main_type -> $old_version.$name -> \
+         $new_version.$name"]
     in
     impl_list, intf :: intf_list, intf :: user_intf_list
+  | TransitivelyModified { record_name; unmodified_fields; transitive_fields }
+    when record_name = main_type ->
+    let intf =
+      [%string
+        "val $(convert)_$record_name: $old_version.$record_name -> \
+         $new_version.$record_name"]
+    in
+    let main_type_intf =
+      [%string
+        "val $convert: $old_version.$record_name -> $new_version.$record_name"]
+    in
+    let unmodified_fields =
+      List.fold_left
+        ~f:(fun acc field ->
+          match StringMap.mem field new_type_map with
+          | true ->
+            acc ^ [%string "$field = $(convert)_$field old_record.$field;\n"]
+          | false ->
+            acc ^ [%string "$field = old_record.$field;\n"])
+        ~init:""
+        unmodified_fields
+    in
+    let transitive_fields =
+      List.fold_left
+        ~f:(fun acc field ->
+          acc
+          ^ [%string
+              "$field = $(convert)_$field old_record old_record.$field ;\n"])
+        ~init:""
+        transitive_fields
+    in
+    let impl =
+      [%string
+        "let $(convert)_$record_name (old_record: $old_version.$record_name) : \
+         $new_version.$record_name = {\n\
+         $unmodified_fields$transitive_fields}"]
+    in
+    let main_type_impl = [%string "let $convert = $(convert)_$record_name"] in
+    ( main_type_impl :: impl :: impl_list
+    , main_type_intf :: intf :: intf_list
+    , user_intf_list )
   | TransitivelyModified { record_name; unmodified_fields; transitive_fields }
     ->
     let intf =
       [%string
-        "val $(convert)_$record_name: $old_version.$old_doc_type -> \
+        "val $(convert)_$record_name: $old_version.$main_type -> \
          $old_version.$record_name -> $new_version.$record_name"]
     in
     let unmodified_fields =
@@ -201,9 +242,10 @@ let classified_type_to_strings
     in
     let impl =
       [%string
-        "let $(convert)_$record_name (old_record: $old_version.$record_name)  \
-         (old_doc: $old_version.$old_doc_type ) : $new_version.$record_name = \
-         { $unmodified_fields $transitive_fields }"]
+        "let $(convert)_$record_name (old_doc: $old_version.$main_type ) \
+         (old_record: $old_version.$record_name) : $new_version.$record_name = \
+         {\n\
+         $unmodified_fields$transitive_fields}"]
     in
     impl :: impl_list, intf :: intf_list, user_intf_list
 
@@ -252,7 +294,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
               ~intf_list
               ~impl_list
               ~user_intf_list
-              ~old_doc_type
+              ~main_type:old_doc_type
               ~new_type_map
               classified_item
           in

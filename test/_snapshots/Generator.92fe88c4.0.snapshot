@@ -6,5 +6,6 @@ module OldVersion := Simple_transitive_change_1_t
 module NewVersion := Simple_transitive_change_2_t
 val
    convert_company: OldVersion.employee -> OldVersion.company -> NewVersion.company
-val convert_employee: OldVersion.employee -> OldVersion.employee -> NewVersion.employee
+val convert_employee: OldVersion.employee -> NewVersion.employee
+val convert: OldVersion.employee -> NewVersion.employee
 end
