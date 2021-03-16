@@ -147,7 +147,12 @@ let user_fns_module_name prefix =
   [%string "$(String.capitalize_ascii prefix)_user_fns"]
 
 let classified_type_to_strings
-    ~intf_list ~impl_list ~user_intf_list ~main_type ~new_type_map
+    ~intf_list
+    ~impl_list
+    ~user_intf_list
+    ~main_type
+    ~new_type_map
+    ~new_file_version
   = function
   | Same name ->
     let impl =
@@ -187,10 +192,12 @@ let classified_type_to_strings
     let unmodified_fields =
       List.fold_left
         ~f:(fun acc field ->
-          match StringMap.mem field new_type_map with
-          | true ->
+          match StringMap.mem field new_type_map, field with
+          | _, "version" ->
+            acc ^ [%string "version = %i$new_file_version;\n"]
+          | true, _ ->
             acc ^ [%string "$field = $(convert)_$field old_record.$field;\n"]
-          | false ->
+          | false, _ ->
             acc ^ [%string "$field = old_record.$field;\n"])
         ~init:""
         unmodified_fields
@@ -200,7 +207,7 @@ let classified_type_to_strings
         ~f:(fun acc field ->
           acc
           ^ [%string
-              "$field = $(convert)_$field old_record old_record.$field ;\n"])
+              "$field = $(convert)_$field old_record old_record.$field;\n"])
         ~init:""
         transitive_fields
     in
@@ -236,13 +243,13 @@ let classified_type_to_strings
       List.fold_left
         ~f:(fun acc field ->
           acc
-          ^ [%string "$field = $(convert)_$field old_doc old_record.$field ;\n"])
+          ^ [%string "$field = $(convert)_$field old_doc old_record.$field;\n"])
         ~init:""
         transitive_fields
     in
     let impl =
       [%string
-        "let $(convert)_$record_name (old_doc: $old_version.$main_type ) \
+        "let $(convert)_$record_name (old_doc: $old_version.$main_type) \
          (old_record: $old_version.$record_name) : $new_version.$record_name = \
          {\n\
          $unmodified_fields$transitive_fields}"]
@@ -305,6 +312,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
               ~user_intf_list
               ~main_type
               ~new_type_map
+              ~new_file_version
               classified_item
           in
           let classified_type_map =
