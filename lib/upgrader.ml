@@ -276,15 +276,13 @@ let enclose_module ~header ~module_name ?(impl = false) = function
     :: header :: List.rev ("end" :: lines)
 
 let name_t_module prefix version =
-  [%string "$(String.capitalize_ascii prefix)_$(string_of_int version)_t"]
+  [%string "$(String.capitalize_ascii prefix)_%i$(version)_t"]
 
 let name_j_module prefix version =
-  [%string "$(String.capitalize_ascii prefix)_$(string_of_int version)_j"]
+  [%string "$(String.capitalize_ascii prefix)_%i$(version)_j"]
 
 let name_upgrader_module ~old_file_version ~new_file_version =
-  [%string
-    "From_$(string_of_int old_file_version)_to_$(string_of_int \
-     new_file_version)"]
+  [%string "From_%i$(old_file_version)_to_%i$new_file_version"]
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_doc_type = load_sort_map old_file in

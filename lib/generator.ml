@@ -31,7 +31,7 @@ let write_files
     user_intf_list
 
 let name_convert_to_latest file_version =
-  [%string "$(Upgrader.convert)_from_$(string_of_int file_version)_to_latest"]
+  [%string "$(Upgrader.convert)_from_%i$(file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
   | [] ->
@@ -93,7 +93,7 @@ let make_main_of_string ~prefix ~main_type = function
       List.map
         ~f:(fun version ->
           [%string
-            "  | $(string_of_int version) -> $(name_convert_to_latest version) \
+            "  | %i$version -> $(name_convert_to_latest version) \
              ($(Upgrader.name_j_module prefix version).$(main_type)_of_string \
              s)"])
         tail
@@ -102,7 +102,7 @@ let make_main_of_string ~prefix ~main_type = function
     ( [%string
         {|
 let $(main_type)_of_string s = match (get_version s) with
-  | $(string_of_int latest_version) -> Json.$(main_type)_of_string s
+  | %i$latest_version -> Json.$(main_type)_of_string s
 $version_matches
   | _ -> invalid_arg "Unknown document version"
 |}]
@@ -153,7 +153,7 @@ let make_upgraders = function
     let* versions = get_versions [] files in
     let file_versions = List.sort ~cmp:Int.compare versions in
     let recreate_path version =
-      [%string "$folder/$(prefix)_$( string_of_int version).$atd_extension"]
+      [%string "$folder/$(prefix)_%i$(version).$atd_extension"]
     in
     let rec make_upgraders ~version_pairs ~main_type ~upgraders = function
       | [] ->
