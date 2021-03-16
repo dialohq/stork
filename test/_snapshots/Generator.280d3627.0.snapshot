@@ -1,5 +1,22 @@
 Generator › simple transitive change - impl list snapshot
 module Types = Simple_transitive_change_2_t
+module Json = Simple_transitive_change_2_j
+
+let get_version s =
+  match Yojson.Safe.from_string s with
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function \"version\", `Int version -> Some version | _ -> None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg \"The parsed JSON should have a `version` field of type int\"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg \"The parsed JSON should be an object.\"
 
 module From_1_to_2 = struct
 module OldVersion = Simple_transitive_change_1_t
@@ -13,3 +30,11 @@ company = convert_company old_record old_record.company ;
 }
 let convert = convert_employee
 end
+let convert_from_1_to_latest = From_1_to_2.convert
+let string_of_employee = Json.string_of_employee
+
+let employee_of_string s = match (get_version s) with
+  | 2 -> Json.employee_of_string s
+  | 1 -> convert_from_1_to_latest (Simple_transitive_change_1_j.employee_of_string s)
+  | _ -> invalid_arg \"Unknown document version\"
+

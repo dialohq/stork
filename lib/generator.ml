@@ -30,6 +30,91 @@ let write_files
     ~path:[%string "$folder/$(String.lowercase_ascii user_fns_module_name).mli"]
     user_intf_list
 
+let name_convert_to_latest file_version =
+  [%string "$(Upgrader.convert)_from_$(string_of_int file_version)_to_latest"]
+
+let make_convert_to_latest_fns = function
+  | [] ->
+    assert false
+  | (old_file_version, newest_file_version) :: tail ->
+    let convert = Upgrader.convert in
+    let from_old_to_new =
+      Upgrader.name_upgrader_module
+        ~old_file_version
+        ~new_file_version:newest_file_version
+    in
+    let latest_converter =
+      [%string
+        "let $(name_convert_to_latest old_file_version) = \
+         $from_old_to_new.$convert"]
+    in
+    let rec aux ~acc = function
+      | [] ->
+        acc
+      | (old_file_version, new_file_version) :: tail ->
+        let from_old_to_new =
+          Upgrader.name_upgrader_module ~old_file_version ~new_file_version
+        in
+        let acc =
+          [%string
+            "let $(name_convert_to_latest old_file_version) doc =  \
+             $(name_convert_to_latest new_file_version) \
+             ($from_old_to_new.$convert doc)"]
+          :: acc
+        in
+        aux ~acc tail
+    in
+    aux ~acc:[ latest_converter ] tail |> List.rev
+
+let get_version =
+  {|
+let get_version s =
+  match Yojson.Safe.from_string s with
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function "version", `Int version -> Some version | _ -> None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg "The parsed JSON should have a `version` field of type int"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg "The parsed JSON should be an object."
+|}
+
+let make_main_of_string ~prefix ~main_type = function
+  | [] ->
+    assert false
+  | latest_version :: tail ->
+    let version_matches =
+      List.map
+        ~f:(fun version ->
+          [%string
+            "  | $(string_of_int version) -> $(name_convert_to_latest version) \
+             ($(Upgrader.name_j_module prefix version).$(main_type)_of_string \
+             s)"])
+        tail
+      |> String.concat ~sep:"\n"
+    in
+    ( [%string
+        {|
+let $(main_type)_of_string s = match (get_version s) with
+  | $(string_of_int latest_version) -> Json.$(main_type)_of_string s
+$version_matches
+  | _ -> invalid_arg "Unknown document version"
+|}]
+    , [%string "val $(main_type)_of_string: string -> Types.$main_type"] )
+
+let make_string_of_main main_type =
+  let intf =
+    [%string "val string_of_$main_type: ?len:int -> Types.$main_type -> string"]
+  in
+  let impl = [%string "let string_of_$main_type = Json.string_of_$main_type"] in
+  impl, intf
+
 let make_upgraders = function
   | [] ->
     Error `Empty_list
@@ -70,11 +155,21 @@ let make_upgraders = function
     let recreate_path version =
       [%string "$folder/$(prefix)_$( string_of_int version).$atd_extension"]
     in
-    let rec make_upgraders ~acc = function
+    let rec make_upgraders ~version_pairs ~main_type ~upgraders = function
       | [] ->
         assert false
       | [ newest_version ] ->
-        Ok (newest_version, acc)
+        let main_type =
+          match main_type with
+          | Some main_type ->
+            main_type
+          | None ->
+            let _sorted_items, _type_map, main_type =
+              Upgrader.load_sort_map (recreate_path newest_version)
+            in
+            main_type
+        in
+        Ok (newest_version, main_type, version_pairs, upgraders)
       | old_file_version :: new_file_version :: tail ->
         (match
            Upgrader.make
@@ -84,14 +179,26 @@ let make_upgraders = function
              ~old_file_version
              ~new_file_version
          with
-        | Ok upgrader ->
-          let acc = upgrader :: acc in
-          make_upgraders ~acc (new_file_version :: tail)
+        | Ok (main_type, upgrader) ->
+          let upgraders = upgrader :: upgraders in
+          let version_pairs =
+            (old_file_version, new_file_version) :: version_pairs
+          in
+          let main_type = Some main_type in
+          make_upgraders
+            ~upgraders
+            ~version_pairs
+            ~main_type
+            (new_file_version :: tail)
         | Error e ->
           Error e)
     in
-    let* newest_version, upgraders_list =
-      make_upgraders ~acc:[] file_versions
+    let* newest_version, main_type, version_pairs, upgraders_list =
+      make_upgraders
+        ~version_pairs:[]
+        ~upgraders:[]
+        ~main_type:None
+        file_versions
     in
     let rec flatten ~acc = function
       | [] ->
@@ -111,16 +218,42 @@ let make_upgraders = function
         ~acc:Upgrader.{ intf_list = []; impl_list = []; user_intf_list = [] }
         upgraders_list
     in
-    let newest_module_t = Upgrader.make_t_module_name prefix newest_version in
-    let types_module = [%string "module Types = $newest_module_t\n"] in
+    let newest_module_t = Upgrader.name_t_module prefix newest_version in
+    let types_module = [%string "module Types = $newest_module_t"] in
     let types_module_sig =
-      [%string "module Types: module type of $newest_module_t\n"]
+      [%string "module Types: module type of $newest_module_t"]
+    in
+    let newest_module_j = Upgrader.name_j_module prefix newest_version in
+    let json_module = [%string "module Json = $newest_module_j"] in
+    let json_module_sig =
+      [%string "module Json: module type of $newest_module_j"]
+    in
+    let desc_versions = List.rev file_versions in
+    let main_of_string_impl, main_of_string_intf =
+      make_main_of_string ~prefix ~main_type desc_versions
+    in
+    let convert_to_latest_fns = make_convert_to_latest_fns version_pairs in
+    let string_of_main_impl, string_of_main_intf =
+      make_string_of_main main_type
     in
     let upgraders =
       Upgrader.
         { upgraders with
-          intf_list = types_module_sig :: upgraders.intf_list
-        ; impl_list = types_module :: upgraders.impl_list
+          intf_list =
+            types_module_sig
+            ::
+            json_module_sig
+            :: main_of_string_intf :: string_of_main_intf :: upgraders.intf_list
+        ; impl_list =
+            types_module
+            ::
+            json_module
+            ::
+            get_version
+            ::
+            (upgraders.impl_list
+            @ convert_to_latest_fns
+            @ [ string_of_main_impl; main_of_string_impl ])
         }
     in
     Ok (folder, prefix, upgraders)

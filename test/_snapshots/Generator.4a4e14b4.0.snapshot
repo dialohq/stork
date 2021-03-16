@@ -1,0 +1,2 @@
+Generator › simple transitive change - parsing test/simple_transitive_change/simple_transitive_change_2.json
+{\"name\":\"Paul\",\"age\":30,\"company\":{\"name\":\"Dialo\",\"turnover\":133700000},\"version\":2}

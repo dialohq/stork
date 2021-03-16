@@ -3,9 +3,7 @@
   "esy": {
     "build": "dune build -p #{self.name}",
     "buildDev": "dune build --root . --only-package #{self.name}",
-    "buildEnv": {
-      "ODOC_SYNTAX": "ml"
-    }
+    "buildEnv": { "ODOC_SYNTAX": "ml" }
   },
   "dependencies": {
     "@opam/atd": "2.2.1",

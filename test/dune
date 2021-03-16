@@ -1,6 +1,6 @@
 (library
  (name stork_test)
- (libraries rely.lib stork)
+ (libraries rely.lib stork yojson)
  (modules
   (:standard \ test_runner))
  (flags

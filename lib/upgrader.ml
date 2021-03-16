@@ -268,8 +268,16 @@ let enclose_module ~header ~module_name ?(impl = false) = function
     [%string "module $module_name $delimiter"]
     :: header :: List.rev ("end" :: lines)
 
-let make_t_module_name prefix version =
+let name_t_module prefix version =
   [%string "$(String.capitalize_ascii prefix)_$(string_of_int version)_t"]
+
+let name_j_module prefix version =
+  [%string "$(String.capitalize_ascii prefix)_$(string_of_int version)_j"]
+
+let name_upgrader_module ~old_file_version ~new_file_version =
+  [%string
+    "From_$(string_of_int old_file_version)_to_$(string_of_int \
+     new_file_version)"]
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_doc_type = load_sort_map old_file in
@@ -277,6 +285,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   if new_doc_type <> old_doc_type then
     Error (`Different_main_type (old_doc_type, new_doc_type))
   else
+    let main_type = old_doc_type in
     let impl_list, intf_list, user_intf_list, _ =
       List.fold_left
         ~f:
@@ -294,7 +303,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
               ~intf_list
               ~impl_list
               ~user_intf_list
-              ~main_type:old_doc_type
+              ~main_type
               ~new_type_map
               classified_item
           in
@@ -306,12 +315,10 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
         new_sorted_items
     in
     let module_name =
-      [%string
-        "From_$(string_of_int old_file_version)_to_$(string_of_int \
-         new_file_version)"]
+      name_upgrader_module ~old_file_version ~new_file_version
     in
-    let old_version_t = make_t_module_name prefix old_file_version in
-    let new_version_t = make_t_module_name prefix new_file_version in
+    let old_version_t = name_t_module prefix old_file_version in
+    let new_version_t = name_t_module prefix new_file_version in
     let user_fns_module =
       [%string "$(user_fns_module_name prefix).$module_name"]
     in
@@ -327,9 +334,10 @@ include $user_fns_module|}]
 module $new_version := $new_version_t|}]
     in
     Ok
-      { impl_list =
-          enclose_module ~module_name ~impl:true ~header:impl_header impl_list
-      ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
-      ; user_intf_list =
-          enclose_module ~module_name ~header:intf_header user_intf_list
-      }
+      ( main_type
+      , { impl_list =
+            enclose_module ~module_name ~impl:true ~header:impl_header impl_list
+        ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
+        ; user_intf_list =
+            enclose_module ~module_name ~header:intf_header user_intf_list
+        } )

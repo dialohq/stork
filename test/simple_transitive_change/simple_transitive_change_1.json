@@ -1,0 +1,9 @@
+{
+    "name": "Paul",
+    "age": 30,
+    "company": {
+        "name": "Dialo",
+        "address": "Canary Islands"
+    },
+    "version": 1
+}
