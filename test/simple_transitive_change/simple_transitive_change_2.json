@@ -2,8 +2,14 @@
     "version": 2,
     "age": 30,
     "name": "Paul",
-    "company": {
-        "name": "Dialo",
-        "turnover": 133700000
-    }
+    "position": [
+        "dev",
+        [
+            "Company",
+            {
+                "name": "Dialo",
+                "turnover": 133700000
+            }
+        ]
+    ]
 }

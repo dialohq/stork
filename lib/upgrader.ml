@@ -1,21 +1,45 @@
+open Ast.NoLoc
+
 type generated =
   { intf_list : string list
   ; impl_list : string list
   ; user_intf_list : string list
   }
 
-type upgrade_kind =
-  | New of string
-  | Same of string
-  | TransitivelyModified of
-      { record_name : string
-      ; unmodified_fields : string list
-      ; transitive_fields : string list
-      }
-  | Modified of string
+type variant_upgrade =
+  | SameVariant of string
+  | SameVariantWithPayload of string
+  | ModifiedVariantWithPayload of (string * modification)
+
+and field_upgrade =
+  | SameField of string
+  | ModifiedField of (string * modification)
+
+and cell_upgrade =
+  | SameCell
+  | ModifiedCell of modification
+
+and modification =
+  | Different of string
+  | Option of modification
+  | Nullable of modification
+  | Shared of modification
+  | Wrap of modification
+  | Sum of variant_upgrade list
+  | Record of field_upgrade list
+  | Tuple of cell_upgrade list
+  | List of modification
+
+type shallow_equal =
+  | Same
+  | TransitivelyModified of modification
+
+type upgrade =
+  | New
+  | ShallowEqual of shallow_equal
+  | Modified
 
 module StringMap = Map.Make (String)
-open Ast.NoLoc
 
 let load_sort path =
   let open Atd.Util in
@@ -53,9 +77,9 @@ let flatten_module_items sorted_modules =
     | [] | [ (_, []) ] ->
       failwith "ATD file is empty"
     | [ ( _flag
-        , [ Atd.Ast.(
-              Type (_, (main_type_name, _, _), Record (_, field_list, _)) as
-              main_type)
+        , [ (Atd.Ast.Type
+               (_, (main_type_name, _, _), Atd.Ast.Record (_, field_list, _)) as
+            main_type)
           ] )
       ]
       when has_version_field field_list ->
@@ -74,66 +98,136 @@ let flatten_module_items sorted_modules =
   let reverse_module_items, main_type_name = aux sorted_modules [] in
   List.rev reverse_module_items, main_type_name
 
-let classify_record ~record_name ~old_fields ~new_fields ~new_type_map =
-  let rec aux new_fields unmodified_fields transitive_fields =
-    match new_fields with
-    | [] ->
-      TransitivelyModified { record_name; unmodified_fields; transitive_fields }
-    | (((name, _field_kind, _annot), _type_expr) as new_field) :: tail ->
-      (match
-         ( StringMap.find_opt name new_type_map
-         , List.find_opt ~f:(fun old_field -> old_field = new_field) old_fields
-         )
-       with
-      | Some _, _ ->
-        aux tail unmodified_fields (name :: transitive_fields)
-      | _, Some ((name, _, _), _) ->
-        aux tail (name :: unmodified_fields) transitive_fields
-      | None, None ->
-        Modified record_name)
-  in
-  aux new_fields [] []
-
-let same_or_transitively_modified ~classified_type_map ~record_name = function
-  | Ast.NoLoc.TypeExpr.Record (fields, _) ->
+(* since the types are shallow equal, it means their composing subtypes existed
+   before, so they can only be same or modified, not new *)
+let rec classify_shallow_equals ~classified_type_map = function
+  | TypeExpr.List (type_expr, _) ->
+    (match classify_shallow_equals ~classified_type_map type_expr with
+    | Same ->
+      Same
+    | TransitivelyModified modification ->
+      TransitivelyModified (List modification))
+  | TypeExpr.Option (type_expr, _) ->
+    (match classify_shallow_equals ~classified_type_map type_expr with
+    | Same ->
+      Same
+    | TransitivelyModified modification ->
+      TransitivelyModified (Option modification))
+  | TypeExpr.Nullable (type_expr, _) ->
+    (match classify_shallow_equals ~classified_type_map type_expr with
+    | Same ->
+      Same
+    | TransitivelyModified modification ->
+      TransitivelyModified (Nullable modification))
+  | TypeExpr.Shared (type_expr, _) ->
+    (match classify_shallow_equals ~classified_type_map type_expr with
+    | Same ->
+      Same
+    | TransitivelyModified modification ->
+      TransitivelyModified (Shared modification))
+  | TypeExpr.Wrap (type_expr, _) ->
+    (match classify_shallow_equals ~classified_type_map type_expr with
+    | Same ->
+      Same
+    | TransitivelyModified modification ->
+      TransitivelyModified (Wrap modification))
+  | TypeExpr.Name ((("unit" | "bool" | "int" | "float" | "string"), _), _) ->
+    Same
+  | TypeExpr.Name (("abstract", _), _) ->
+    failwith "Abstract types are unsupported"
+  | TypeExpr.Name ((type_name, type_expr_list), _) ->
+    let same_parameters =
+      List.for_all
+        ~f:(fun type_expr ->
+          match classify_shallow_equals ~classified_type_map type_expr with
+          | Same ->
+            true
+          | TransitivelyModified _ ->
+            false)
+        type_expr_list
+    in
     (match
-       List.fold_left
-         ~init:([], [])
-         ~f:
-           (fun (unmodified_fields, transitive_fields) ((field_name, _, _), _) ->
-           match StringMap.find_opt field_name classified_type_map with
-           | Some (Same _) | None ->
-             field_name :: unmodified_fields, transitive_fields
-           | _ ->
-             unmodified_fields, field_name :: transitive_fields)
-         fields
+       same_parameters, StringMap.find_opt type_name classified_type_map
      with
-    | _, [] ->
-      Same record_name
-    | unmodified_fields, transitive_fields ->
-      TransitivelyModified { record_name; unmodified_fields; transitive_fields })
-  | _ ->
-    Same record_name
+    | _, None ->
+      failwith ("unknown type " ^ type_name) (* should not happen *)
+    | true, Some (ShallowEqual Same) ->
+      Same
+    | _ ->
+      TransitivelyModified (Different type_name))
+  | TypeExpr.Tvar _ ->
+    Same
+  | TypeExpr.Record (fields, _) ->
+    let same = ref true in
+    let field_upgrades =
+      List.map fields ~f:(fun ((field_name, field_kind, _), type_expr) ->
+          match classify_shallow_equals ~classified_type_map type_expr with
+          | Same ->
+            SameField field_name
+          | TransitivelyModified modification ->
+            let () = same := false in
+            ModifiedField
+              ( field_name
+              , match field_kind with
+                | TypeExpr.Required | TypeExpr.With_default ->
+                  modification
+                | TypeExpr.Optional ->
+                  Option modification ))
+    in
+    (match !same with
+    | true ->
+      Same
+    | false ->
+      TransitivelyModified (Record field_upgrades))
+  | TypeExpr.Sum (variants, _) ->
+    let same = ref true in
+    let variant_upgrades =
+      List.map variants ~f:(fun ((variant_name, _), type_expr) ->
+          match type_expr with
+          | None ->
+            SameVariant variant_name
+          | Some type_expr ->
+            (match classify_shallow_equals ~classified_type_map type_expr with
+            | Same ->
+              SameVariantWithPayload variant_name
+            | TransitivelyModified modification ->
+              let () = same := false in
+              ModifiedVariantWithPayload (variant_name, modification)))
+    in
+    (match !same with
+    | true ->
+      Same
+    | false ->
+      TransitivelyModified (Sum variant_upgrades))
+  | TypeExpr.Tuple (cells, _) ->
+    let same = ref true in
+    let cell_upgrades =
+      List.map cells ~f:(fun (type_expr, _) ->
+          match classify_shallow_equals ~classified_type_map type_expr with
+          | Same ->
+            SameCell
+          | TransitivelyModified modification ->
+            let () = same := false in
+            ModifiedCell modification)
+    in
+    (match !same with
+    | true ->
+      Same
+    | false ->
+      TransitivelyModified (Tuple cell_upgrades))
 
 let classify_item
     (((name, _, _), type_expr) as new_item : ModuleItem.t)
     ~old_type_map
-    ~new_type_map
     ~classified_type_map
   =
-  let open TypeExpr in
-  match type_expr, StringMap.find_opt name old_type_map with
-  | _, None ->
-    New name
-  | _, Some old_item when old_item = new_item ->
-    same_or_transitively_modified
-      ~classified_type_map
-      ~record_name:name
-      type_expr
-  | Record (new_fields, _), Some (_, Record (old_fields, _)) ->
-    classify_record ~record_name:name ~old_fields ~new_fields ~new_type_map
-  | _, Some (_, _) ->
-    New name
+  match StringMap.find_opt name old_type_map with
+  | None ->
+    name, New
+  | Some old_item when old_item = new_item ->
+    name, ShallowEqual (classify_shallow_equals ~classified_type_map type_expr)
+  | Some _ ->
+    name, Modified
 
 let old_version = "OldVersion"
 
@@ -146,115 +240,107 @@ let make = "make"
 let user_fns_module_name prefix =
   [%string "$(String.capitalize_ascii prefix)_user_fns"]
 
-let classified_type_to_strings
-    ~intf_list
-    ~impl_list
-    ~user_intf_list
-    ~main_type
-    ~new_type_map
-    ~new_file_version
-  = function
-  | Same name ->
+let old_doc = "old_doc"
+
+let rec modification_to_string ?main_type = function
+  | Different type_name ->
+    [%string "$(convert)_$type_name $old_doc"]
+  | Option modification | Nullable modification ->
+    [%string "Option.map ($(modification_to_string modification))"]
+  | Shared modification | Wrap modification ->
+    modification_to_string modification
+  | Sum variant_upgrades ->
+    let variants =
+      List.map variant_upgrades ~f:(function
+          | SameVariant variant_name ->
+            [%string "| `$variant_name -> `$variant_name"]
+          | SameVariantWithPayload variant_name ->
+            [%string "| `$variant_name _ as variant -> variant"]
+          | ModifiedVariantWithPayload (variant_name, modification) ->
+            [%string
+              "| `$variant_name payload -> `$variant_name (payload |> \
+               ($(modification_to_string modification)))"])
+      |> String.concat ~sep:"\n"
+    in
+    [%string "function \n$variants"]
+  | Record field_upgrades ->
+    let fields =
+      List.map field_upgrades ~f:(fun field_upgrade ->
+          match field_upgrade, main_type with
+          | SameField "version", Some new_file_version ->
+            [%string "version = %i$new_file_version;"]
+          | SameField field_name, _ ->
+            [%string "$field_name = old_record.$field_name;"]
+          | ModifiedField (field_name, modification), _ ->
+            [%string
+              "$field_name = old_record.$field_name |> \
+               ($(modification_to_string modification));"])
+      |> String.concat ~sep:"\n"
+    in
+    [%string "fun old_record -> $new_version.{ $fields }"]
+  | Tuple cell_upgrades ->
+    let tuple_var =
+      List.mapi cell_upgrades ~f:(fun i _ -> [%string "a_%i$i"])
+      |> String.concat ~sep:", "
+    in
+    let tuple_var = [%string "($tuple_var)"] in
+    let cells =
+      List.mapi cell_upgrades ~f:(fun i -> function
+        | SameCell ->
+          [%string "a_%i$i"]
+        | ModifiedCell modification ->
+          [%string "a_%i$i |> ($(modification_to_string modification))"])
+      |> String.concat ~sep:", "
+    in
+    [%string "fun $tuple_var -> ($cells)"]
+  | List modification ->
+    [%string "List.map ~f:($(modification_to_string modification))"]
+
+let classified_type_to_strings ~main_type ~new_file_version = function
+  | name, ShallowEqual Same ->
     let impl =
       [%string
         "let $(convert)_$name: $old_version.$name -> $new_version.$name = \
          Obj.magic"]
     in
-    let intf =
-      [%string "val $(convert)_$name: $old_version.$name -> $new_version.$name"]
-    in
-    impl :: impl_list, intf :: intf_list, user_intf_list
-  | New name ->
+    Some impl, None
+  | name, New ->
     let intf =
       [%string
         "val $(make)_$name: $old_version.$main_type -> $new_version.$name"]
     in
-    impl_list, intf :: intf_list, intf :: user_intf_list
-  | Modified name ->
+    None, Some intf
+  | name, Modified when name = main_type ->
     let intf =
       [%string
-        "val\n\
-        \   $(convert)_$name: $old_version.$main_type -> $old_version.$name -> \
-         $new_version.$name"]
+        "val $(convert)_$name: $old_version.$main_type -> $new_version.$name"]
     in
-    impl_list, intf :: intf_list, intf :: user_intf_list
-  | TransitivelyModified { record_name; unmodified_fields; transitive_fields }
-    when record_name = main_type ->
+    None, Some intf
+  | name, Modified ->
     let intf =
       [%string
-        "val $(convert)_$record_name: $old_version.$record_name -> \
-         $new_version.$record_name"]
+        "val $(convert)_$name: $old_version.$main_type -> $old_version.$name \
+         -> $new_version.$name"]
     in
-    let main_type_intf =
-      [%string
-        "val $convert: $old_version.$record_name -> $new_version.$record_name"]
-    in
-    let unmodified_fields =
-      List.fold_left
-        ~f:(fun acc field ->
-          match StringMap.mem field new_type_map, field with
-          | _, "version" ->
-            acc ^ [%string "version = %i$new_file_version;\n"]
-          | true, _ ->
-            acc ^ [%string "$field = $(convert)_$field old_record.$field;\n"]
-          | false, _ ->
-            acc ^ [%string "$field = old_record.$field;\n"])
-        ~init:""
-        unmodified_fields
-    in
-    let transitive_fields =
-      List.fold_left
-        ~f:(fun acc field ->
-          acc
-          ^ [%string
-              "$field = $(convert)_$field old_record old_record.$field;\n"])
-        ~init:""
-        transitive_fields
-    in
-    let impl =
-      [%string
-        "let $(convert)_$record_name (old_record: $old_version.$record_name) : \
-         $new_version.$record_name = {\n\
-         $unmodified_fields$transitive_fields}"]
-    in
-    let main_type_impl = [%string "let $convert = $(convert)_$record_name"] in
-    ( main_type_impl :: impl :: impl_list
-    , main_type_intf :: intf :: intf_list
-    , user_intf_list )
-  | TransitivelyModified { record_name; unmodified_fields; transitive_fields }
+    None, Some intf
+  | name, ShallowEqual (TransitivelyModified modification) when name = main_type
     ->
-    let intf =
-      [%string
-        "val $(convert)_$record_name: $old_version.$main_type -> \
-         $old_version.$record_name -> $new_version.$record_name"]
-    in
-    let unmodified_fields =
-      List.fold_left
-        ~f:(fun acc field ->
-          match StringMap.mem field new_type_map with
-          | true ->
-            acc ^ [%string "$field = $(convert)_$field old_record.$field;\n"]
-          | false ->
-            acc ^ [%string "$field = old_record.$field;\n"])
-        ~init:""
-        unmodified_fields
-    in
-    let transitive_fields =
-      List.fold_left
-        ~f:(fun acc field ->
-          acc
-          ^ [%string "$field = $(convert)_$field old_doc old_record.$field;\n"])
-        ~init:""
-        transitive_fields
-    in
+    let fn = modification_to_string ~main_type:new_file_version modification in
     let impl =
       [%string
-        "let $(convert)_$record_name (old_doc: $old_version.$main_type) \
-         (old_record: $old_version.$record_name) : $new_version.$record_name = \
-         {\n\
-         $unmodified_fields$transitive_fields}"]
+        "let $(convert)_$name: $old_version.$main_type -> \
+         $new_version.$main_type = fun $old_doc -> $old_doc |> ($fn)"]
     in
-    impl :: impl_list, intf :: intf_list, user_intf_list
+    Some impl, None
+  | name, ShallowEqual (TransitivelyModified modification) ->
+    let fn = modification_to_string modification in
+    let impl =
+      [%string
+        "let $(convert)_$name: $old_version.$main_type -> $old_version.$name \
+         -> $new_version.$name\n\
+        \      = fun old_doc -> $fn"]
+    in
+    Some impl, None
 
 let to_map : ModuleItem.t list -> ModuleItem.t StringMap.t =
   List.fold_left
@@ -286,38 +372,38 @@ let name_upgrader_module ~old_file_version ~new_file_version =
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_doc_type = load_sort_map old_file in
-  let new_sorted_items, new_type_map, new_doc_type = load_sort_map new_file in
+  let new_sorted_items, _new_type_map, new_doc_type = load_sort_map new_file in
   if new_doc_type <> old_doc_type then
     Error (`Different_main_type (old_doc_type, new_doc_type))
   else
     let main_type = old_doc_type in
-    let impl_list, intf_list, user_intf_list, _ =
+    let impl_list, user_intf_list, _ =
       List.fold_left
-        ~f:
-          (fun (impl_list, intf_list, user_intf_list, classified_type_map)
-               (((name, _, _), _) as new_item) ->
-          let classified_item =
-            classify_item
-              ~old_type_map
-              ~new_type_map
-              ~classified_type_map
-              new_item
+        ~f:(fun (impl_list, user_intf_list, classified_type_map) new_item ->
+          let name, classified_item =
+            classify_item ~old_type_map ~classified_type_map new_item
           in
-          let impl_list, intf_list, user_intf_list =
+          let impl, user_intf =
             classified_type_to_strings
-              ~intf_list
-              ~impl_list
-              ~user_intf_list
               ~main_type
-              ~new_type_map
               ~new_file_version
-              classified_item
+              (name, classified_item)
+          in
+          let impl_list =
+            match impl with None -> impl_list | Some impl -> impl :: impl_list
+          in
+          let user_intf_list =
+            match user_intf with
+            | None ->
+              user_intf_list
+            | Some user_intf ->
+              user_intf :: user_intf_list
           in
           let classified_type_map =
             StringMap.add name classified_item classified_type_map
           in
-          impl_list, intf_list, user_intf_list, classified_type_map)
-        ~init:([], [], [], StringMap.empty)
+          impl_list, user_intf_list, classified_type_map)
+        ~init:([], [], StringMap.empty)
         new_sorted_items
     in
     let module_name =
@@ -338,6 +424,13 @@ include $user_fns_module|}]
       [%string
         {|module $old_version := $old_version_t
 module $new_version := $new_version_t|}]
+    in
+    let main_type_impl = [%string "let $convert = $(convert)_$main_type"] in
+    let impl_list = main_type_impl :: impl_list in
+    let intf_list =
+      [ [%string
+          "val $convert: $old_version.$main_type -> $new_version.$main_type"]
+      ]
     in
     Ok
       ( main_type

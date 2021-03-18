@@ -1,9 +1,15 @@
 {
     "name": "Paul",
     "age": 30,
-    "company": {
-        "name": "Dialo",
-        "address": "Canary Islands"
-    },
+    "position": [
+        "dev",
+        [
+            "Company",
+            {
+                "name": "Dialo",
+                "address": "Canary Islands"
+            }
+        ]
+    ],
     "version": 1
 }

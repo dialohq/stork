@@ -3,9 +3,13 @@ type company = {
     address: string;
 }
 
+type employer = [ Self | Company of company ]
+
+type employment = (string * employer)
+
 type employee = {
     name: string;
     age: int;
-    company: company;
+    position: employment;
     version: int;
 }

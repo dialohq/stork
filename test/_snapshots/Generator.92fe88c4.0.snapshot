@@ -6,8 +6,5 @@ val string_of_employee: ?len:int -> Types.employee -> string
 module From_1_to_2 : sig
 module OldVersion := Simple_transitive_change_1_t
 module NewVersion := Simple_transitive_change_2_t
-val
-   convert_company: OldVersion.employee -> OldVersion.company -> NewVersion.company
-val convert_employee: OldVersion.employee -> NewVersion.employee
 val convert: OldVersion.employee -> NewVersion.employee
 end
