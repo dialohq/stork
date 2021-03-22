@@ -259,8 +259,8 @@ let rec classify_shallow_equals ~classified_type_map = function
       Same
     | Some (ShallowEqual (_, SameNominal), _) ->
       SameNominal
-    | Some (ShallowEqual (_, TransitivelyModified modif), _) ->
-      TransitivelyModified modif
+    | Some (ShallowEqual (_, TransitivelyModified _), _) ->
+      TransitivelyModified (Name (Modified type_name))
     | Some (New _, _) ->
       TransitivelyModified (Name (New type_name))
     | Some (Modified _, _) ->
@@ -423,7 +423,7 @@ let old_doc = "old_doc"
 
 let rec modification_to_string ?main_type = function
   | Name (New type_name) ->
-    [%string "$(make)_$type_name $old_doc"]
+    [%string "fun _ -> (make)_$type_name $old_doc"]
   | Name (Modified type_name) ->
     [%string "$(convert)_$type_name $old_doc"]
   | Option modification | Nullable modification ->
