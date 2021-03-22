@@ -3,9 +3,11 @@ type company = {
     address: string;
 }
 
-type employer = [ Self | Company of company ]
+type employer = [ Self | Company of company ] <ocaml repr="classic">
 
-type employment = (string * employer)
+type 'b tuple_2 = (string * 'b)
+
+type employment = employer tuple_2
 
 type employee = {
     name: string;

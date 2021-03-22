@@ -164,7 +164,7 @@ let make_upgraders = function
           | Some main_type ->
             main_type
           | None ->
-            let _sorted_items, _type_map, main_type =
+            let _sorted_items, _type_map, main_type, _main_type_param_count =
               Upgrader.load_sort_map (recreate_path newest_version)
             in
             main_type
@@ -236,6 +236,7 @@ let make_upgraders = function
     let string_of_main_impl, string_of_main_intf =
       make_string_of_main main_type
     in
+    let disable_warnings = {|[@@@ocaml.warning "-32"]|} in
     let upgraders =
       Upgrader.
         { upgraders with
@@ -245,6 +246,8 @@ let make_upgraders = function
             json_module_sig
             :: main_of_string_intf :: string_of_main_intf :: upgraders.intf_list
         ; impl_list =
+            disable_warnings
+            ::
             types_module
             ::
             json_module

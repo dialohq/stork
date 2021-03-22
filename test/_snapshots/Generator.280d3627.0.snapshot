@@ -1,4 +1,5 @@
 Generator › simple transitive change - impl list snapshot
+[@@@ocaml.warning \"-32\"]
 module Types = Simple_transitive_change_2_t
 module Json = Simple_transitive_change_2_j
 
@@ -22,15 +23,20 @@ module From_1_to_2 = struct
 module OldVersion = Simple_transitive_change_1_t
 module NewVersion = Simple_transitive_change_2_t
 include Simple_transitive_change_user_fns.From_1_to_2
+let convert_tuple_2 x = x
 let convert_employer: OldVersion.employee -> OldVersion.employer -> NewVersion.employer
       = fun old_doc -> function 
-| `Self -> `Self
-| `Company payload -> `Company (payload |> (convert_company old_doc))
+| OldVersion.Self -> NewVersion.Self
+| OldVersion.Company payload -> NewVersion.Company (payload |> (convert_company old_doc))
 let convert_employment: OldVersion.employee -> OldVersion.employment -> NewVersion.employment
-      = fun old_doc -> fun (a_0, a_1) -> (a_0, a_1 |> (convert_employer old_doc))
+      = fun old_doc -> fun (a_0, a_1) -> (a_0, a_1 |> (function 
+| OldVersion.Self -> NewVersion.Self
+| OldVersion.Company payload -> NewVersion.Company (payload |> (convert_company old_doc))))
 let convert_employee: OldVersion.employee -> NewVersion.employee = fun old_doc -> old_doc |> (fun old_record -> NewVersion.{ name = old_record.name;
 age = old_record.age;
-position = old_record.position |> (convert_employment old_doc);
+position = old_record.position |> (fun (a_0, a_1) -> (a_0, a_1 |> (function 
+| OldVersion.Self -> NewVersion.Self
+| OldVersion.Company payload -> NewVersion.Company (payload |> (convert_company old_doc)))));
 version = 2; })
 let convert = convert_employee
 end
