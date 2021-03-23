@@ -1,2 +1,2 @@
 Generator › simple transitive change - parsing test/simple_transitive_change/simple_transitive_change_1.json
-{\"name\":\"Paul\",\"age\":30,\"position\":[\"dev\",[\"Company\",{\"name\":\"Dialo\"}]],\"version\":2}
+{\"name\":\"Paul\",\"age\":30,\"position\":[\"dev\",[\"Company\",{\"name\":\"Dialo\"}]],\"version\":2,\"skills\":[{\"domain\":\"design\",\"name\":\"typography\"},{\"domain\":\"computer science\",\"name\":\"ocaml\"}]}

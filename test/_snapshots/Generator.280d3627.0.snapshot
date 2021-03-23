@@ -33,7 +33,8 @@ let convert_employment: OldVersion.employee -> OldVersion.employment -> NewVersi
 let convert_employee: OldVersion.employee -> NewVersion.employee = fun old_doc -> old_doc |> (fun old_record -> NewVersion.{ name = old_record.name;
 age = old_record.age;
 position = old_record.position |> (convert_employment old_doc);
-version = 2; })
+version = 2;
+skills = old_record.skills |> (Array.map ~f:(convert_skill old_doc)); })
 let convert = convert_employee
 end
 let convert_from_1_to_latest = From_1_to_2.convert
