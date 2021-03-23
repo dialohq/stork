@@ -7,36 +7,31 @@ type generated =
   }
 [@@deriving show]
 
-type param_count = int [@@deriving show]
+type param_count = int
 
 type sum_repr =
   | Polymorphic
   | Classic
-[@@deriving show]
 
 type list_repr =
   | List
   | Array
-[@@deriving show]
 
 type variant_upgrade =
   | SameVariant of string
   | SameVariantWithPayload of string
   | SameVariantWithNominalPayload of string
   | ModifiedVariantWithPayload of (string * modification)
-[@@deriving show]
 
 and field_upgrade =
   | SameField of string
   | SameFieldNominal of string
   | ModifiedField of (string * modification)
-[@@deriving show]
 
 and cell_upgrade =
   | SameCell
   | SameCellNominal
   | ModifiedCell of modification
-[@@deriving show]
 
 and name_upgrade =
   | Modified of string
@@ -52,13 +47,11 @@ and modification =
   | Record of field_upgrade list
   | Tuple of cell_upgrade list
   | List of list_repr * modification
-[@@deriving show]
 
 type shallow_equal =
   | Same
   | SameNominal
   | TransitivelyModified of modification
-[@@deriving show]
 
 type upgrade =
   | New of param_count
@@ -67,7 +60,6 @@ type upgrade =
       { old_param_count : param_count
       ; new_param_count : param_count
       }
-[@@deriving show]
 
 module StringMap = Map.Make (String)
 
@@ -77,20 +69,6 @@ let load_sort path =
     load_file ~inherit_fields:true ~inherit_variants:true path
   in
   tsort module_body
-
-let to_no_loc_map module_body =
-  let rec aux module_body map =
-    match module_body with
-    | [] ->
-      map
-    | item :: tail ->
-      let (((name, _type_param, _annot), _type_expr) as noLocItem) =
-        ModuleItem.from_loc item
-      in
-      let map = StringMap.add name noLocItem map in
-      aux tail map
-  in
-  aux module_body StringMap.empty
 
 let has_version_field (field_list : Atd.Ast.field list) : bool =
   List.exists
