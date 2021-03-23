@@ -11,5 +11,15 @@
                 "turnover": 133700000
             }
         ]
+    ],
+    "skills": [
+        {
+            "domain": "design",
+            "name": "typography"
+        },
+        {
+            "domain": "computer science",
+            "name": "ocaml"
+        }
     ]
 }

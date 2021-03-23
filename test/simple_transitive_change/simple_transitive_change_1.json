@@ -11,5 +11,15 @@
             }
         ]
     ],
+    "skills": [
+        [
+            "design",
+            "typography"
+        ],
+        [
+            "computer science",
+            "ocaml"
+        ]
+    ],
     "version": 1
 }

@@ -4,4 +4,6 @@ module From_1_to_2 = struct
 
   let convert_company _ (old_company : OldVersion.company) : NewVersion.company =
     { NewVersion.name = old_company.OldVersion.name; turnover = None }
+
+  let convert_skill _ (domain, name) = NewVersion.{ domain; name }
 end
