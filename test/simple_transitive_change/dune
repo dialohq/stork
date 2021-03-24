@@ -8,6 +8,8 @@
   simple_transitive_change_2_t.mli
   simple_transitive_change_2_j.ml
   simple_transitive_change_2_j.mli
+  simple_transitive_change_upgrader_t.ml
+  simple_transitive_change_upgrader_t.mli
   simple_transitive_change.ml
   simple_transitive_change.mli
   simple_transitive_change_user_fns.mli)

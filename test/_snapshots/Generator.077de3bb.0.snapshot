@@ -1,7 +1,9 @@
 Generator › simple transitive change - user intf list snapshot
+[@@@ocaml.warning \"-34\"]
 module From_1_to_2 : sig
 module OldVersion := Simple_transitive_change_1_t
 module NewVersion := Simple_transitive_change_2_t
-val convert_skill: OldVersion.employee -> OldVersion.skill -> NewVersion.skill
-val convert_company: OldVersion.employee -> OldVersion.company -> NewVersion.company
+type converter := Simple_transitive_change_upgrader_t.From_1_to_2.converter
+val convert_skill: converter -> OldVersion.employee -> OldVersion.skill -> NewVersion.skill
+val convert_company: converter -> OldVersion.employee -> OldVersion.company -> NewVersion.company
 end

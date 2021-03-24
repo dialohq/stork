@@ -1,3 +1,4 @@
+
 type variable_ref_type = [ Input | Model ]
 
 type grammar_case = [
@@ -266,8 +267,14 @@ type dialog = {
 
 type deploy_env = [ Production | Test ]
 
+type metadata = {
+  created_at: date;
+  created_by: string;
+}
+
 type dialog_file = {
   version: int;
   deploy_env: deploy_env;
   dialog: dialog;
+  metadata: metadata;
 }

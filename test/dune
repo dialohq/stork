@@ -1,6 +1,6 @@
 (library
  (name stork_test)
- (libraries rely.lib stork yojson)
+ (libraries rely.lib stork yojson atdgen-runtime)
  (modules
   (:standard \ test_runner))
  (flags

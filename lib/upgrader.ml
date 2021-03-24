@@ -4,10 +4,10 @@ type generated =
   { intf_list : string list
   ; impl_list : string list
   ; user_intf_list : string list
+  ; upgrader_t : string list
+  ; upgrader_t_intf : string list
   }
 [@@deriving show]
-
-type param_count = int
 
 type sum_repr =
   | Polymorphic
@@ -53,12 +53,14 @@ type shallow_equal =
   | SameNominal
   | TransitivelyModified of modification
 
+type generic = bool
+
 type upgrade =
-  | New of param_count
-  | ShallowEqual of param_count * shallow_equal
+  | New of generic
+  | ShallowEqual of generic * shallow_equal
   | Modified of
-      { old_param_count : param_count
-      ; new_param_count : param_count
+      { was_generic : generic
+      ; is_generic : generic
       }
 
 module StringMap = Map.Make (String)
@@ -181,6 +183,8 @@ let replace_type_vars ~concrete_params ~tvars =
       StringMap.find var tvarMap
   in
   aux
+
+let is_not_empty = function [] -> false | _ :: _ -> true
 
 (* since the types are shallow equal, it means their composing subtypes existed
    before, so they can only be same or transitively modified, not new *)
@@ -370,25 +374,29 @@ let classify_item
     ~old_type_map
     ~classified_type_map
   =
-  let new_param_count = List.length type_param in
+  let is_generic = is_not_empty type_param in
   match type_expr, StringMap.find_opt name old_type_map with
   | _, None ->
-    name, (New new_param_count : upgrade)
+    name, (New is_generic : upgrade)
   | TypeExpr.Name (("abstract", _), _), Some ((_, old_type_param, _), _) ->
-    let old_param_count = List.length old_type_param in
-    name, Modified { old_param_count; new_param_count }
+    let was_generic = is_not_empty old_type_param in
+    name, Modified { is_generic; was_generic }
   | _, Some old_item when old_item = new_item ->
     ( name
     , ShallowEqual
-        (new_param_count, classify_shallow_equals ~classified_type_map type_expr)
-    )
+        (is_generic, classify_shallow_equals ~classified_type_map type_expr) )
   | _, Some ((_, old_type_param, _), _) ->
-    let old_param_count = List.length old_type_param in
-    name, Modified { old_param_count; new_param_count }
+    let was_generic = is_not_empty old_type_param in
+    name, Modified { is_generic; was_generic }
 
 let old_version = "OldVersion"
 
 let new_version = "NewVersion"
+
+let upgrader_t_name prefix =
+  [%string "$(String.capitalize_ascii prefix)_upgrader_t"]
+
+let converter = "converter"
 
 let convert = "convert"
 
@@ -399,11 +407,13 @@ let user_fns_module_name prefix =
 
 let old_doc = "old_doc"
 
-let rec modification_to_string ?main_type = function
+let name_converter name = [%string "$(convert)_$name"]
+
+let rec modification_to_string ?version_when_main_type = function
   | Name (New type_name) ->
-    [%string "fun _ -> (make)_$type_name $old_doc"]
+    [%string "fun _ -> $(make)_$type_name $converter $old_doc"]
   | Name (Modified type_name) ->
-    [%string "$(convert)_$type_name $old_doc"]
+    [%string "$(name_converter type_name) $converter $old_doc"]
   | Option modification | Nullable modification ->
     [%string "Option.map ($(modification_to_string modification))"]
   | Shared modification | Wrap modification ->
@@ -438,7 +448,7 @@ let rec modification_to_string ?main_type = function
   | Record field_upgrades ->
     let fields =
       List.map field_upgrades ~f:(fun field_upgrade ->
-          match field_upgrade, main_type with
+          match field_upgrade, version_when_main_type with
           | SameField "version", Some new_file_version ->
             [%string "version = %i$new_file_version;"]
           | SameField field_name, _ ->
@@ -484,107 +494,81 @@ let generate_type_params ~start = function
     let rec aux ~acc i =
       match n - i with
       | 1 ->
-        [%string "($acc 'a_%i$i) "]
+        [%string "($(acc)'a_%i$i) "]
       | _ ->
-        let acc = [%string "$acc 'a_%i$i,"] in
+        let acc = [%string "$(acc)'a_%i$i, "] in
         aux ~acc (i + 1)
     in
     aux ~acc:"" start
 
-let classified_type_to_strings
-    ~main_type ~old_main_type_param_count ~new_file_version
-  = function
-  | name, ShallowEqual (_, Same) ->
-    let impl = [%string "let $(convert)_$name x = x"] in
-    Some impl, None
-  | name, ShallowEqual (param_count, SameNominal) ->
-    let old_type_params = generate_type_params param_count ~start:0 in
-    let new_type_params = generate_type_params param_count ~start:param_count in
-    let impl =
-      [%string
-        "let $(convert)_$name: $old_type_params$old_version.$name -> \
-         $new_type_params$new_version.$name = Obj.magic"]
+let classified_type_to_strings ~main_type ~new_file_version =
+  let old_main_type = [%string "$old_version.$main_type"] in
+  let make name =
+    let old_type = [%string "$old_version.$name"] in
+    let new_type = [%string "$new_version.$name"] in
+    let fn = name_converter name in
+    let fn_intf =
+      [%string "$converter -> $old_main_type -> $old_type -> $new_type"]
     in
-    Some impl, None
-  | name, New new_param_count ->
-    let main_type_params =
-      generate_type_params old_main_type_param_count ~start:0
-    in
-    let new_type_params =
-      generate_type_params new_param_count ~start:old_main_type_param_count
-    in
-    let intf =
-      [%string
-        "val $(make)_$name: $main_type_params$old_version.$main_type -> \
-         $new_type_params$new_version.$name"]
-    in
-    None, Some intf
-  | name, Modified { old_param_count; new_param_count } when name = main_type ->
+    let intf = [%string "val $fn: $fn_intf"] in
+    let field = fn, fn_intf in
+    fn, fn_intf, intf, field
+  in
+  function
+  | name, (New true : upgrade)
+  | name, ShallowEqual (true, _)
+  | name, Modified { is_generic = true; _ }
+  | name, Modified { was_generic = true; _ } ->
+    if name = main_type then
+      failwith "The main type cannot be generic"
+    else
+      None, None, None
+  | name, ShallowEqual (false, Same) ->
+    let fn, _, _, field = make name in
+    let impl = [%string "let $fn _ _ x = x"] in
+    Some impl, None, Some field
+  | name, ShallowEqual (false, SameNominal) ->
+    let fn, fn_intf, _, field = make name in
+    let impl = [%string "let $fn: $fn_intf = fun _ _  x -> Obj.magic x"] in
+    Some impl, None, Some field
+  | _, (New _ : upgrade) ->
+    None, None, None
+  | name, Modified _ when name = main_type ->
     (* not sure how to ensure that version is correctly updated in this case *)
-    let old_type_params = generate_type_params old_param_count ~start:0 in
-    let new_type_params =
-      generate_type_params new_param_count ~start:old_param_count
-    in
-    let intf =
-      [%string
-        "val $(convert)_$name: $old_type_params$old_version.$main_type -> \
-         $new_type_params$new_version.$name"]
-    in
-    None, Some intf
-  | name, Modified { old_param_count; new_param_count } ->
-    let main_type_params =
-      generate_type_params old_main_type_param_count ~start:0
-    in
-    let old_type_params =
-      generate_type_params old_param_count ~start:old_main_type_param_count
-    in
-    let new_type_params =
-      generate_type_params
-        new_param_count
-        ~start:(old_main_type_param_count + old_param_count)
-    in
-    let intf =
-      [%string
-        "val $(convert)_$name: $main_type_params$old_version.$main_type -> \
-         $old_type_params$old_version.$name -> \
-         $new_type_params$new_version.$name"]
-    in
-    None, Some intf
-  | ( name
-    , ShallowEqual (new_main_type_param_count, TransitivelyModified modification)
-    )
+    let old_type = [%string "$old_version.$name"] in
+    let new_type = [%string "$new_version.$name"] in
+    let fn = name_converter name in
+    let fn_intf = [%string "$converter -> $old_type -> $new_type"] in
+    let intf = [%string "val $fn: $fn_intf"] in
+    let field = fn, fn_intf in
+    None, Some intf, Some field
+  | name, Modified { was_generic = false; is_generic = false } ->
+    let _, _, intf, field = make name in
+    None, Some intf, Some field
+  | name, ShallowEqual (false, TransitivelyModified modification)
     when name = main_type ->
-    let old_type_params =
-      generate_type_params old_main_type_param_count ~start:0
+    let fn = name_converter name in
+    let fn_impl =
+      modification_to_string
+        ~version_when_main_type:new_file_version
+        modification
     in
-    let new_type_params =
-      generate_type_params
-        new_main_type_param_count
-        ~start:old_main_type_param_count
+    let fn_intf =
+      [%string "$converter -> $old_version.$name -> $new_version.$name"]
     in
-    let fn = modification_to_string ~main_type:new_file_version modification in
     let impl =
       [%string
-        "let $(convert)_$name: $old_type_params$old_version.$main_type -> \
-         $new_type_params$new_version.$main_type = fun $old_doc -> $old_doc |> \
-         ($fn)"]
+        "let $fn: $fn_intf = fun $converter $old_doc -> $old_doc |> ($fn_impl)"]
     in
-    Some impl, None
-  | name, ShallowEqual (param_count, TransitivelyModified modification) ->
-    let main_type_params =
-      generate_type_params old_main_type_param_count ~start:0
-    in
-    let old_type_params = generate_type_params param_count ~start:0 in
-    let new_type_params = generate_type_params param_count ~start:param_count in
-    let fn = modification_to_string modification in
+    let field = fn, fn_intf in
+    Some impl, None, Some field
+  | name, ShallowEqual (false, TransitivelyModified modification) ->
+    let fn, fn_intf, _, field = make name in
+    let fn_impl = modification_to_string modification in
     let impl =
-      [%string
-        "let $(convert)_$name: $main_type_params$old_version.$main_type -> \
-         $old_type_params$old_version.$name -> \
-         $new_type_params$new_version.$name\n\
-        \      = fun old_doc -> $fn"]
+      [%string "let $fn: $fn_intf = fun $converter $old_doc -> $fn_impl"]
     in
-    Some impl, None
+    Some impl, None, Some field
 
 let to_map : ModuleItem.t list -> ModuleItem.t StringMap.t =
   List.fold_left
@@ -620,45 +604,49 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_main_type, old_main_type_param_count =
     load_sort_map old_file
   in
-  let new_sorted_items, _new_type_map, new_main_type, _ =
+  let new_sorted_items, _new_type_map, new_main_type, new_main_type_param_count =
     load_sort_map new_file
   in
   if new_main_type <> old_main_type then
     Error (`Different_main_type (new_main_type, new_main_type))
   else
     let main_type = new_main_type in
-    let impl_list, user_intf_list, _ =
+    let impl_list, user_intf_list, fields, _ =
       List.fold_left
-        ~f:(fun (impl_list, user_intf_list, classified_type_map) new_item ->
+        ~f:
+          (fun (impl_list, user_intf_list, fields, classified_type_map) new_item ->
           let name, classified_item =
             classify_item ~old_type_map ~classified_type_map new_item
           in
-          let impl, user_intf =
+          let impl, user_intf, field =
             classified_type_to_strings
               ~main_type
-              ~old_main_type_param_count
               ~new_file_version
               (name, classified_item)
           in
-          let impl_list =
-            match impl with None -> impl_list | Some impl -> impl :: impl_list
-          in
-          let user_intf_list =
-            match user_intf with
-            | None ->
-              user_intf_list
-            | Some user_intf ->
-              user_intf :: user_intf_list
-          in
+          let add_if_some l = function None -> l | Some el -> el :: l in
+          let impl_list = add_if_some impl_list impl in
+          let user_intf_list = add_if_some user_intf_list user_intf in
+          let fields = add_if_some fields field in
           let classified_type_map =
             StringMap.add name (classified_item, new_item) classified_type_map
           in
-          impl_list, user_intf_list, classified_type_map)
-        ~init:([], [], StringMap.empty)
+          impl_list, user_intf_list, fields, classified_type_map)
+        ~init:([], [], [], StringMap.empty)
         new_sorted_items
     in
     let module_name =
       name_upgrader_module ~old_file_version ~new_file_version
+    in
+    let upgrader_t = upgrader_t_name prefix in
+    let converter_type =
+      List.map ~f:(fun (name, intf) -> [%string "$name: $intf"]) fields
+      |> String.concat ~sep:";\n"
+    in
+    let converter_type = [%string "type $converter = { $converter_type }"] in
+    let converter_impl = List.map ~f:fst fields |> String.concat ~sep:";\n" in
+    let converter_impl =
+      [%string "let converter = $upgrader_t.$module_name.{ $converter_impl }"]
     in
     let old_version_t = name_t_module prefix old_file_version in
     let new_version_t = name_t_module prefix new_file_version in
@@ -669,18 +657,45 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
       [%string
         {|module $old_version = $old_version_t
 module $new_version = $new_version_t
-include $user_fns_module|}]
+include $user_fns_module
+type $converter = $upgrader_t.$module_name.$converter|}]
     in
     let intf_header =
       [%string
         {|module $old_version := $old_version_t
+module $new_version := $new_version_t
+type $converter := $upgrader_t.$module_name.$converter|}]
+    in
+    let upgrader_t_header =
+      [%string
+        {|module $old_version = $old_version_t
+module $new_version = $new_version_t|}]
+    in
+    let upgrader_t_intf_header =
+      [%string
+        {|module $old_version := $old_version_t
 module $new_version := $new_version_t|}]
     in
-    let main_type_impl = [%string "let $convert = $(convert)_$main_type"] in
-    let impl_list = main_type_impl :: impl_list in
+    let main_type_impl =
+      [%string "let $convert = $(convert)_$main_type $converter"]
+    in
+    let impl_list = main_type_impl :: converter_impl :: impl_list in
+    let old_main_type_params =
+      generate_type_params old_main_type_param_count ~start:0
+    in
+    let new_main_type_params =
+      generate_type_params
+        new_main_type_param_count
+        ~start:old_main_type_param_count
+    in
+    let main_converter_type =
+      [%string
+        "$old_main_type_params$(old_version).$main_type -> \
+         $new_main_type_params$(new_version).$main_type"]
+    in
     let intf_list =
-      [ [%string
-          "val $convert: $old_version.$main_type -> $new_version.$main_type"]
+      [ [%string "val $convert: $main_converter_type"]
+      ; [%string "val $converter: converter"]
       ]
     in
     Ok
@@ -690,4 +705,15 @@ module $new_version := $new_version_t|}]
         ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
         ; user_intf_list =
             enclose_module ~module_name ~header:intf_header user_intf_list
+        ; upgrader_t =
+            enclose_module
+              ~module_name
+              ~impl:true
+              ~header:upgrader_t_header
+              [ converter_type ]
+        ; upgrader_t_intf =
+            enclose_module
+              ~module_name
+              ~header:upgrader_t_intf_header
+              [ converter_type ]
         } )

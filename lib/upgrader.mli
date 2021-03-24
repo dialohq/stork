@@ -2,6 +2,8 @@ type generated =
   { intf_list : string list
   ; impl_list : string list
   ; user_intf_list : string list
+  ; upgrader_t : string list
+  ; upgrader_t_intf : string list
   }
 [@@deriving show]
 
@@ -12,6 +14,8 @@ val make
   -> new_file:string
   -> new_file_version:int
   -> (string * generated, [> `Different_main_type of string * string ]) result
+
+val upgrader_t_name : string -> string
 
 val user_fns_module_name : string -> string
 
