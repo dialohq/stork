@@ -1,0 +1,24 @@
+(rule
+ (targets
+  realistic_202008241_t.ml
+  realistic_202008241_t.mli
+  realistic_202008241_j.ml
+  realistic_202008241_j.mli
+  realistic_202103001_t.ml
+  realistic_202103001_t.mli
+  realistic_202103001_j.ml
+  realistic_202103001_j.mli
+  realistic_202103115_t.ml
+  realistic_202103115_t.mli
+  realistic_202103115_j.ml
+  realistic_202103115_j.mli
+  realistic_upgrader_t.ml
+  realistic_upgrader_t.mli
+  realistic.ml
+  realistic.mli
+  realistic_user_fns.mli)
+ (deps
+  (:atd
+   (glob_files *.atd)))
+ (action
+  (run %{bin:stork} gen %{atd})))

@@ -20,9 +20,24 @@ let split_on_last_char ~char s =
     Some (first_part, last_part)
 
 let write_files
-    ~folder ~prefix Upgrader.{ intf_list; impl_list; user_intf_list }
+    ~folder
+    ~prefix
+    Upgrader.
+      { intf_list; impl_list; user_intf_list; upgrader_t; upgrader_t_intf }
   =
   let path = [%string "$folder/$(prefix)"] in
+  let upgrader_t_name = Upgrader.upgrader_t_name prefix in
+  let upgrader_t_path =
+    [%string "$folder/$(String.lowercase_ascii upgrader_t_name)"]
+  in
+  let () =
+    File.write_string_list ~path:[%string "$(upgrader_t_path).ml"] upgrader_t
+  in
+  let () =
+    File.write_string_list
+      ~path:[%string "$(upgrader_t_path).mli"]
+      upgrader_t_intf
+  in
   let () = File.write_string_list ~path:[%string "$(path).ml"] impl_list in
   let () = File.write_string_list ~path:[%string "$(path).mli"] intf_list in
   let user_fns_module_name = Upgrader.user_fns_module_name prefix in
@@ -104,7 +119,7 @@ let make_main_of_string ~prefix ~main_type = function
 let $(main_type)_of_string s = match (get_version s) with
   | %i$latest_version -> Json.$(main_type)_of_string s
 $version_matches
-  | _ -> invalid_arg "Unknown document version"
+  | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
 |}]
     , [%string "val $(main_type)_of_string: string -> Types.$main_type"] )
 
@@ -203,19 +218,30 @@ let make_upgraders = function
     let rec flatten ~acc = function
       | [] ->
         acc
-      | Upgrader.{ intf_list; impl_list; user_intf_list } :: tail ->
+      | Upgrader.
+          { intf_list; impl_list; user_intf_list; upgrader_t; upgrader_t_intf }
+        :: tail ->
         let open Upgrader in
         let acc =
           { intf_list = intf_list @ acc.intf_list
           ; impl_list = impl_list @ acc.impl_list
           ; user_intf_list = user_intf_list @ acc.user_intf_list
+          ; upgrader_t = upgrader_t @ acc.upgrader_t
+          ; upgrader_t_intf = upgrader_t_intf @ acc.upgrader_t_intf
           }
         in
         flatten ~acc tail
     in
     let upgraders =
       flatten
-        ~acc:Upgrader.{ intf_list = []; impl_list = []; user_intf_list = [] }
+        ~acc:
+          Upgrader.
+            { intf_list = []
+            ; impl_list = []
+            ; user_intf_list = []
+            ; upgrader_t = []
+            ; upgrader_t_intf = []
+            }
         upgraders_list
     in
     let newest_module_t = Upgrader.name_t_module prefix newest_version in
@@ -236,7 +262,8 @@ let make_upgraders = function
     let string_of_main_impl, string_of_main_intf =
       make_string_of_main main_type
     in
-    let disable_warnings = {|[@@@ocaml.warning "-32"]|} in
+    let disable_warnings_impl = {|[@@@ocaml.warning "-32"]|} in
+    let disable_warnings_intf = {|[@@@ocaml.warning "-34"]|} in
     let upgraders =
       Upgrader.
         { upgraders with
@@ -246,7 +273,7 @@ let make_upgraders = function
             json_module_sig
             :: main_of_string_intf :: string_of_main_intf :: upgraders.intf_list
         ; impl_list =
-            disable_warnings
+            disable_warnings_impl
             ::
             types_module
             ::
@@ -257,6 +284,7 @@ let make_upgraders = function
             (upgraders.impl_list
             @ convert_to_latest_fns
             @ [ string_of_main_impl; main_of_string_impl ])
+        ; user_intf_list = disable_warnings_intf :: upgraders.user_intf_list
         }
     in
     Ok (folder, prefix, upgraders)

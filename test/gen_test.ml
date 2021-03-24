@@ -9,20 +9,41 @@ let lines_match_snapshot lines { expect; _ } =
 let string_match_snapshot s { expect; _ } = (expect.string s).toMatchSnapshot ()
 
 let test_upgraders ~test ~test_name files =
-  let _, _, Upgrader.{ intf_list; impl_list; user_intf_list } =
+  let ( _
+      , _
+      , Upgrader.
+          { intf_list; impl_list; user_intf_list; upgrader_t; upgrader_t_intf }
+      )
+    =
     Generator.make_upgraders files |> Result.get_ok
   in
   test (test_name ^ " - impl list snapshot") (lines_match_snapshot impl_list);
   test (test_name ^ " - intf list snapshot") (lines_match_snapshot intf_list);
   test
     (test_name ^ " - user intf list snapshot")
-    (lines_match_snapshot user_intf_list)
+    (lines_match_snapshot user_intf_list);
+  test
+    (test_name ^ " - upgrader_t impl list snapshot")
+    (lines_match_snapshot upgrader_t);
+  test
+    (test_name ^ " - upgrader_t intf list snapshot")
+    (lines_match_snapshot upgrader_t_intf)
 
-let test_json_parsing ~test ~test_name file =
-  let json_string = Yojson.Safe.(from_file file |> to_string) in
-  let employee = Simple_transitive_change.employee_of_string json_string in
-  let res = Simple_transitive_change.string_of_employee employee in
+let test_json_parsing ~test ~test_name ~to_string ~from_string file =
+  let json_string = Yojson.Safe.from_file file |> Yojson.Safe.to_string in
+  let doc = from_string json_string in
+  let res = to_string doc in
   test (test_name ^ " - parsing " ^ file) (string_match_snapshot res)
+
+let simple_test_json_parsing =
+  test_json_parsing
+    ~to_string:Simple_transitive_change.string_of_employee
+    ~from_string:Simple_transitive_change.employee_of_string
+
+let realistic_test_json_parsing =
+  test_json_parsing
+    ~to_string:Realistic.string_of_dialog_file
+    ~from_string:Realistic.dialog_file_of_string
 
 let () =
   let test_name = "simple transitive change" in
@@ -33,11 +54,22 @@ let () =
     [ "test/simple_transitive_change/simple_transitive_change_1.atd"
     ; "test/simple_transitive_change/simple_transitive_change_2.atd"
     ];
-  test_json_parsing
+  simple_test_json_parsing
     ~test
     ~test_name
     "test/simple_transitive_change/simple_transitive_change_1.json";
-  test_json_parsing
+  simple_test_json_parsing
     ~test
     ~test_name
-    "test/simple_transitive_change/simple_transitive_change_2.json"
+    "test/simple_transitive_change/simple_transitive_change_2.json";
+  let test_name = "simple transitive change" in
+  test_upgraders
+    ~test
+    ~test_name
+    [ "test/realistic_examples/realistic_202008241.atd"
+    ; "test/realistic_examples/realistic_202103001.atd"
+    ];
+  realistic_test_json_parsing
+    ~test
+    ~test_name
+    "test/realistic_examples/realistic_202008241.json"

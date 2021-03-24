@@ -23,19 +23,22 @@ module From_1_to_2 = struct
 module OldVersion = Simple_transitive_change_1_t
 module NewVersion = Simple_transitive_change_2_t
 include Simple_transitive_change_user_fns.From_1_to_2
-let convert_tuple_2 x = x
-let convert_employer: OldVersion.employee -> OldVersion.employer -> NewVersion.employer
-      = fun old_doc -> function 
+type converter = Simple_transitive_change_upgrader_t.From_1_to_2.converter
+let convert_employer: converter -> OldVersion.employee -> OldVersion.employer -> NewVersion.employer = fun converter old_doc -> function 
 | OldVersion.Self -> NewVersion.Self
-| OldVersion.Company payload -> NewVersion.Company (payload |> (convert_company old_doc))
-let convert_employment: OldVersion.employee -> OldVersion.employment -> NewVersion.employment
-      = fun old_doc -> fun (a_0, a_1) -> (a_0, a_1 |> (convert_employer old_doc))
-let convert_employee: OldVersion.employee -> NewVersion.employee = fun old_doc -> old_doc |> (fun old_record -> NewVersion.{ name = old_record.name;
+| OldVersion.Company payload -> NewVersion.Company (payload |> (convert_company converter old_doc))
+let convert_employment: converter -> OldVersion.employee -> OldVersion.employment -> NewVersion.employment = fun converter old_doc -> fun (a_0, a_1) -> (a_0, a_1 |> (convert_employer converter old_doc))
+let convert_employee: converter -> OldVersion.employee -> NewVersion.employee = fun converter old_doc -> old_doc |> (fun old_record -> NewVersion.{ name = old_record.name;
 age = old_record.age;
-position = old_record.position |> (convert_employment old_doc);
+position = old_record.position |> (convert_employment converter old_doc);
 version = 2;
-skills = old_record.skills |> (Array.map ~f:(convert_skill old_doc)); })
-let convert = convert_employee
+skills = old_record.skills |> (Array.map ~f:(convert_skill converter old_doc)); })
+let converter = Simple_transitive_change_upgrader_t.From_1_to_2.{ convert_employee;
+convert_employment;
+convert_employer;
+convert_company;
+convert_skill }
+let convert = convert_employee converter
 end
 let convert_from_1_to_latest = From_1_to_2.convert
 let string_of_employee = Json.string_of_employee
@@ -43,5 +46,5 @@ let string_of_employee = Json.string_of_employee
 let employee_of_string s = match (get_version s) with
   | 2 -> Json.employee_of_string s
   | 1 -> convert_from_1_to_latest (Simple_transitive_change_1_j.employee_of_string s)
-  | _ -> invalid_arg \"Unknown document version\"
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 
