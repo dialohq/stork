@@ -1,18 +1,11 @@
 (rule
- (targets
-  simple_transitive_change_1_t.ml
-  simple_transitive_change_1_t.mli
-  simple_transitive_change_1_j.ml
-  simple_transitive_change_1_j.mli
-  simple_transitive_change_2_t.ml
-  simple_transitive_change_2_t.mli
-  simple_transitive_change_2_j.ml
-  simple_transitive_change_2_j.mli
-  simple_transitive_change_upgrader_t.ml
-  simple_transitive_change_upgrader_t.mli
-  simple_transitive_change.ml
-  simple_transitive_change.mli
-  simple_transitive_change_user_fns.mli)
+ (targets simple_transitive_change_1_t.ml simple_transitive_change_1_t.mli
+   simple_transitive_change_1_j.ml simple_transitive_change_1_j.mli
+   simple_transitive_change_2_t.ml simple_transitive_change_2_t.mli
+   simple_transitive_change_2_j.ml simple_transitive_change_2_j.mli
+   simple_transitive_change_upgrader_t.ml
+   simple_transitive_change_upgrader_t.mli simple_transitive_change.ml
+   simple_transitive_change.mli simple_transitive_change_user_fns.mli)
  (deps
   (:atd
    (glob_files *.atd)))
