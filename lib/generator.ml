@@ -49,8 +49,7 @@ let name_convert_to_latest file_version =
   [%string "$(Upgrader.convert)_from_%i$(file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
-  | [] ->
-    assert false
+  | [] -> []
   | (old_file_version, newest_file_version) :: tail ->
     let convert = Upgrader.convert in
     let from_old_to_new =

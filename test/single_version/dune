@@ -1,0 +1,16 @@
+(rule
+ (targets
+  single_version_1_t.ml
+  single_version_1_t.mli
+  single_version_1_j.ml
+  single_version_1_j.mli
+  single_version_upgrader_t.ml
+  single_version_upgrader_t.mli
+  single_version.ml
+  single_version.mli
+  single_version_user_fns.mli)
+ (deps
+  (:atd
+   (glob_files *.atd)))
+ (action
+  (run %{bin:stork} gen %{atd})))

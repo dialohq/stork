@@ -45,6 +45,11 @@ let realistic_test_json_parsing =
     ~to_string:Realistic.string_of_dialog_file
     ~from_string:Realistic.dialog_file_of_string
 
+let single_version_json_parsing =
+  test_json_parsing
+    ~to_string:Single_version.string_of_employee
+    ~from_string:Single_version.employee_of_string
+
 let () =
   let test_name = "simple transitive change" in
   describe "Generator" @@ fun { test; _ } ->
@@ -72,4 +77,14 @@ let () =
   realistic_test_json_parsing
     ~test
     ~test_name
-    "test/realistic_examples/realistic_202008241.json"
+    "test/realistic_examples/realistic_202008241.json";
+  let test_name = "single version" in 
+    test_upgraders
+    ~test
+    ~test_name
+    [ "test/single_version/single_version_1.atd"
+    ];
+  single_version_json_parsing
+    ~test
+    ~test_name
+    "test/single_version/single_version_1.json"

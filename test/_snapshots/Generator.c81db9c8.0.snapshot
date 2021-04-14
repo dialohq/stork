@@ -1,0 +1,28 @@
+Generator › single version - impl list snapshot
+[@@@ocaml.warning \"-32\"]
+module Types = Single_version_1_t
+module Json = Single_version_1_j
+
+let get_version s =
+  match Yojson.Safe.from_string s with
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function \"version\", `Int version -> Some version | _ -> None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg \"The parsed JSON should have a `version` field of type int\"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg \"The parsed JSON should be an object.\"
+
+let string_of_employee = Json.string_of_employee
+
+let employee_of_string s = match (get_version s) with
+  | 1 -> Json.employee_of_string s
+
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
