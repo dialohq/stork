@@ -88,6 +88,7 @@ let () =
     ~test_name
     [ "test/realistic_examples/realistic_202008241.atd"
     ; "test/realistic_examples/realistic_202103001.atd"
+    ; "test/realistic_examples/realistic_202103115.atd"
     ];
   realistic_test_json_parsing
     ~test
