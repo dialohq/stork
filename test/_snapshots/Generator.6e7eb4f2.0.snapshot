@@ -3,8 +3,7 @@ Generator › simple transitive change - impl list snapshot
 module Types = Realistic_202103001_t
 module Json = Realistic_202103001_j
 
-let get_version s =
-  match Yojson.Safe.from_string s with
+let get_version_from_json = function
   | `Assoc fields ->
     let version =
       List.find_map
@@ -19,6 +18,10 @@ let get_version s =
   | _ ->
     invalid_arg \"The parsed JSON should be an object.\"
 
+let get_version s = 
+  get_version_from_json (Yojson.Safe.from_string s)
+let get_version_from_lexbuf p lb = 
+  get_version_from_json (Yojson.Safe.from_lexbuf p lb)
 module From_202008241_to_202103001 = struct
 module OldVersion = Realistic_202008241_t
 module NewVersion = Realistic_202103001_t
@@ -159,5 +162,15 @@ let string_of_dialog_file = Json.string_of_dialog_file
 let dialog_file_of_string s = match (get_version s) with
   | 202103001 -> Json.dialog_file_of_string s
   | 202008241 -> convert_from_202008241_to_latest (Realistic_202008241_j.dialog_file_of_string s)
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
+
+let read_dialog_file p lb = let Yojson.{ lnum; fname; _ } = p in 
+  let new_p = Yojson.init_lexer ?fname ~lnum () in
+  let ic = open_in_bin (Option.get fname) in
+  let new_lb = Lexing.from_channel ic
+  in match (get_version_from_lexbuf new_p new_lb) with
+  | 202103001 -> Json.read_dialog_file p lb
+  | 202008241 -> convert_from_202008241_to_latest (Realistic_202008241_j.read_dialog_file p lb)
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 

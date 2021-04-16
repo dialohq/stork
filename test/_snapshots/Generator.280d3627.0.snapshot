@@ -3,8 +3,7 @@ Generator › simple transitive change - impl list snapshot
 module Types = Simple_transitive_change_2_t
 module Json = Simple_transitive_change_2_j
 
-let get_version s =
-  match Yojson.Safe.from_string s with
+let get_version_from_json = function
   | `Assoc fields ->
     let version =
       List.find_map
@@ -19,6 +18,10 @@ let get_version s =
   | _ ->
     invalid_arg \"The parsed JSON should be an object.\"
 
+let get_version s = 
+  get_version_from_json (Yojson.Safe.from_string s)
+let get_version_from_lexbuf p lb = 
+  get_version_from_json (Yojson.Safe.from_lexbuf p lb)
 module From_1_to_2 = struct
 module OldVersion = Simple_transitive_change_1_t
 module NewVersion = Simple_transitive_change_2_t
@@ -46,5 +49,15 @@ let string_of_employee = Json.string_of_employee
 let employee_of_string s = match (get_version s) with
   | 2 -> Json.employee_of_string s
   | 1 -> convert_from_1_to_latest (Simple_transitive_change_1_j.employee_of_string s)
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
+
+let read_employee p lb = let Yojson.{ lnum; fname; _ } = p in 
+  let new_p = Yojson.init_lexer ?fname ~lnum () in
+  let ic = open_in_bin (Option.get fname) in
+  let new_lb = Lexing.from_channel ic
+  in match (get_version_from_lexbuf new_p new_lb) with
+  | 2 -> Json.read_employee p lb
+  | 1 -> convert_from_1_to_latest (Simple_transitive_change_1_j.read_employee p lb)
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 

@@ -6,7 +6,7 @@ open Stork
 let lines_match_snapshot lines { expect; _ } =
   (expect.lines lines).toMatchSnapshot ()
 
-let string_match_snapshot s { expect; _ } = (expect.string s).toMatchSnapshot ()
+let string_equals s1 s2 { expect; _ } = (expect.string s1).toEqual s2
 
 let test_upgraders ~test ~test_name files =
   let ( _
@@ -29,26 +29,41 @@ let test_upgraders ~test ~test_name files =
     (test_name ^ " - upgrader_t intf list snapshot")
     (lines_match_snapshot upgrader_t_intf)
 
-let test_json_parsing ~test ~test_name ~to_string ~from_string file =
+let test_json_parsing ~test ~test_name ~to_string ~from_string ~read file =
   let json_string = Yojson.Safe.from_file file |> Yojson.Safe.to_string in
-  let doc = from_string json_string in
-  let res = to_string doc in
-  test (test_name ^ " - parsing " ^ file) (string_match_snapshot res)
+  let doc_of_string = from_string json_string in
+  let res_of_string = to_string doc_of_string in
+  let doc_read = Atdgen_runtime.Util.Json.from_file read file in
+  let res_read = to_string doc_read in
+  let () =
+    test
+      (test_name
+      ^ " - when parsing via\n\
+        \ type_of_string and read_type, results equals for file "
+      ^ file)
+      (fun { expect; _ } -> (expect.string res_of_string).toEqual res_read)
+  in
+  test
+    (test_name ^ " - parsing " ^ file)
+    (fun { expect; _ } -> (expect.string res_of_string).toMatchSnapshot ())
 
 let simple_test_json_parsing =
   test_json_parsing
     ~to_string:Simple_transitive_change.string_of_employee
     ~from_string:Simple_transitive_change.employee_of_string
+    ~read:Simple_transitive_change.read_employee
 
 let realistic_test_json_parsing =
   test_json_parsing
     ~to_string:Realistic.string_of_dialog_file
     ~from_string:Realistic.dialog_file_of_string
+    ~read:Realistic.read_dialog_file
 
 let single_version_json_parsing =
   test_json_parsing
     ~to_string:Single_version.string_of_employee
     ~from_string:Single_version.employee_of_string
+    ~read:Single_version.read_employee
 
 let () =
   let test_name = "simple transitive change" in
@@ -78,12 +93,8 @@ let () =
     ~test
     ~test_name
     "test/realistic_examples/realistic_202008241.json";
-  let test_name = "single version" in 
-    test_upgraders
-    ~test
-    ~test_name
-    [ "test/single_version/single_version_1.atd"
-    ];
+  let test_name = "single version" in
+  test_upgraders ~test ~test_name [ "test/single_version/single_version_1.atd" ];
   single_version_json_parsing
     ~test
     ~test_name

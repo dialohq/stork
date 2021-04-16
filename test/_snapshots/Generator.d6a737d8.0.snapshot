@@ -3,3 +3,4 @@ module Types: module type of Single_version_1_t
 module Json: module type of Single_version_1_j
 val employee_of_string: string -> Types.employee
 val string_of_employee: ?len:int -> Types.employee -> string
+val read_employee: Yojson.Safe.lexer_state -> Lexing.lexbuf -> Types.employee

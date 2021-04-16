@@ -3,6 +3,7 @@ module Types: module type of Realistic_202103001_t
 module Json: module type of Realistic_202103001_j
 val dialog_file_of_string: string -> Types.dialog_file
 val string_of_dialog_file: ?len:int -> Types.dialog_file -> string
+val read_dialog_file: Yojson.Safe.lexer_state -> Lexing.lexbuf -> Types.dialog_file
 module From_202008241_to_202103001 : sig
 module OldVersion := Realistic_202008241_t
 module NewVersion := Realistic_202103001_t

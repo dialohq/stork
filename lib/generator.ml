@@ -49,7 +49,8 @@ let name_convert_to_latest file_version =
   [%string "$(Upgrader.convert)_from_%i$(file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
-  | [] -> []
+  | [] ->
+    []
   | (old_file_version, newest_file_version) :: tail ->
     let convert = Upgrader.convert in
     let from_old_to_new =
@@ -80,10 +81,9 @@ let make_convert_to_latest_fns = function
     in
     aux ~acc:[ latest_converter ] tail |> List.rev
 
-let get_version =
+let get_version_from_json =
   {|
-let get_version s =
-  match Yojson.Safe.from_string s with
+let get_version_from_json = function
   | `Assoc fields ->
     let version =
       List.find_map
@@ -99,7 +99,17 @@ let get_version s =
     invalid_arg "The parsed JSON should be an object."
 |}
 
-let make_main_of_string ~prefix ~main_type = function
+let get_version =
+  {|let get_version s = 
+  get_version_from_json (Yojson.Safe.from_string s)|}
+
+let get_version_from_lexbuf =
+  {|let get_version_from_lexbuf p lb = 
+  get_version_from_json (Yojson.Safe.from_lexbuf p lb)|}
+
+let make_main_of_string ~prefix ~main_type =
+  let main_type_of_string = [%string "$(main_type)_of_string"] in
+  function
   | [] ->
     assert false
   | latest_version :: tail ->
@@ -108,19 +118,49 @@ let make_main_of_string ~prefix ~main_type = function
         ~f:(fun version ->
           [%string
             "  | %i$version -> $(name_convert_to_latest version) \
-             ($(Upgrader.name_j_module prefix version).$(main_type)_of_string \
-             s)"])
+             ($(Upgrader.name_j_module prefix version).$main_type_of_string s)"])
         tail
       |> String.concat ~sep:"\n"
     in
     ( [%string
         {|
-let $(main_type)_of_string s = match (get_version s) with
-  | %i$latest_version -> Json.$(main_type)_of_string s
+let $main_type_of_string s = match (get_version s) with
+  | %i$latest_version -> Json.$main_type_of_string s
 $version_matches
   | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
 |}]
-    , [%string "val $(main_type)_of_string: string -> Types.$main_type"] )
+    , [%string "val $main_type_of_string: string -> Types.$main_type"] )
+
+let make_read_main ~prefix ~main_type =
+  let read_main_type = [%string "read_$main_type"] in
+  function
+  | [] ->
+    assert false
+  | latest_version :: tail ->
+    let version_matches =
+      List.map
+        ~f:(fun version ->
+          [%string
+            "  | %i$version -> $(name_convert_to_latest version) \
+             ($(Upgrader.name_j_module prefix version).$read_main_type p lb)"])
+        tail
+      |> String.concat ~sep:"\n"
+    in
+    (* todo change implementation of lexbuf reuse *)
+    ( [%string
+        {|
+let $read_main_type p lb = let Yojson.{ lnum; fname; _ } = p in 
+  let new_p = Yojson.init_lexer ?fname ~lnum () in
+  let ic = open_in_bin (Option.get fname) in
+  let new_lb = Lexing.from_channel ic
+  in match (get_version_from_lexbuf new_p new_lb) with
+  | %i$latest_version -> Json.$read_main_type p lb
+$version_matches
+  | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
+|}]
+    , [%string
+        "val $read_main_type: Yojson.Safe.lexer_state -> Lexing.lexbuf -> \
+         Types.$main_type"] )
 
 let make_string_of_main main_type =
   let intf =
@@ -261,6 +301,9 @@ let make_upgraders = function
     let string_of_main_impl, string_of_main_intf =
       make_string_of_main main_type
     in
+    let read_main_impl, read_main_intf =
+      make_read_main ~prefix ~main_type desc_versions
+    in
     let disable_warnings_impl = {|[@@@ocaml.warning "-32"]|} in
     let disable_warnings_intf = {|[@@@ocaml.warning "-34"]|} in
     let upgraders =
@@ -270,7 +313,9 @@ let make_upgraders = function
             types_module_sig
             ::
             json_module_sig
-            :: main_of_string_intf :: string_of_main_intf :: upgraders.intf_list
+            ::
+            main_of_string_intf
+            :: string_of_main_intf :: read_main_intf :: upgraders.intf_list
         ; impl_list =
             disable_warnings_impl
             ::
@@ -278,11 +323,15 @@ let make_upgraders = function
             ::
             json_module
             ::
+            get_version_from_json
+            ::
             get_version
+            ::
+            get_version_from_lexbuf
             ::
             (upgraders.impl_list
             @ convert_to_latest_fns
-            @ [ string_of_main_impl; main_of_string_impl ])
+            @ [ string_of_main_impl; main_of_string_impl; read_main_impl ])
         ; user_intf_list = disable_warnings_intf :: upgraders.user_intf_list
         }
     in
