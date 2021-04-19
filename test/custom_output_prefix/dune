@@ -1,0 +1,13 @@
+(rule
+ (targets custom_output_prefix_1_t.ml custom_output_prefix_1_t.mli
+   custom_output_prefix_1_j.ml custom_output_prefix_1_j.mli
+   custom_output_prefix_2_t.ml custom_output_prefix_2_t.mli
+   custom_output_prefix_2_j.ml custom_output_prefix_2_j.mli
+   custom_output_prefix_upgrader_t.ml custom_output_prefix_upgrader_t.mli
+   custom_output_prefix.ml custom_output_prefix.mli
+   custom_output_prefix_user_fns.mli)
+ (deps
+  (:atd
+   (glob_files *.atd)))
+ (action
+  (run %{bin:stork} gen -o custom_output_prefix %{atd})))

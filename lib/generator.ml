@@ -1,8 +1,6 @@
+open Letops.Result
+
 let atd_extension = "atd"
-
-let ( let+ ) o f = match o with Error e -> Error e | Ok x -> Ok (f x)
-
-let ( let* ) o f = match o with Error e -> Error e | Ok x -> f x
 
 let split_on_last_char ~char s =
   let open String in
@@ -18,6 +16,24 @@ let split_on_last_char ~char s =
     let len = total_length - char_last_pos - 1 in
     let last_part = sub s ~pos ~len in
     Some (first_part, last_part)
+
+let split_elements file =
+  let folder, filename =
+    split_on_last_char ~char:'/' file |> Option.value ~default:(".", file)
+  in
+  match split_on_last_char ~char:'.' filename with
+  | Some (filename, ext) when ext = atd_extension ->
+    (match split_on_last_char filename ~char:'_' with
+    | None ->
+      Error (`Invalid_version file)
+    | Some (prefix, version) ->
+      (match int_of_string_opt version with
+      | None ->
+        Error (`Invalid_version file)
+      | Some version ->
+        Ok (folder, prefix, version)))
+  | Some _ | None ->
+    Error (`Invalid_atd_file file)
 
 let write_files
     ~folder
@@ -169,46 +185,29 @@ let make_string_of_main main_type =
   let impl = [%string "let string_of_$main_type = Json.string_of_$main_type"] in
   impl, intf
 
-let make_upgraders = function
+let make_upgraders ?output_prefix = function
   | [] ->
     Error `Empty_list
   | first_file :: _ as files ->
-    let split_elements file =
-      let folder, filename =
-        split_on_last_char ~char:'/' file |> Option.value ~default:(".", file)
-      in
-      match split_on_last_char ~char:'.' filename with
-      | Some (filename, ext) when ext = atd_extension ->
-        (match split_on_last_char filename ~char:'_' with
-        | None ->
-          Error (`Invalid_version file)
-        | Some (prefix, version) ->
-          (match int_of_string_opt version with
-          | None ->
-            Error (`Invalid_version file)
-          | Some version ->
-            Ok (folder, prefix, version)))
-      | Some _ | None ->
-        Error (`Invalid_atd_file file)
-    in
-    let* folder, prefix, _ = split_elements first_file in
+    let* folder, input_prefix, _ = split_elements first_file in
     let rec get_versions acc = function
       | [] ->
         Ok acc
       | file :: tail ->
         (match split_elements file with
-        | Ok (f, p, v) when (f, p) = (folder, prefix) ->
+        | Ok (f, p, v) when (f, p) = (folder, input_prefix) ->
           get_versions (v :: acc) tail
         | Ok _ ->
-          Error (`Different_prefix (folder ^ "/" ^ prefix, file))
+          Error (`Different_prefix (folder ^ "/" ^ input_prefix, file))
         | Error e ->
           Error e)
     in
     let* versions = get_versions [] files in
     let file_versions = List.sort ~cmp:Int.compare versions in
     let recreate_path version =
-      [%string "$folder/$(prefix)_%i$(version).$atd_extension"]
+      [%string "$folder/$(input_prefix)_%i$(version).$atd_extension"]
     in
+    let prefix = Option.value ~default:input_prefix output_prefix in
     let rec make_upgraders ~version_pairs ~main_type ~upgraders = function
       | [] ->
         assert false
@@ -335,9 +334,22 @@ let make_upgraders = function
         ; user_intf_list = disable_warnings_intf :: upgraders.user_intf_list
         }
     in
-    Ok (folder, prefix, upgraders)
+    Ok (folder, input_prefix, upgraders)
 
-let main files =
-  let+ folder, prefix, upgraders = make_upgraders files in
+let main ?output_prefix files =
+  let output_folder_and_prefix =
+    match output_prefix with
+    | Some output_prefix ->
+      split_on_last_char ~char:'/' output_prefix
+      |> Option.value ~default:(".", output_prefix)
+      |> Option.some
+    | None ->
+      None
+  in
+  let output_prefix = Option.map snd output_folder_and_prefix in
+  let+ folder, file_prefix, upgraders = make_upgraders ?output_prefix files in
+  let folder, prefix =
+    Option.value ~default:(folder, file_prefix) output_folder_and_prefix
+  in
   let () = write_files ~folder ~prefix upgraders in
   files
