@@ -22,3 +22,7 @@ let config_dir =
   Sys.getenv_opt "STORK_CONFIG_DIR"
   |> Option.map Result.ok
   |> Option.value ~default:default_config_dir
+
+type impl_kind =
+  | Native
+  | Rescript

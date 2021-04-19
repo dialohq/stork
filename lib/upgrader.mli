@@ -28,7 +28,7 @@ val name_upgrader_module
 
 val name_t_module : string -> int -> string
 
-val name_j_module : string -> int -> string
+val name_impl_module : Config.impl_kind -> string -> int -> string
 
 val load_sort_map
   :  string

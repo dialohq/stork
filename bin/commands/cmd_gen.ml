@@ -6,11 +6,12 @@ let atdgen ?output_prefix ~options file =
   in
   Sys.command ("atdgen " ^ options ^ " " ^ prefix_option ^ file)
 
-let atdgen_j = atdgen ~options:"-j -j-std"
+let atdgen_j ?(rescript = false) =
+  atdgen ~options:(if rescript then " -bs" else "-j -j-std")
 
 let atdgen_t = atdgen ~options:"-t"
 
-let rec atdgen ?output_prefix:original_prefix = function
+let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
   | [] ->
     Ok ()
   | file :: tail ->
@@ -21,15 +22,20 @@ let rec atdgen ?output_prefix:original_prefix = function
         (fun output_prefix -> output_prefix ^ "_" ^ string_of_int version)
         original_prefix
     in
-    (match atdgen_t ?output_prefix file, atdgen_j ?output_prefix file with
+    (match
+       atdgen_t ?output_prefix file, atdgen_j ?output_prefix ~rescript file
+     with
     | 0, 0 ->
-      atdgen ?output_prefix:original_prefix tail
+      atdgen ~rescript ?output_prefix:original_prefix tail
     | 0, i | i, _ ->
       Error (`Atd_error (i, file)))
 
-let run ?output_prefix files =
-  Result.bind (atdgen ?output_prefix files) (fun () ->
-      Generator.main ?output_prefix files)
+let run ?output_prefix ?(rescript = false) files =
+  let impl_kind =
+    match rescript with true -> Config.Rescript | false -> Config.Native
+  in
+  Result.bind (atdgen ?output_prefix ~rescript files) (fun () ->
+      Generator.main ~impl_kind ?output_prefix files)
   |> Result.map (fun _ -> ())
 
 open Cmdliner
@@ -63,7 +69,15 @@ let term =
     in
     let docv = "PREFIX" in
     Arg.(value & opt (some string) None & info [ "o" ] ~doc ~docv)
+  and+ rescript =
+    let doc =
+      "Produce files example_bs.mli and example_bs.ml containing OCaml \
+       serializers and deserializers for the JSON data format from the \
+       specifications in example.atd using rescript's json api."
+    in
+    let docv = "RESCRIPT" in
+    Arg.(value & flag & info [ "rescript" ] ~doc ~docv)
   in
-  run ?output_prefix files |> Common.handle_errors
+  run ?output_prefix ~rescript files |> Common.handle_errors
 
 let cmd = term, info

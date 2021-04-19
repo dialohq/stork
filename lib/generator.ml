@@ -123,7 +123,7 @@ let get_version_from_lexbuf =
   {|let get_version_from_lexbuf p lb = 
   get_version_from_json (Yojson.Safe.from_lexbuf p lb)|}
 
-let make_main_of_string ~prefix ~main_type =
+let make_main_of_string ~impl_kind ~prefix ~main_type =
   let main_type_of_string = [%string "$(main_type)_of_string"] in
   function
   | [] ->
@@ -134,7 +134,8 @@ let make_main_of_string ~prefix ~main_type =
         ~f:(fun version ->
           [%string
             "  | %i$version -> $(name_convert_to_latest version) \
-             ($(Upgrader.name_j_module prefix version).$main_type_of_string s)"])
+             ($(Upgrader.name_impl_module impl_kind prefix \
+             version).$main_type_of_string s)"])
         tail
       |> String.concat ~sep:"\n"
     in
@@ -147,7 +148,7 @@ $version_matches
 |}]
     , [%string "val $main_type_of_string: string -> Types.$main_type"] )
 
-let make_read_main ~prefix ~main_type =
+let make_read_main ~impl_kind ~prefix ~main_type =
   let read_main_type = [%string "read_$main_type"] in
   function
   | [] ->
@@ -158,7 +159,8 @@ let make_read_main ~prefix ~main_type =
         ~f:(fun version ->
           [%string
             "  | %i$version -> $(name_convert_to_latest version) \
-             ($(Upgrader.name_j_module prefix version).$read_main_type p lb)"])
+             ($(Upgrader.name_impl_module impl_kind prefix \
+             version).$read_main_type p lb)"])
         tail
       |> String.concat ~sep:"\n"
     in
@@ -185,7 +187,7 @@ let make_string_of_main main_type =
   let impl = [%string "let string_of_$main_type = Json.string_of_$main_type"] in
   impl, intf
 
-let make_upgraders ?output_prefix = function
+let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
   | [] ->
     Error `Empty_list
   | first_file :: _ as files ->
@@ -287,21 +289,23 @@ let make_upgraders ?output_prefix = function
     let types_module_sig =
       [%string "module Types: module type of $newest_module_t"]
     in
-    let newest_module_j = Upgrader.name_j_module prefix newest_version in
-    let json_module = [%string "module Json = $newest_module_j"] in
+    let newest_module_impl =
+      Upgrader.name_impl_module impl_kind prefix newest_version
+    in
+    let json_module = [%string "module Json = $newest_module_impl"] in
     let json_module_sig =
-      [%string "module Json: module type of $newest_module_j"]
+      [%string "module Json: module type of $newest_module_impl"]
     in
     let desc_versions = List.rev file_versions in
     let main_of_string_impl, main_of_string_intf =
-      make_main_of_string ~prefix ~main_type desc_versions
+      make_main_of_string ~impl_kind ~prefix ~main_type desc_versions
     in
     let convert_to_latest_fns = make_convert_to_latest_fns version_pairs in
     let string_of_main_impl, string_of_main_intf =
       make_string_of_main main_type
     in
     let read_main_impl, read_main_intf =
-      make_read_main ~prefix ~main_type desc_versions
+      make_read_main ~impl_kind ~prefix ~main_type desc_versions
     in
     let open_std = "open StdLabels" in
     let disable_warnings_impl = {|[@@@ocaml.warning "-32-44"]|} in
@@ -339,7 +343,7 @@ let make_upgraders ?output_prefix = function
     in
     Ok (folder, input_prefix, upgraders)
 
-let main ?output_prefix files =
+let main ?(impl_kind = Config.Native) ?output_prefix files =
   let output_folder_and_prefix =
     match output_prefix with
     | Some output_prefix ->
@@ -350,7 +354,9 @@ let main ?output_prefix files =
       None
   in
   let output_prefix = Option.map snd output_folder_and_prefix in
-  let+ folder, file_prefix, upgraders = make_upgraders ?output_prefix files in
+  let+ folder, file_prefix, upgraders =
+    make_upgraders ~impl_kind ?output_prefix files
+  in
   let folder, prefix =
     Option.value ~default:(folder, file_prefix) output_folder_and_prefix
   in
