@@ -594,8 +594,9 @@ let enclose_module ~header ~module_name ?(impl = false) = function
 let name_t_module prefix version =
   [%string "$(String.capitalize_ascii prefix)_%i$(version)_t"]
 
-let name_j_module prefix version =
-  [%string "$(String.capitalize_ascii prefix)_%i$(version)_j"]
+let name_impl_module kind prefix version =
+  [%string
+    {|$(String.capitalize_ascii prefix)_%i$(version)_$(match kind with Config.Native -> "j" | Config.Rescript -> "bs")|}]
 
 let name_upgrader_module ~old_file_version ~new_file_version =
   [%string "From_%i$(old_file_version)_to_%i$new_file_version"]

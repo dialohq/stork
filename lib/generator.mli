@@ -5,7 +5,8 @@ val split_elements
      Result.t
 
 val main
-  :  ?output_prefix:string
+  :  ?impl_kind:Config.impl_kind
+  -> ?output_prefix:string
   -> string list
   -> ( string list
      , [> `Different_main_type of string * string
@@ -17,7 +18,8 @@ val main
      result
 
 val make_upgraders
-  :  ?output_prefix:string
+  :  ?impl_kind:Config.impl_kind
+  -> ?output_prefix:string
   -> string list
   -> ( string * string * Upgrader.generated
      , [> `Different_main_type of string * string
