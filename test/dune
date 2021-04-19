@@ -11,7 +11,7 @@
  (libraries rely.lib stork_test)
  (modules test_runner)
  (flags
-  (:standard -open StdLabels -w +A-48-42-40)))
+  (:standard -w +A-48-42-40)))
 
 (rule
  (alias runtest)
