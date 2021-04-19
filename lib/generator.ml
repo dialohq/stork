@@ -303,7 +303,8 @@ let make_upgraders ?output_prefix = function
     let read_main_impl, read_main_intf =
       make_read_main ~prefix ~main_type desc_versions
     in
-    let disable_warnings_impl = {|[@@@ocaml.warning "-32"]|} in
+    let open_std = "open StdLabels" in
+    let disable_warnings_impl = {|[@@@ocaml.warning "-32-44"]|} in
     let disable_warnings_intf = {|[@@@ocaml.warning "-34"]|} in
     let upgraders =
       Upgrader.
@@ -317,6 +318,8 @@ let make_upgraders ?output_prefix = function
             :: string_of_main_intf :: read_main_intf :: upgraders.intf_list
         ; impl_list =
             disable_warnings_impl
+            ::
+            open_std
             ::
             types_module
             ::
