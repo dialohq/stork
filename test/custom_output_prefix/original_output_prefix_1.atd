@@ -1,0 +1,20 @@
+type company = {
+    name: string;
+    address: string;
+}
+
+type employer = [ Self | Company of company ] <ocaml repr="classic">
+
+type 'b tuple_2 = (string * 'b)
+
+type employment = employer tuple_2
+
+type skill = string tuple_2
+
+type employee = {
+    name: string;
+    age: int;
+    position: employment;
+    version: int;
+    skills: skill list <ocaml repr="array">
+}

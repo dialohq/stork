@@ -1,0 +1,41 @@
+Generator › single version - impl list snapshot
+[@@@ocaml.warning \"-32\"]
+module Types = Single_version_1_t
+module Json = Single_version_1_j
+
+let get_version_from_json = function
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function \"version\", `Int version -> Some version | _ -> None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg \"The parsed JSON should have a `version` field of type int\"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg \"The parsed JSON should be an object.\"
+
+let get_version s = 
+  get_version_from_json (Yojson.Safe.from_string s)
+let get_version_from_lexbuf p lb = 
+  get_version_from_json (Yojson.Safe.from_lexbuf p lb)
+let string_of_employee = Json.string_of_employee
+
+let employee_of_string s = match (get_version s) with
+  | 1 -> Json.employee_of_string s
+
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
+
+let read_employee p lb = let Yojson.{ lnum; fname; _ } = p in 
+  let new_p = Yojson.init_lexer ?fname ~lnum () in
+  let ic = open_in_bin (Option.get fname) in
+  let new_lb = Lexing.from_channel ic
+  in match (get_version_from_lexbuf new_p new_lb) with
+  | 1 -> Json.read_employee p lb
+
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+

@@ -1,0 +1,2 @@
+Generator › single version - parsing test/single_version/single_version_1.json
+{\"name\":\"Paul\",\"age\":30,\"position\":[\"dev\",[\"Company\",{\"name\":\"Dialo\",\"address\":\"Canary Islands\"}]],\"version\":1,\"skills\":[[\"design\",\"typography\"],[\"computer science\",\"ocaml\"]]}

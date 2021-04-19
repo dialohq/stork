@@ -1,12 +1,20 @@
 Generator › simple transitive change - intf list snapshot
-module Types: module type of Realistic_202103001_t
-module Json: module type of Realistic_202103001_j
+module Types: module type of Realistic_202103115_t
+module Json: module type of Realistic_202103115_j
 val dialog_file_of_string: string -> Types.dialog_file
 val string_of_dialog_file: ?len:int -> Types.dialog_file -> string
+val read_dialog_file: Yojson.Safe.lexer_state -> Lexing.lexbuf -> Types.dialog_file
 module From_202008241_to_202103001 : sig
 module OldVersion := Realistic_202008241_t
 module NewVersion := Realistic_202103001_t
 type converter := Realistic_upgrader_t.From_202008241_to_202103001.converter
+val converter: converter
+val convert: OldVersion.dialog_file -> NewVersion.dialog_file
+end
+module From_202103001_to_202103115 : sig
+module OldVersion := Realistic_202103001_t
+module NewVersion := Realistic_202103115_t
+type converter := Realistic_upgrader_t.From_202103001_to_202103115.converter
 val converter: converter
 val convert: OldVersion.dialog_file -> NewVersion.dialog_file
 end
