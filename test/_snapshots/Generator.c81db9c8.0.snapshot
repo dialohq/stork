@@ -1,5 +1,6 @@
 Generator › single version - impl list snapshot
-[@@@ocaml.warning \"-32\"]
+[@@@ocaml.warning \"-32-44\"]
+open StdLabels
 module Types = Single_version_1_t
 module Json = Single_version_1_j
 
