@@ -1,5 +1,5 @@
 Generator › simple transitive change - impl list snapshot
-[@@@ocaml.warning \"-32-44\"]
+[@@@ocaml.warning \"-32-33-44\"]
 open StdLabels
 module Types = Simple_transitive_change_2_t
 module Json = Simple_transitive_change_2_j

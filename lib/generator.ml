@@ -390,7 +390,7 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
       make_read_and_write_main ~prefix ~impl_kind ~main_type desc_versions
     in
     let open_std = "open StdLabels" in
-    let disable_warnings_impl = {|[@@@ocaml.warning "-32-44"]|} in
+    let disable_warnings_impl = {|[@@@ocaml.warning "-32-33-44"]|} in
     let disable_warnings_intf = {|[@@@ocaml.warning "-34"]|} in
     let upgraders =
       Upgrader.

@@ -1,5 +1,5 @@
 Generator › rescript simple - impl list snapshot
-[@@@ocaml.warning \"-32-44\"]
+[@@@ocaml.warning \"-32-33-44\"]
 open StdLabels
 module Types = Rescript_simple_2_t
 module Json = Rescript_simple_2_bs
