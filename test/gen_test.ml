@@ -8,14 +8,14 @@ let lines_match_snapshot lines { expect; _ } =
 
 let string_equals s1 s2 { expect; _ } = (expect.string s1).toEqual s2
 
-let test_upgraders ~test ~test_name files =
+let test_upgraders ?(impl_kind = Config.Native) ~test ~test_name files =
   let ( _
       , _
       , Upgrader.
           { intf_list; impl_list; user_intf_list; upgrader_t; upgrader_t_intf }
       )
     =
-    Generator.make_upgraders files |> Result.get_ok
+    Generator.make_upgraders ~impl_kind files |> Result.get_ok
   in
   test (test_name ^ " - impl list snapshot") (lines_match_snapshot impl_list);
   test (test_name ^ " - intf list snapshot") (lines_match_snapshot intf_list);
@@ -99,4 +99,12 @@ let () =
   single_version_json_parsing
     ~test
     ~test_name
-    "test/single_version/single_version_1.json"
+    "test/single_version/single_version_1.json";
+  let test_name = "rescript simple" in
+  test_upgraders
+    ~impl_kind:Config.Rescript
+    ~test
+    ~test_name
+    [ "test/rescript_simple/rescript_simple_1.atd"
+    ; "test/rescript_simple/rescript_simple_2.atd"
+    ]
