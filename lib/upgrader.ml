@@ -658,7 +658,6 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
       [%string
         {|
 include $user_fns_module
-type $converter = $upgrader_t.$module_name.$converter
 |}]
     in
     let intf_header =
