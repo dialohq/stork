@@ -1,10 +1,8 @@
 module From_202008241_to_202103001 = struct
-  module OldVersion = Realistic_202008241_t
-  module NewVersion = Realistic_202103001_t
-  module Upgrader_t = Realistic_upgrader_t.From_202008241_to_202103001
+  include Realistic_upgrader_t.From_202008241_to_202103001
 
   let convert_dialog_file
-      (converter : Upgrader_t.converter)
+      (converter : converter)
       (OldVersion.{ deploy_env; dialog; _ } as old_dialog_file)
     =
     NewVersion.
@@ -20,8 +18,7 @@ module From_202008241_to_202103001 = struct
 end
 
 module From_202103001_to_202103115 = struct
-  module OldVersion = Realistic_202103001_t
-  module NewVersion = Realistic_202103115_t
+  include Realistic_upgrader_t.From_202103001_to_202103115
 
   let convert_primitive_variable_type
       _ _ (old : OldVersion.primitive_variable_type)
