@@ -1,0 +1,11 @@
+(rule
+ (targets nominal_variant_1_t.ml nominal_variant_1_t.mli
+   nominal_variant_1_j.ml nominal_variant_1_j.mli nominal_variant_2_t.ml
+   nominal_variant_2_t.mli nominal_variant_2_j.ml nominal_variant_2_j.mli
+   nominal_variant_upgrader_t.ml nominal_variant_upgrader_t.mli
+   nominal_variant.ml nominal_variant.mli nominal_variant_user_fns.mli)
+ (deps
+  (:atd
+   (glob_files *.atd)))
+ (action
+  (run %{bin:stork} gen %{atd})))

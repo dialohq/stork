@@ -333,9 +333,9 @@ let rec classify_shallow_equals ~classified_type_map = function
     in
     let upgrade_kind = aux ~current:Same variant_upgrades in
     (match upgrade_kind with
-    | Same ->
+    | Same when annot_to_sum_repr annot = Polymorphic ->
       Same
-    | SameNominal ->
+    | SameNominal | Same ->
       SameNominal
     | TransitivelyModified _ ->
       TransitivelyModified (Sum (annot_to_sum_repr annot, variant_upgrades)))
