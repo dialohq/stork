@@ -1,0 +1,7 @@
+type variant = [ Field ] <ocaml repr="classic">
+
+type json = {
+  variant: variant;
+  field1: string;
+  version: int
+}
