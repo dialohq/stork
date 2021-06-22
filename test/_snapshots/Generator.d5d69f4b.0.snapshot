@@ -4,8 +4,7 @@ open StdLabels
 module Types = Rescript_simple_2_t
 module Json = Rescript_simple_2_bs
 module From_1_to_2 = struct
-module OldVersion = Rescript_simple_1_t
-module NewVersion = Rescript_simple_2_t
+
 include Rescript_simple_user_fns.From_1_to_2
 type converter = Rescript_simple_upgrader_t.From_1_to_2.converter
 let convert_employer: converter -> OldVersion.employee -> OldVersion.employer -> NewVersion.employer = fun converter old_doc -> function 
