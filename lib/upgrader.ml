@@ -323,22 +323,19 @@ let rec classify_shallow_equals ~classified_type_map = function
     in
     let rec aux ~current = function
       | [] ->
-        current
+        (match current with
+        | `Same when annot_to_sum_repr annot = Polymorphic ->
+          Same
+        | `SameNominal | `Same ->
+          SameNominal)
       | (SameVariant _ | SameVariantWithPayload _) :: tail ->
         aux ~current tail
       | SameVariantWithNominalPayload _ :: tail ->
-        aux ~current:SameNominal tail
-      | ModifiedVariantWithPayload (_, modif) :: _ ->
-        TransitivelyModified modif
+        aux ~current:`SameNominal tail
+      | ModifiedVariantWithPayload _ :: _ ->
+        TransitivelyModified (Sum (annot_to_sum_repr annot, variant_upgrades))
     in
-    let upgrade_kind = aux ~current:Same variant_upgrades in
-    (match upgrade_kind with
-    | Same when annot_to_sum_repr annot = Polymorphic ->
-      Same
-    | SameNominal | Same ->
-      SameNominal
-    | TransitivelyModified _ ->
-      TransitivelyModified (Sum (annot_to_sum_repr annot, variant_upgrades)))
+    aux ~current:`Same variant_upgrades
   | TypeExpr.Tuple (cells, _) ->
     let cell_upgrades =
       List.map cells ~f:(fun (type_expr, _) ->
