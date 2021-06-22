@@ -658,13 +658,14 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
       [%string
         {|
 include $user_fns_module
-type $converter = $upgrader_t.$module_name.$converter|}]
+type $converter = $upgrader_t.$module_name.$converter
+|}]
     in
     let intf_header =
       [%string
         {|module $old_version : (module type of $old_version_t)
 module $new_version : (module type of $new_version_t)
-type $converter := $upgrader_t.$module_name.$converter|}]
+type $converter = $upgrader_t.$module_name.$converter|}]
     in
     let upgrader_t_header =
       [%string
