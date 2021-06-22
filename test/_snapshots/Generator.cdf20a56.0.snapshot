@@ -1,7 +1,7 @@
 Generator › simple transitive change - upgrader_t intf list snapshot
 module From_202008241_to_202103001 : sig
-module OldVersion := Realistic_202008241_t
-module NewVersion := Realistic_202103001_t
+module OldVersion : (module type of Realistic_202008241_t)
+module NewVersion : (module type of Realistic_202103001_t)
 type converter = { convert_dialog_file: converter -> OldVersion.dialog_file -> NewVersion.dialog_file;
 convert_deploy_env: converter -> OldVersion.dialog_file -> OldVersion.deploy_env -> NewVersion.deploy_env;
 convert_dialog: converter -> OldVersion.dialog_file -> OldVersion.dialog -> NewVersion.dialog;
@@ -68,8 +68,8 @@ convert_variable_ref: converter -> OldVersion.dialog_file -> OldVersion.variable
 convert_variable_ref_type: converter -> OldVersion.dialog_file -> OldVersion.variable_ref_type -> NewVersion.variable_ref_type }
 end
 module From_202103001_to_202103115 : sig
-module OldVersion := Realistic_202103001_t
-module NewVersion := Realistic_202103115_t
+module OldVersion : (module type of Realistic_202103001_t)
+module NewVersion : (module type of Realistic_202103115_t)
 type converter = { convert_dialog_file: converter -> OldVersion.dialog_file -> NewVersion.dialog_file;
 convert_deploy_env: converter -> OldVersion.dialog_file -> OldVersion.deploy_env -> NewVersion.deploy_env;
 convert_dialog: converter -> OldVersion.dialog_file -> OldVersion.dialog -> NewVersion.dialog;

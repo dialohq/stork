@@ -4,8 +4,7 @@ open StdLabels
 module Types = Realistic_202103115_t
 module Json = Realistic_202103115_j
 module From_202008241_to_202103001 = struct
-module OldVersion = Realistic_202008241_t
-module NewVersion = Realistic_202103001_t
+
 include Realistic_user_fns.From_202008241_to_202103001
 type converter = Realistic_upgrader_t.From_202008241_to_202103001.converter
 let convert_variable_ref_type _ _ x = x
@@ -138,8 +137,7 @@ convert_variable_ref_type }
 let convert = convert_dialog_file converter
 end
 module From_202103001_to_202103115 = struct
-module OldVersion = Realistic_202103001_t
-module NewVersion = Realistic_202103115_t
+
 include Realistic_user_fns.From_202103001_to_202103115
 type converter = Realistic_upgrader_t.From_202103001_to_202103115.converter
 let convert_variable_ref_type _ _ x = x
