@@ -1,0 +1,8 @@
+Generator › nominal variant - user intf list snapshot
+[@@@ocaml.warning \"-34\"]
+module From_1_to_2 : sig
+module OldVersion : (module type of Nominal_variant_1_t)
+module NewVersion : (module type of Nominal_variant_2_t)
+type converter = Nominal_variant_upgrader_t.From_1_to_2.converter
+val convert_json: converter -> OldVersion.json -> NewVersion.json
+end

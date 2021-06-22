@@ -1,0 +1,53 @@
+Generator › nominal variant - impl list snapshot
+[@@@ocaml.warning \"-32-33-44\"]
+open StdLabels
+module Types = Nominal_variant_2_t
+module Json = Nominal_variant_2_j
+module From_1_to_2 = struct
+
+include Nominal_variant_user_fns.From_1_to_2
+type converter = Nominal_variant_upgrader_t.From_1_to_2.converter
+
+let convert_variant: converter -> OldVersion.json -> OldVersion.variant -> NewVersion.variant = fun _ _  x -> Obj.magic x
+let converter = Nominal_variant_upgrader_t.From_1_to_2.{ convert_json;
+convert_variant }
+let convert = convert_json converter
+end
+let convert_from_1_to_latest = From_1_to_2.convert
+
+let get_version_from_json = function
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function \"version\", `Int version -> Some version | _ -> None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg \"The parsed JSON should have a `version` field of type int\"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg \"The parsed JSON should be an object.\"
+
+let get_version s = 
+  get_version_from_json (Yojson.Safe.from_string s)
+let get_version_from_lexbuf p lb = 
+  get_version_from_json (Yojson.Safe.from_lexbuf p lb)
+let string_of_json = Json.string_of_json
+
+let json_of_string s = match (get_version s) with
+  | 2 -> Json.json_of_string s
+  | 1 -> convert_from_1_to_latest (Nominal_variant_1_j.json_of_string s)
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
+
+let read_json p lb = let Yojson.{ lnum; fname; _ } = p in 
+  let new_p = Yojson.init_lexer ?fname ~lnum () in
+  let ic = open_in_bin (Option.get fname) in
+  let new_lb = Lexing.from_channel ic
+  in match (get_version_from_lexbuf new_p new_lb) with
+  | 2 -> Json.read_json p lb
+  | 1 -> convert_from_1_to_latest (Nominal_variant_1_j.read_json p lb)
+  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+
