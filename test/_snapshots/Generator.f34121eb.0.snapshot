@@ -1,0 +1,7 @@
+Generator › nominal variant - upgrader_t impl list snapshot
+module From_1_to_2 = struct
+module OldVersion = Nominal_variant_1_t
+module NewVersion = Nominal_variant_2_t
+type converter = { convert_json: converter -> OldVersion.json -> NewVersion.json;
+convert_variant: converter -> OldVersion.json -> OldVersion.variant -> NewVersion.variant }
+end

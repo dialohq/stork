@@ -107,4 +107,11 @@ let () =
     ~test_name
     [ "test/rescript_simple/rescript_simple_1.atd"
     ; "test/rescript_simple/rescript_simple_2.atd"
+    ];
+  let test_name = "nominal variant" in
+  test_upgraders
+    ~test
+    ~test_name
+    [ "test/nominal_variant/nominal_variant_1.atd"
+    ; "test/nominal_variant/nominal_variant_2.atd"
     ]
