@@ -6,7 +6,6 @@ module Json = Nominal_variant_2_j
 module From_1_to_2 = struct
 
 include Nominal_variant_user_fns.From_1_to_2
-type converter = Nominal_variant_upgrader_t.From_1_to_2.converter
 
 let convert_variant: converter -> OldVersion.json -> OldVersion.variant -> NewVersion.variant = fun _ _  x -> Obj.magic x
 let converter = Nominal_variant_upgrader_t.From_1_to_2.{ convert_json;
