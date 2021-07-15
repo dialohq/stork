@@ -10,9 +10,9 @@ type generated =
 val make
   :  prefix:string
   -> old_file:string
-  -> old_file_version:int
+  -> old_file_version:string
   -> new_file:string
-  -> new_file_version:int
+  -> new_file_version:string
   -> (string * generated, [> `Different_main_type of string * string ]) result
 
 val upgrader_t_name : string -> string
@@ -22,13 +22,13 @@ val user_fns_module_name : string -> string
 val convert : string
 
 val name_upgrader_module
-  :  old_file_version:int
-  -> new_file_version:int
+  :  old_file_version:string
+  -> new_file_version:string
   -> string
 
-val name_t_module : string -> int -> string
+val name_t_module : string -> string -> string
 
-val name_impl_module : Config.impl_kind -> string -> int -> string
+val name_impl_module : Config.impl_kind -> string -> string -> string
 
 val load_sort_map
   :  string
