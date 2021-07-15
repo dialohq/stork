@@ -27,11 +27,7 @@ let split_elements file =
     | None ->
       Error (`Invalid_version file)
     | Some (prefix, version) ->
-      (match int_of_string_opt version with
-      | None ->
-        Error (`Invalid_version file)
-      | Some version ->
-        Ok (folder, prefix, version)))
+      Ok (folder, prefix, version))
   | Some _ | None ->
     Error (`Invalid_atd_file file)
 
@@ -62,7 +58,7 @@ let write_files
     user_intf_list
 
 let name_convert_to_latest file_version =
-  [%string "$(Upgrader.convert)_from_%i$(file_version)_to_latest"]
+  [%string "$(Upgrader.convert)_from_$(file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
   | [] ->
@@ -149,7 +145,7 @@ let make_decode_main ~impl_kind ~prefix ~fn_name ~arg ~fn_sig ~match_version
       List.map
         ~f:(fun version ->
           [%string
-            "  | %i$version -> $(name_convert_to_latest version) \
+            "  | $version -> $(name_convert_to_latest version) \
              ($(Upgrader.name_impl_module impl_kind prefix version).$fn_name \
              $arg)"])
         tail
@@ -158,7 +154,7 @@ let make_decode_main ~impl_kind ~prefix ~fn_name ~arg ~fn_sig ~match_version
     ( [%string
         {|
 let $fn_name $arg = $match_version with
-  | %i$latest_version -> Json.$fn_name $arg
+  | $latest_version -> Json.$fn_name $arg
 $version_matches
   | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
 |}]
@@ -272,9 +268,10 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
           Error e)
     in
     let* versions = get_versions [] files in
-    let file_versions = List.sort ~cmp:Int.compare versions in
+    (* TODO: write a custom ordering function, where "2" < "10" *)
+    let file_versions = List.sort ~cmp:String.compare versions in
     let recreate_path version =
-      [%string "$folder/$(input_prefix)_%i$(version).$atd_extension"]
+      [%string "$folder/$(input_prefix)_$(version).$atd_extension"]
     in
     let prefix = Option.value ~default:input_prefix output_prefix in
     let rec make_upgraders ~version_pairs ~main_type ~upgraders = function

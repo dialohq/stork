@@ -19,7 +19,7 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
     let* _, _, version = Generator.split_elements file in
     let output_prefix =
       Option.map
-        (fun output_prefix -> output_prefix ^ "_" ^ string_of_int version)
+        (fun output_prefix -> output_prefix ^ "_" ^ version)
         original_prefix
     in
     (match
