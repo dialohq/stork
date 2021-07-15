@@ -317,7 +317,7 @@ let get_version s =
   get_version_from_json (Yojson.Safe.from_string s)
 let get_version_from_file fname = 
   get_version_from_json (Yojson.Safe.from_file ~fname fname)
-let string_of_dialog_file = Json.string_of_dialog_file
+let string_of_dialog_file ?len x = Json.string_of_dialog_file ?len { x with Types.version = 202103115 }
 
 let dialog_file_of_string s = match (get_version s) with
   | 202103115 -> Json.dialog_file_of_string s
@@ -332,3 +332,4 @@ let read_dialog_file_from_file fname = match (get_version_from_file fname) with
   | 202008241 -> convert_from_202008241_to_latest (Atdgen_runtime.Util.Json.from_file Realistic_202008241_j.read_dialog_file fname)
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 
+let write_dialog_file buf x = Json.write_dialog_file buf { x with Types.version = 202103115 }

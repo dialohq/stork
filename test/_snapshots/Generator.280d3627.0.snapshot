@@ -44,7 +44,7 @@ let get_version s =
   get_version_from_json (Yojson.Safe.from_string s)
 let get_version_from_file fname = 
   get_version_from_json (Yojson.Safe.from_file ~fname fname)
-let string_of_employee = Json.string_of_employee
+let string_of_employee ?len x = Json.string_of_employee ?len { x with Types.version = 2 }
 
 let employee_of_string s = match (get_version s) with
   | 2 -> Json.employee_of_string s
@@ -57,3 +57,4 @@ let read_employee_from_file fname = match (get_version_from_file fname) with
   | 1 -> convert_from_1_to_latest (Atdgen_runtime.Util.Json.from_file Simple_transitive_change_1_j.read_employee fname)
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 
+let write_employee buf x = Json.write_employee buf { x with Types.version = 2 }

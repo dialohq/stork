@@ -208,29 +208,53 @@ let make_read_main ~main_type ~impl_kind =
   in
   make_decode_main ~fn_name ~arg ~fn_sig ~impl_kind ~match_version ~decode
 
-let make_string_of_main main_type =
+let make_string_of_main ~latest_version main_type =
   let intf =
     [%string "val string_of_$main_type: ?len:int -> Types.$main_type -> string"]
   in
-  let impl = [%string "let string_of_$main_type = Json.string_of_$main_type"] in
+  let impl =
+    [%string
+      "let string_of_$main_type ?len x = Json.string_of_$main_type ?len { x \
+       with Types.version = $(string_of_int latest_version) }"]
+  in
   impl, intf
 
-let make_write_main main_type =
-  let intf =
-    [%string
-      "val write_$main_type: Types.$main_type Atdgen_codec_runtime.Encode.t"]
-  in
-  let impl = [%string "let write_$main_type = Json.write_$main_type"] in
-  impl, intf
+let make_write_main ~impl_kind ~latest_version main_type =
+  match impl_kind with
+  | Config.Rescript ->
+    let intf =
+      [%string
+        "val write_$main_type: Types.$main_type Atdgen_codec_runtime.Encode.t"]
+    in
+    let impl =
+      [%string
+        "let write_$main_type x = Json.write_$main_type { x with Types.version \
+         = $(string_of_int latest_version) }"]
+    in
+    impl, intf
+  | Config.Native ->
+    let intf =
+      [%string "val write_$main_type: Bi_outbuf.t -> Types.$main_type -> unit"]
+    in
+    let impl =
+      [%string
+        "let write_$main_type buf x = Json.write_$main_type buf { x with \
+         Types.version = $(string_of_int latest_version) }"]
+    in
+    impl, intf
 
 let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
+  let latest_version = List.hd versions in
+  let write_main_impl, write_main_intf =
+    make_write_main ~impl_kind ~latest_version main_type
+  in
+  let read_main_impl, read_main_intf =
+    make_read_main ~prefix ~impl_kind ~main_type versions
+  in
   match impl_kind with
   | Config.Native ->
     let string_of_main_impl, string_of_main_intf =
-      make_string_of_main main_type
-    in
-    let read_main_impl, read_main_intf =
-      make_read_main ~prefix ~impl_kind ~main_type versions
+      make_string_of_main ~latest_version main_type
     in
     let main_of_string_impl, main_of_string_intf =
       make_main_of_string ~prefix ~impl_kind ~main_type versions
@@ -242,17 +266,18 @@ let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
       ; string_of_main_impl
       ; main_of_string_impl
       ; read_main_impl
+      ; write_main_impl
       ]
     in
     let intf_list =
-      [ main_of_string_intf; string_of_main_intf; read_main_intf ]
+      [ main_of_string_intf
+      ; string_of_main_intf
+      ; read_main_intf
+      ; write_main_intf
+      ]
     in
     impl_list, intf_list
   | Config.Rescript ->
-    let write_main_impl, write_main_intf = make_write_main main_type in
-    let read_main_impl, read_main_intf =
-      make_read_main ~prefix ~impl_kind ~main_type versions
-    in
     let impl_list =
       [ make_get_version_from_json impl_kind; write_main_impl; read_main_impl ]
     in

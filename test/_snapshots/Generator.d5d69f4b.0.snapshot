@@ -39,7 +39,7 @@ let get_version_from_json json =
   | Some version -> version 
   | None -> invalid_arg \"The parsed JSON should be an object with a `version` field of type int.\"
 
-let write_employee = Json.write_employee
+let write_employee x = Json.write_employee { x with Types.version = 2 }
 
 let read_employee json = match (get_version_from_json json) with
   | 2 -> Json.read_employee json
