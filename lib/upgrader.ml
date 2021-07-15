@@ -447,7 +447,7 @@ let rec modification_to_string ?version_when_main_type = function
       List.map field_upgrades ~f:(fun field_upgrade ->
           match field_upgrade, version_when_main_type with
           | SameField "version", Some new_file_version ->
-            [%string "version = %i$new_file_version;"]
+            [%string "version = $new_file_version;"]
           | SameField field_name, _ ->
             [%string "$field_name = old_record.$field_name;"]
           | SameFieldNominal field_name, _ ->
@@ -589,14 +589,14 @@ let enclose_module ~header ~module_name ?(impl = false) = function
     :: header :: List.rev ("end" :: lines)
 
 let name_t_module prefix version =
-  [%string "$(String.capitalize_ascii prefix)_%i$(version)_t"]
+  [%string "$(String.capitalize_ascii prefix)_$(version)_t"]
 
 let name_impl_module kind prefix version =
   [%string
-    {|$(String.capitalize_ascii prefix)_%i$(version)_$(match kind with Config.Native -> "j" | Config.Rescript -> "bs")|}]
+    {|$(String.capitalize_ascii prefix)_$(version)_$(match kind with Config.Native -> "j" | Config.Rescript -> "bs")|}]
 
 let name_upgrader_module ~old_file_version ~new_file_version =
-  [%string "From_%i$(old_file_version)_to_%i$new_file_version"]
+  [%string "From_$(old_file_version)_to_$new_file_version"]
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
   let _old_sorted_items, old_type_map, old_main_type, old_main_type_param_count =

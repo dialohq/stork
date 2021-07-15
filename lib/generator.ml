@@ -38,11 +38,7 @@ let split_elements file =
     | None ->
       Error (`Invalid_version file)
     | Some (prefix, version) ->
-      (match int_of_string_opt version with
-      | None ->
-        Error (`Invalid_version file)
-      | Some version ->
-        Ok (folder, prefix, version)))
+      Ok (folder, prefix, version))
   | Some _ | None ->
     Error (`Invalid_atd_file file)
 
@@ -88,7 +84,7 @@ let write_files
     user_intf_list
 
 let name_convert_to_latest file_version =
-  [%string "$(Upgrader.convert)_from_%i$(file_version)_to_latest"]
+  [%string "$(Upgrader.convert)_from_$(file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
   | [] ->
@@ -145,7 +141,7 @@ let get_version_from_json = function
     {|
 let get_version_from_json json =
   let toInteger : float -> int option = fun value ->
-    if Js.Float.isFinite value && Js.Math.floor_float value == value 
+    if Js.Float.isFinite value && Js.Math.floor_float value == value
     then Some (int_of_float value)
     else None
   in let getVersionField obj = Js.Dict.get obj "version"
@@ -153,17 +149,17 @@ let get_version_from_json json =
   in let versionJson = Belt.Option.flatMap obj getVersionField
   in let versionNumber = Belt.Option.flatMap versionJson Js.Json.decodeNumber
   in let version = Belt.Option.flatMap versionNumber toInteger in
-  match version with 
-  | Some version -> version 
+  match version with
+  | Some version -> version
   | None -> invalid_arg "The parsed JSON should be an object with a `version` field of type int."
 |}
 
 let get_version =
-  {|let get_version s = 
+  {|let get_version s =
   get_version_from_json (Yojson.Safe.from_string s)|}
 
 let get_version_from_file =
-  {|let get_version_from_file fname = 
+  {|let get_version_from_file fname =
   get_version_from_json (Yojson.Safe.from_file ~fname fname)|}
 
 let make_decode_main
@@ -328,9 +324,10 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
           Error e)
     in
     let* versions = get_versions [] files in
-    let file_versions = List.sort ~cmp:Int.compare versions in
+    (* TODO: write a custom ordering function, where "2" < "10" *)
+    let file_versions = List.sort ~cmp:String.compare versions in
     let recreate_path version =
-      [%string "$folder/$(input_prefix)_%i$(version).$atd_extension"]
+      [%string "$folder/$(input_prefix)_$(version).$atd_extension"]
     in
     let prefix = Option.value ~default:input_prefix output_prefix in
     let rec make_upgraders ~version_pairs ~main_type ~upgraders = function

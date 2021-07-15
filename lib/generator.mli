@@ -1,6 +1,6 @@
 val split_elements
   :  string
-  -> ( string * string * int
+  -> ( string * string * string
      , [> `Invalid_atd_file of string | `Invalid_version of string ] )
      Result.t
 
