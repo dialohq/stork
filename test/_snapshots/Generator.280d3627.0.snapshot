@@ -42,8 +42,8 @@ let get_version_from_json = function
 
 let get_version s = 
   get_version_from_json (Yojson.Safe.from_string s)
-let get_version_from_lexbuf p lb = 
-  get_version_from_json (Yojson.Safe.from_lexbuf p lb)
+let get_version_from_file fname = 
+  get_version_from_json (Yojson.Safe.from_file ~fname fname)
 let string_of_employee = Json.string_of_employee
 
 let employee_of_string s = match (get_version s) with
@@ -52,12 +52,8 @@ let employee_of_string s = match (get_version s) with
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 
 
-let read_employee p lb = let Yojson.{ lnum; fname; _ } = p in 
-  let new_p = Yojson.init_lexer ?fname ~lnum () in
-  let ic = open_in_bin (Option.get fname) in
-  let new_lb = Lexing.from_channel ic
-  in match (get_version_from_lexbuf new_p new_lb) with
-  | 2 -> Json.read_employee p lb
-  | 1 -> convert_from_1_to_latest (Simple_transitive_change_1_j.read_employee p lb)
+let read_employee_from_file fname = match (get_version_from_file fname) with
+  | 2 -> Atdgen_runtime.Util.Json.from_file Json.read_employee fname
+  | 1 -> convert_from_1_to_latest (Atdgen_runtime.Util.Json.from_file Simple_transitive_change_1_j.read_employee fname)
   | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
 

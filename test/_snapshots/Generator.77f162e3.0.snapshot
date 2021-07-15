@@ -3,7 +3,7 @@ module Types: module type of Nominal_variant_2_t
 module Json: module type of Nominal_variant_2_j
 val json_of_string: string -> Types.json
 val string_of_json: ?len:int -> Types.json -> string
-val read_json: Yojson.Safe.lexer_state -> Lexing.lexbuf -> Types.json
+val read_json_from_file: string -> Types.json
 module From_1_to_2 : sig
 module OldVersion : (module type of Nominal_variant_1_t)
 module NewVersion : (module type of Nominal_variant_2_t)

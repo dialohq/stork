@@ -29,11 +29,13 @@ let test_upgraders ?(impl_kind = Config.Native) ~test ~test_name files =
     (test_name ^ " - upgrader_t intf list snapshot")
     (lines_match_snapshot upgrader_t_intf)
 
-let test_json_parsing ~test ~test_name ~to_string ~from_string ~read file =
+let test_json_parsing
+    ~test ~test_name ~to_string ~from_string ~read_from_file file
+  =
   let json_string = Yojson.Safe.from_file file |> Yojson.Safe.to_string in
   let doc_of_string = from_string json_string in
   let res_of_string = to_string doc_of_string in
-  let doc_read = Atdgen_runtime.Util.Json.from_file read file in
+  let doc_read = read_from_file file in
   let res_read = to_string doc_read in
   let () =
     test
@@ -51,19 +53,19 @@ let simple_test_json_parsing =
   test_json_parsing
     ~to_string:Simple_transitive_change.string_of_employee
     ~from_string:Simple_transitive_change.employee_of_string
-    ~read:Simple_transitive_change.read_employee
+    ~read_from_file:Simple_transitive_change.read_employee_from_file
 
 let realistic_test_json_parsing =
   test_json_parsing
     ~to_string:Realistic.string_of_dialog_file
     ~from_string:Realistic.dialog_file_of_string
-    ~read:Realistic.read_dialog_file
+    ~read_from_file:Realistic.read_dialog_file_from_file
 
 let single_version_json_parsing =
   test_json_parsing
     ~to_string:Single_version.string_of_employee
     ~from_string:Single_version.employee_of_string
-    ~read:Single_version.read_employee
+    ~read_from_file:Single_version.read_employee_from_file
 
 let () =
   let test_name = "simple transitive change" in
