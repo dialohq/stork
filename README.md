@@ -1,42 +1,37 @@
 # Stork
 
 [![Actions Status](https://github.com/dialohq/stork/workflows/CI/badge.svg)](https://github.com/dialohq/stork/actions)
-[![NPM Version](https://badge.fury.io/js/%40dialohq%stork.svg)](https://badge.fury.io/js/%40dialohq%stork)
 
 A JSON migrator CLI for [ATD](https://github.com/ahrefs/atd)
 
-## Features
-
-- Available on all major platforms (Windows, Linux and Windows)
-
 ## Installation
 
-### Using Opam
+### Using Esy
 
-```bash
-opam install stork
-```
+Add this to your `esy.json` or `package.json` file:
 
-### Using npm
-
-```bash
-yarn global add @dialohq/stork
-# Or
-npm -g install @dialohq/stork
-```
-
-### Using a script
-
-```bash
-curl -fsSL https://github.com/dialohq/stork/raw/master/script/install.sh | bash
+```json
+  ...
+  {
+    "stork": "*"
+  },
+  "resolutions": {
+    "stork": "dialohq/stork#<COMMIT_SHA>"
+  }
+  ...
 ```
 
 ## Usage
 
-### `stork hello NAME`
+```sh
+stork gen -o 'dir/file' [ --rescript ]
+```
 
-Greets the name given in argument.
+Will generate `dir/file.ml` and `dir/file.mli`. Use `--rescript` to generate ReScript files.
+
+TODO: explain whole workflow.
 
 ## Contributing
 
 Take a look at our [Contributing Guide](CONTRIBUTING.md).
+`
