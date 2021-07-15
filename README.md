@@ -3,11 +3,11 @@
 [![Actions Status](https://github.com/dialohq/stork/workflows/CI/badge.svg)](https://github.com/dialohq/stork/actions)
 [![NPM Version](https://badge.fury.io/js/%40dialohq%stork.svg)](https://badge.fury.io/js/%40dialohq%stork)
 
-A JSON migrator CLI for ATD
+A JSON migrator CLI for [ATD](https://github.com/ahrefs/atd)
 
 ## Features
 
-- Available on all major platform (Windows, Linux and Windows)
+- Available on all major platforms (Windows, Linux and Windows)
 
 ## Installation
 
