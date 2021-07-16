@@ -30,7 +30,35 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
     | 0, i | i, _ ->
       Error (`Atd_error (i, file)))
 
-let run ?output_prefix ?(rescript = false) files =
+let rec checkout ~git_file = function
+  | [] ->
+    Ok []
+  | file :: tail ->
+    let open Letops.Result in
+    let* version, commit = Generator.split_commit file in
+    let* filename, _extension = Generator.split_filename git_file in
+    (* This checks out the commit of the versioned file in the same location as the file.
+     * Dangerous?! Should it be in output_prefix, or in a temporary directory?
+     *)
+    let temp_file = filename ^ "_" ^ string_of_int version ^ ".atd" in
+    let commit = match commit with None -> "HEAD" | Some commit -> commit in
+    let cmd = "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file in
+    (match Sys.command cmd with
+    | 0 ->
+      let* tail = checkout ~git_file tail in
+      Ok (temp_file :: tail)
+    | retval ->
+      Error (`Git_error retval))
+
+let run ?output_prefix ?(rescript = false) ?(git = None) files =
+  let open Letops.Result in
+  let* files =
+    match git with
+    | None ->
+      Ok files
+    | Some git_file ->
+      checkout ~git_file files
+  in
   let impl_kind =
     match rescript with true -> Config.Rescript | false -> Config.Native
   in
@@ -59,9 +87,13 @@ let term =
   let open Common.Let_syntax in
   let+ _term = Common.term
   and+ files =
-    let doc = "The ATD files to generate migrators for, eg. foo_*.atd" in
+    let doc =
+      "The ATD files to generate migrators for, e.g. foo_*.atd, or in \
+       conjunction with --git, the commit hashes and versions, e.g. \
+       <version>:<git_sha>"
+    in
     let docv = "FILE" in
-    Arg.(non_empty & pos_all file [] & info [] ~doc ~docv)
+    Arg.(non_empty & pos_all string [] & info [] ~doc ~docv)
   and+ output_prefix =
     let doc =
       "Use this prefix for the generated files, e.g. 'foo/bar' for foo/bar.ml \
@@ -69,6 +101,10 @@ let term =
     in
     let docv = "PREFIX" in
     Arg.(value & opt (some string) None & info [ "o" ] ~doc ~docv)
+  and+ git =
+    let doc = "Use this ATD file under version control" in
+    let docv = "GIT" in
+    Arg.(value & opt (some string) None & info [ "git" ] ~doc ~docv)
   and+ rescript =
     let doc =
       "Produce files example_bs.mli and example_bs.ml containing OCaml \
@@ -78,6 +114,6 @@ let term =
     let docv = "RESCRIPT" in
     Arg.(value & flag & info [ "rescript" ] ~doc ~docv)
   in
-  run ?output_prefix ~rescript files |> Common.handle_errors
+  run ?output_prefix ~rescript ~git files |> Common.handle_errors
 
 let cmd = term, info

@@ -4,6 +4,16 @@ val split_elements
      , [> `Invalid_atd_file of string | `Invalid_version of string ] )
      Result.t
 
+val split_filename
+  :  string
+  -> (string * string, [> `Invalid_atd_file of string ]) Result.t
+
+val split_commit
+  :  string
+  -> ( int * string option
+     , [> `Invalid_atd_file of string | `Invalid_version of string ] )
+     Result.t
+
 val main
   :  ?impl_kind:Config.impl_kind
   -> ?output_prefix:string

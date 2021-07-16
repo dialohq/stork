@@ -17,6 +17,13 @@ let split_on_last_char ~char s =
     let last_part = sub s ~pos ~len in
     Some (first_part, last_part)
 
+let split_filename filename =
+  match split_on_last_char ~char:'.' filename with
+  | Some (filename, ext) when ext = atd_extension ->
+    Ok (filename, ext)
+  | _ ->
+    Error (`Invalid_atd_file filename)
+
 let split_elements file =
   let folder, filename =
     split_on_last_char ~char:'/' file |> Option.value ~default:(".", file)
@@ -34,6 +41,21 @@ let split_elements file =
         Ok (folder, prefix, version)))
   | Some _ | None ->
     Error (`Invalid_atd_file file)
+
+let split_commit str =
+  match split_on_last_char ~char:':' str with
+  | Some (version, commit) ->
+    (match int_of_string_opt version with
+    | None ->
+      Error (`Invalid_version str)
+    | Some version ->
+      Ok (version, Some commit))
+  | None ->
+    (match int_of_string_opt str with
+    | None ->
+      Error (`Invalid_version str)
+    | Some version ->
+      Ok (version, None))
 
 let write_files
     ~folder
