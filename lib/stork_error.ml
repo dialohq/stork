@@ -8,6 +8,9 @@ type t =
   | `Atd_error of int * string
   | `Different_main_type of string * string
   | `System_error of string * int
+  | `Empty_atd_file of string
+  | `No_version_field of string
+  | `Incoherent_version_field of string * string
   ]
 
 let to_string = function
@@ -50,6 +53,19 @@ let to_string = function
       old_main_type
   | `System_error (cmd, retval) ->
     Printf.sprintf "Command `%s` failed with return value %i" cmd retval
+  | `Empty_atd_file path ->
+    Printf.sprintf "ATD file `%s` is empty" path
+  | `No_version_field path ->
+    Printf.sprintf
+      "In ATD file `%s`, the main (and last) type is not a record with a \
+       `version` field of type `int` as it should"
+      path
+  | `Incoherent_version_field (path, version) ->
+    Printf.sprintf
+      "In ATD file `%s`, `version` is of type `int` but its version number is \
+       `%s` and cannot be converted to an int"
+      path
+      version
 
 let missing_env env = `Missing_env_var env
 

@@ -84,7 +84,8 @@ let write_files
     user_intf_list
 
 let name_convert_to_latest file_version =
-  [%string "$(Upgrader.convert)_from_$(file_version)_to_latest"]
+  [%string
+    "$(Upgrader.convert)_from_$(Version.to_string file_version)_to_latest"]
 
 let make_convert_to_latest_fns = function
   | [] ->
@@ -123,35 +124,56 @@ let make_get_version_from_json = function
   | Config.Native ->
     {|
 let get_version_from_json = function
-  | `Assoc fields ->
-    let version =
-      List.find_map
-        ~f:(function "version", `Int version -> Some version | _ -> None)
-        fields
-    in
-    (match version with
-    | None ->
-      invalid_arg "The parsed JSON should have a `version` field of type int"
-    | Some version ->
-      version)
-  | _ ->
-    invalid_arg "The parsed JSON should be an object."
+| `Assoc fields ->
+  let version =
+    List.find_map
+      ~f:(function
+        | "version", `String version ->
+          Some (`String version)
+        | "version", `Int version ->
+          Some (`Int version)
+        | _ ->
+          None)
+      fields
+  in
+  (match version with
+  | None ->
+    invalid_arg
+      "The parsed JSON should have a `version` field of type int or string"
+  | Some version ->
+    version)
+| _ ->
+  invalid_arg "The parsed JSON should be an object."
 |}
   | Config.Rescript ->
     {|
 let get_version_from_json json =
-  let toInteger : float -> int option = fun value ->
-    if Js.Float.isFinite value && Js.Math.floor_float value == value
-    then Some (int_of_float value)
-    else None
-  in let getVersionField obj = Js.Dict.get obj "version"
-  in let obj = Js.Json.decodeObject json
-  in let versionJson = Belt.Option.flatMap obj getVersionField
-  in let versionNumber = Belt.Option.flatMap versionJson Js.Json.decodeNumber
-  in let version = Belt.Option.flatMap versionNumber toInteger in
+  let toInteger : float -> int option =
+    fun value ->
+    if Js.Float.isFinite value && Js.Math.floor_float value == value then
+      Some (int_of_float value)
+    else
+      None
+  in
+  let getVersionField obj = Js.Dict.get obj "version" in
+  let obj = Js.Json.decodeObject json in
+  let versionJson = Belt.Option.flatMap obj getVersionField in
+  let invalid_arg_message =
+    "The parsed JSON should be an object with a `version` field of type int or \
+      string."
+  in
+  let version = Belt.Option.map versionJson Js.Json.classify in
   match version with
-  | Some version -> version
-  | None -> invalid_arg "The parsed JSON should be an object with a `version` field of type int."
+  | Some (Js.Json.JSONString version) ->
+    `String version
+  | Some (Js.Json.JSONNumber version) ->
+    (match toInteger version with
+    | Some version ->
+      `Int version
+    | None ->
+      invalid_arg invalid_arg_message)
+  | Some _ | None ->
+    invalid_arg invalid_arg_message
 |}
 
 let get_version =
@@ -166,7 +188,7 @@ let make_decode_main
     ~impl_kind ~prefix ~decode ~fn_name ~arg ~fn_sig ~match_version
   = function
   | [] ->
-    assert false
+    failwith "received 0 ATD files as input in make_decode_main"
   | latest_version :: tail ->
     let make_decode_fn module_name =
       match decode with
@@ -183,16 +205,17 @@ let make_decode_main
           in
           let decode = make_decode_fn module_name in
           [%string
-            "  | %i$version -> $(name_convert_to_latest version) ($decode)"])
+            "  | $(Version.to_literal_string version) -> \
+             $(name_convert_to_latest version) ($decode)"])
         tail
       |> String.concat ~sep:"\n"
     in
     ( [%string
         {|
 let $fn_name $arg = $match_version with
-  | %i$latest_version -> $(make_decode_fn "Json")
+  | $(Version.to_literal_string latest_version) -> $(make_decode_fn "Json")
 $version_matches
-  | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
+  | v -> invalid_arg ("Unknown document version: '" ^ version_to_string v ^ "'")
 |}]
     , [%string "val $fn_name: $fn_sig"] )
 
@@ -237,7 +260,8 @@ let make_string_of_main ~latest_version main_type =
   let impl =
     [%string
       "let string_of_$main_type ?len x = Json.string_of_$main_type ?len { x \
-       with Types.version = $(string_of_int latest_version) }"]
+       with Types.version = $(Version.to_unwrapped_literal_string \
+       latest_version) }"]
   in
   impl, intf
 
@@ -251,7 +275,7 @@ let make_write_main ~impl_kind ~latest_version main_type =
     let impl =
       [%string
         "let write_$main_type x = Json.write_$main_type { x with Types.version \
-         = $(string_of_int latest_version) }"]
+         = $(Version.to_unwrapped_literal_string latest_version) }"]
     in
     impl, intf
   | Config.Native ->
@@ -261,12 +285,18 @@ let make_write_main ~impl_kind ~latest_version main_type =
     let impl =
       [%string
         "let write_$main_type buf x = Json.write_$main_type buf { x with \
-         Types.version = $(string_of_int latest_version) }"]
+         Types.version = $(Version.to_unwrapped_literal_string latest_version) \
+         }"]
     in
     impl, intf
 
-let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
-  let latest_version = List.hd versions in
+let make_read_and_write_main
+    ~latest_version ~prefix ~impl_kind ~main_type versions
+  =
+  let version_to_string_impl =
+    "let version_to_string = function `Int v -> string_of_int v | `String s -> \
+     s"
+  in
   let write_main_impl, write_main_intf =
     make_write_main ~impl_kind ~latest_version main_type
   in
@@ -282,7 +312,8 @@ let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
       make_main_of_string ~prefix ~impl_kind ~main_type versions
     in
     let impl_list =
-      [ make_get_version_from_json impl_kind
+      [ version_to_string_impl
+      ; make_get_version_from_json impl_kind
       ; get_version
       ; get_version_from_file
       ; string_of_main_impl
@@ -301,7 +332,11 @@ let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
     impl_list, intf_list
   | Config.Rescript ->
     let impl_list =
-      [ make_get_version_from_json impl_kind; write_main_impl; read_main_impl ]
+      [ version_to_string_impl
+      ; make_get_version_from_json impl_kind
+      ; write_main_impl
+      ; read_main_impl
+      ]
     in
     let intf_list = [ write_main_intf; read_main_intf ] in
     impl_list, intf_list
@@ -323,28 +358,33 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
         | Error e ->
           Error e)
     in
-    let* versions = get_versions [] files in
-    (* TODO: write a custom ordering function, where "2" < "10" *)
-    let file_versions = List.sort ~cmp:String.compare versions in
+    let* desc_file_versions = get_versions [] files in
+    let file_versions = List.rev desc_file_versions in
     let recreate_path version =
       [%string "$folder/$(input_prefix)_$(version).$atd_extension"]
     in
     let prefix = Option.value ~default:input_prefix output_prefix in
-    let rec make_upgraders ~version_pairs ~main_type ~upgraders = function
+    let rec make_upgraders ~desc_file_versions ~version_pairs ~upgraders
+      = function
       | [] ->
-        assert false
+        failwith "received 0 ATD files as input in make_upgraders"
       | [ newest_version ] ->
-        let main_type =
-          match main_type with
-          | Some main_type ->
-            main_type
-          | None ->
-            let _sorted_items, _type_map, main_type, _main_type_param_count =
-              Upgrader.load_sort_map (recreate_path newest_version)
-            in
-            main_type
+        let* ( _sorted_items
+             , _type_map
+             , main_type
+             , _main_type_param_count
+             , latest_version )
+          =
+          Upgrader.load_sort_map
+            ~version:newest_version
+            (recreate_path newest_version)
         in
-        Ok (newest_version, main_type, version_pairs, upgraders)
+        Ok
+          ( latest_version
+          , main_type
+          , version_pairs
+          , latest_version :: desc_file_versions
+          , upgraders )
       | old_file_version :: new_file_version :: tail ->
         (match
            Upgrader.make
@@ -354,25 +394,28 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
              ~old_file_version
              ~new_file_version
          with
-        | Ok (main_type, upgrader) ->
+        | Ok (_main_type, old_version, new_version, upgrader) ->
           let upgraders = upgrader :: upgraders in
-          let version_pairs =
-            (old_file_version, new_file_version) :: version_pairs
-          in
-          let main_type = Some main_type in
+          let version_pairs = (old_version, new_version) :: version_pairs in
+          let desc_file_versions = old_version :: desc_file_versions in
           make_upgraders
+            ~desc_file_versions
             ~upgraders
             ~version_pairs
-            ~main_type
             (new_file_version :: tail)
         | Error e ->
           Error e)
     in
-    let* newest_version, main_type, version_pairs, upgraders_list =
+    let* ( latest_version
+         , main_type
+         , version_pairs
+         , desc_file_versions
+         , upgraders_list )
+      =
       make_upgraders
+        ~desc_file_versions:[]
         ~version_pairs:[]
         ~upgraders:[]
-        ~main_type:None
         file_versions
     in
     let rec flatten ~acc = function
@@ -404,22 +447,26 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
             }
         upgraders_list
     in
-    let newest_module_t = Upgrader.name_t_module prefix newest_version in
+    let newest_module_t = Upgrader.name_t_module prefix latest_version in
     let types_module = [%string "module Types = $newest_module_t"] in
     let types_module_sig =
       [%string "module Types: module type of $newest_module_t"]
     in
     let newest_module_impl =
-      Upgrader.name_impl_module impl_kind prefix newest_version
+      Upgrader.name_impl_module impl_kind prefix latest_version
     in
     let json_module = [%string "module Json = $newest_module_impl"] in
     let json_module_sig =
       [%string "module Json: module type of $newest_module_impl"]
     in
-    let desc_versions = List.rev file_versions in
     let convert_to_latest_fns = make_convert_to_latest_fns version_pairs in
     let read_write_main_impl_list, read_write_main_intf_list =
-      make_read_and_write_main ~prefix ~impl_kind ~main_type desc_versions
+      make_read_and_write_main
+        ~latest_version
+        ~prefix
+        ~impl_kind
+        ~main_type
+        desc_file_versions
     in
     let open_std = "open StdLabels" in
     let disable_warnings_impl = {|[@@@ocaml.warning "-32-33-44"]|} in

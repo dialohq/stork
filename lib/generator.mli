@@ -19,9 +19,12 @@ val main
   -> ( string list
      , [> `Different_main_type of string * string
        | `Different_prefix of string * string
+       | `Empty_atd_file of string
        | `Empty_list
+       | `Incoherent_version_field of string * string
        | `Invalid_atd_file of string
        | `Invalid_version of string
+       | `No_version_field of string
        ] )
      result
 
@@ -32,8 +35,11 @@ val make_upgraders
   -> ( string * string * Upgrader.generated
      , [> `Different_main_type of string * string
        | `Different_prefix of string * string
+       | `Empty_atd_file of string
        | `Empty_list
+       | `Incoherent_version_field of string * string
        | `Invalid_atd_file of string
        | `Invalid_version of string
+       | `No_version_field of string
        ] )
      result

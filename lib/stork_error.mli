@@ -8,6 +8,9 @@ type t =
   | `Atd_error of int * string
   | `Different_main_type of string * string
   | `System_error of string * int
+  | `Empty_atd_file of string
+  | `No_version_field of string
+  | `Incoherent_version_field of string * string
   ]
 
 val to_string : t -> string

@@ -1,5 +1,5 @@
-module From_1_to_2 = struct
-  include Custom_output_prefix_upgrader_t.From_1_to_2
+module From_1_to_bar = struct
+  include Custom_output_prefix_upgrader_t.From_1_to_bar
 
   let convert_company _ _ (old_company : OldVersion.company)
       : NewVersion.company

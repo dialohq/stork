@@ -1,25 +1,25 @@
 {
-    "version": 2,
-    "age": 30,
-    "name": "Paul",
-    "position": [
-        "dev",
-        [
-            "Company",
-            {
-                "name": "Dialo",
-                "turnover": 133700000
-            }
-        ]
-    ],
-    "skills": [
-        {
-            "domain": "design",
-            "name": "typography"
-        },
-        {
-            "domain": "computer science",
-            "name": "ocaml"
-        }
+  "version": "bar",
+  "age": 30,
+  "name": "Paul",
+  "position": [
+    "dev",
+    [
+      "Company",
+      {
+        "name": "Dialo",
+        "turnover": 133700000
+      }
     ]
+  ],
+  "skills": [
+    {
+      "domain": "design",
+      "name": "typography"
+    },
+    {
+      "domain": "computer science",
+      "name": "ocaml"
+    }
+  ]
 }
