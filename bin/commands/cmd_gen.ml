@@ -40,8 +40,14 @@ let rec checkout ~git_file ~temp_dir = function
     let temp_file =
       Filename.concat temp_dir (filename ^ "_" ^ string_of_int version ^ ".atd")
     in
-    let commit = Option.value ~default:"HEAD" commit in
-    let cmd = "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file in
+    (* When no commit hash is given, take what's in the working directory *)
+    let cmd =
+      match commit with
+      | Some commit ->
+        "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file
+      | None ->
+        "cp " ^ git_file ^ " " ^ temp_file
+    in
     (match Sys.command cmd with
     | 0 ->
       let* tail = checkout ~git_file ~temp_dir tail in
