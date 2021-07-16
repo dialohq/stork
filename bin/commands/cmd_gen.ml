@@ -30,25 +30,24 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
     | 0, i | i, _ ->
       Error (`Atd_error (i, file)))
 
-let rec checkout ~git_file = function
+let rec checkout ~git_file ~temp_dir = function
   | [] ->
     Ok []
-  | file :: tail ->
+  | head :: tail ->
     let open Letops.Result in
-    let* version, commit = Generator.split_commit file in
-    let* filename, _extension = Generator.split_filename git_file in
-    (* This checks out the commit of the versioned file in the same location as the file.
-     * Dangerous?! Should it be in output_prefix, or in a temporary directory?
-     *)
-    let temp_file = filename ^ "_" ^ string_of_int version ^ ".atd" in
-    let commit = match commit with None -> "HEAD" | Some commit -> commit in
+    let* version, commit = Generator.split_commit head in
+    let* _folder, filename, _extension = Generator.split_filename git_file in
+    let temp_file =
+      Filename.concat temp_dir (filename ^ "_" ^ string_of_int version ^ ".atd")
+    in
+    let commit = Option.value ~default:"HEAD" commit in
     let cmd = "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file in
     (match Sys.command cmd with
     | 0 ->
-      let* tail = checkout ~git_file tail in
+      let* tail = checkout ~git_file ~temp_dir tail in
       Ok (temp_file :: tail)
     | retval ->
-      Error (`Git_error retval))
+      Error (`System_error (cmd, retval)))
 
 let run ?output_prefix ?(rescript = false) ?(git = None) files =
   let open Letops.Result in
@@ -57,7 +56,19 @@ let run ?output_prefix ?(rescript = false) ?(git = None) files =
     | None ->
       Ok files
     | Some git_file ->
-      checkout ~git_file files
+      let* cache_dir = Config.cache_dir in
+      (* We need to create the cache dir if it doesn't exist.
+       * Should this rather be in config.ml?
+       *)
+      let* _ =
+        let cmd = "mkdir -p " ^ cache_dir in
+        match Sys.command cmd with
+        | 0 ->
+          Ok ()
+        | retval ->
+          Error (`System_error (cmd, retval))
+      in
+      checkout ~git_file ~temp_dir:cache_dir files
   in
   let impl_kind =
     match rescript with true -> Config.Rescript | false -> Config.Native
@@ -103,7 +114,7 @@ let term =
     Arg.(value & opt (some string) None & info [ "o" ] ~doc ~docv)
   and+ git =
     let doc = "Use this ATD file under version control" in
-    let docv = "GIT" in
+    let docv = "GIT_FILE" in
     Arg.(value & opt (some string) None & info [ "git" ] ~doc ~docv)
   and+ rescript =
     let doc =

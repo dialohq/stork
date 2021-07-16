@@ -7,7 +7,7 @@ type t =
   | `Different_prefix of string * string
   | `Atd_error of int * string
   | `Different_main_type of string * string
-  | `Git_error of int
+  | `System_error of string * int
   ]
 
 val to_string : t -> string
