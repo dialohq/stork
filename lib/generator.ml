@@ -18,9 +18,13 @@ let split_on_last_char ~char s =
     Some (first_part, last_part)
 
 let split_filename filename =
+  let folder, filename =
+    split_on_last_char ~char:'/' filename
+    |> Option.value ~default:(".", filename)
+  in
   match split_on_last_char ~char:'.' filename with
   | Some (filename, ext) when ext = atd_extension ->
-    Ok (filename, ext)
+    Ok (folder, filename, ext)
   | _ ->
     Error (`Invalid_atd_file filename)
 

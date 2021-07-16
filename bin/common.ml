@@ -44,7 +44,7 @@ let error_to_code = function
     10
   | `Different_main_type _ ->
     11
-  | `Git_error _ ->
+  | `System_error _ ->
     12
 
 let handle_errors = function
@@ -74,4 +74,4 @@ let exits =
   Term.exit_info 10 ~doc:"on ATD error when generating serializers"
   ::
   Term.exit_info 11 ~doc:"on using different main types"
-  :: Term.exit_info 12 ~doc:"on failed `git show` call" :: Term.default_exits
+  :: Term.exit_info 12 ~doc:"on failed system call" :: Term.default_exits
