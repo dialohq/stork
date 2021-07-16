@@ -7,6 +7,7 @@ type t =
   | `Different_prefix of string * string
   | `Atd_error of int * string
   | `Different_main_type of string * string
+  | `Git_error of int
   ]
 
 let to_string = function
@@ -47,6 +48,8 @@ let to_string = function
       "The main type should always be the same, but %s is different from %s"
       new_main_type
       old_main_type
+  | `Git_error retval ->
+    Printf.sprintf "`git show` failed with return value %i" retval
 
 let missing_env env = `Missing_env_var env
 
