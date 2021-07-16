@@ -2,9 +2,13 @@ open Stork
 
 let atdgen ?output_prefix ~options file =
   let prefix_option =
-    match output_prefix with Some prefix -> "-o " ^ prefix ^ " " | None -> ""
+    match output_prefix with
+    | Some prefix ->
+      [%string "-o $prefix "]
+    | None ->
+      ""
   in
-  Sys.command ("atdgen " ^ options ^ " " ^ prefix_option ^ file)
+  Sys.command [%string "atdgen $options $(prefix_option)$(file)"]
 
 let atdgen_j ?(rescript = false) =
   atdgen ~options:(if rescript then " -bs" else "-j -j-std")
@@ -19,7 +23,7 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
     let* _, _, version = Generator.split_elements file in
     let output_prefix =
       Option.map
-        (fun output_prefix -> output_prefix ^ "_" ^ version)
+        (fun output_prefix -> [%string "$(output_prefix)_$(version)"])
         original_prefix
     in
     (match
