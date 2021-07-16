@@ -1,6 +1,6 @@
 type company = {
     name: string;
-    address: string;
+    ?turnover: int option;
 }
 
 type employer = [ Self | Company of company ] <ocaml repr="classic">
@@ -9,7 +9,10 @@ type 'b tuple_2 = (string * 'b)
 
 type employment = employer tuple_2
 
-type skill = string tuple_2
+type skill = {
+    domain: string;
+    name: string;
+}
 
 type employee = {
     name: string;
