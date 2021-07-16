@@ -297,39 +297,47 @@ let convert = convert_dialog_file converter
 end
 let convert_from_202103001_to_latest = From_202103001_to_202103115.convert
 let convert_from_202008241_to_latest doc =  convert_from_202103001_to_latest (From_202008241_to_202103001.convert doc)
+let version_to_string = function `Int v -> string_of_int v | `String s -> s
 
 let get_version_from_json = function
-  | `Assoc fields ->
-    let version =
-      List.find_map
-        ~f:(function \"version\", `Int version -> Some version | _ -> None)
-        fields
-    in
-    (match version with
-    | None ->
-      invalid_arg \"The parsed JSON should have a `version` field of type int\"
-    | Some version ->
-      version)
-  | _ ->
-    invalid_arg \"The parsed JSON should be an object.\"
+| `Assoc fields ->
+  let version =
+    List.find_map
+      ~f:(function
+        | \"version\", `String version ->
+          Some (`String version)
+        | \"version\", `Int version ->
+          Some (`Int version)
+        | _ ->
+          None)
+      fields
+  in
+  (match version with
+  | None ->
+    invalid_arg
+      \"The parsed JSON should have a `version` field of type int or string\"
+  | Some version ->
+    version)
+| _ ->
+  invalid_arg \"The parsed JSON should be an object.\"
 
-let get_version s = 
+let get_version s =
   get_version_from_json (Yojson.Safe.from_string s)
-let get_version_from_file fname = 
+let get_version_from_file fname =
   get_version_from_json (Yojson.Safe.from_file ~fname fname)
 let string_of_dialog_file ?len x = Json.string_of_dialog_file ?len { x with Types.version = 202103115 }
 
 let dialog_file_of_string s = match (get_version s) with
-  | 202103115 -> Json.dialog_file_of_string s
-  | 202103001 -> convert_from_202103001_to_latest (Realistic_202103001_j.dialog_file_of_string s)
-  | 202008241 -> convert_from_202008241_to_latest (Realistic_202008241_j.dialog_file_of_string s)
-  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+  | `Int 202103115 -> Json.dialog_file_of_string s
+  | `Int 202103001 -> convert_from_202103001_to_latest (Realistic_202103001_j.dialog_file_of_string s)
+  | `Int 202008241 -> convert_from_202008241_to_latest (Realistic_202008241_j.dialog_file_of_string s)
+  | v -> invalid_arg (\"Unknown document version: '\" ^ version_to_string v ^ \"'\")
 
 
 let read_dialog_file_from_file fname = match (get_version_from_file fname) with
-  | 202103115 -> Atdgen_runtime.Util.Json.from_file Json.read_dialog_file fname
-  | 202103001 -> convert_from_202103001_to_latest (Atdgen_runtime.Util.Json.from_file Realistic_202103001_j.read_dialog_file fname)
-  | 202008241 -> convert_from_202008241_to_latest (Atdgen_runtime.Util.Json.from_file Realistic_202008241_j.read_dialog_file fname)
-  | v -> invalid_arg (\"Unknown document version: \" ^ \"'\" ^ (string_of_int v) ^ \"'\")
+  | `Int 202103115 -> Atdgen_runtime.Util.Json.from_file Json.read_dialog_file fname
+  | `Int 202103001 -> convert_from_202103001_to_latest (Atdgen_runtime.Util.Json.from_file Realistic_202103001_j.read_dialog_file fname)
+  | `Int 202008241 -> convert_from_202008241_to_latest (Atdgen_runtime.Util.Json.from_file Realistic_202008241_j.read_dialog_file fname)
+  | v -> invalid_arg (\"Unknown document version: '\" ^ version_to_string v ^ \"'\")
 
 let write_dialog_file buf x = Json.write_dialog_file buf { x with Types.version = 202103115 }

@@ -18,6 +18,6 @@ type employee = {
     name: string;
     age: int;
     position: employment;
-    version: int;
+    version: string;
     skills: skill list <ocaml repr="array">
 }

@@ -1,4 +1,5 @@
 open Ast.NoLoc
+open Letops.Result
 
 type generated =
   { intf_list : string list
@@ -72,35 +73,51 @@ let load_sort path =
   in
   tsort module_body
 
-let has_version_field (field_list : Atd.Ast.field list) : bool =
-  List.exists
+let get_version_field_type (field_list : Atd.Ast.field list)
+    : Version.Kind.t option
+  =
+  List.find_map
     ~f:(function
+      | `Field (_, ("version", _, _), Atd.Ast.Name (_, (_, "string", _), _)) ->
+        Some Version.Kind.String
       | `Field (_, ("version", _, _), Atd.Ast.Name (_, (_, "int", _), _)) ->
-        true
+        Some Version.Kind.Int
       | `Field _ | `Inherit _ ->
-        false)
+        None)
     field_list
 
-let flatten_module_items sorted_modules =
+let flatten_module_items ~path ~version sorted_modules =
   let rec aux sorted_modules flat_module_items =
     match sorted_modules with
     | [] | [ (_, []) ] ->
-      failwith "ATD file is empty"
+      Error (`Empty_atd_file path)
     | [ ( _flag
         , [ (Atd.Ast.Type
                ( _
                , (main_type_name, main_type_param, _)
                , Atd.Ast.Record (_, field_list, _) ) as main_type)
           ] )
-      ]
-      when has_version_field field_list ->
-      ( ModuleItem.from_loc main_type :: flat_module_items
-      , main_type_name
-      , List.length main_type_param )
+      ] ->
+      let* version =
+        match get_version_field_type field_list with
+        | Some Version.Kind.String ->
+          Ok (Version.String version)
+        | Some Version.Kind.Int ->
+          (match int_of_string_opt version with
+          | None ->
+            Error (`Incoherent_version_field (path, version))
+          | Some version ->
+            Ok (Version.Int version))
+        | None ->
+          Error (`No_version_field path)
+      in
+      Ok
+        ( ModuleItem.from_loc main_type :: flat_module_items
+        , main_type_name
+        , List.length main_type_param
+        , version )
     | [ _ ] ->
-      failwith
-        "The main (and last) type of the file must be a record with a \
-         `version` field of type `int`"
+      Error (`No_version_field path)
     | (_flag, []) :: modules ->
       aux modules flat_module_items
     | (flag, module_item :: tail) :: modules ->
@@ -108,10 +125,14 @@ let flatten_module_items sorted_modules =
         ((flag, tail) :: modules)
         (ModuleItem.from_loc module_item :: flat_module_items)
   in
-  let reverse_module_items, main_type_name, main_type_param_count =
+  let* reverse_module_items, main_type_name, main_type_param_count, version =
     aux sorted_modules []
   in
-  List.rev reverse_module_items, main_type_name, main_type_param_count
+  Ok
+    ( List.rev reverse_module_items
+    , main_type_name
+    , main_type_param_count
+    , version )
 
 let filter_ocaml_annot : annot -> annot_field list option =
   List.find_map ~f:(function
@@ -366,8 +387,12 @@ let rec classify_shallow_equals ~classified_type_map = function
     | TransitivelyModified _ ->
       TransitivelyModified (Tuple cell_upgrades))
 
+let remove_version_field =
+  List.filter ~f:(function ("version", _, _), _ -> false | _ -> true)
+
 let classify_item
     (((name, type_param, _), type_expr) as new_item : ModuleItem.t)
+    ~main_type
     ~old_type_map
     ~classified_type_map
   =
@@ -379,6 +404,13 @@ let classify_item
     let was_generic = is_not_empty old_type_param in
     name, Modified { is_generic; was_generic }
   | _, Some old_item when old_item = new_item ->
+    ( name
+    , ShallowEqual
+        (is_generic, classify_shallow_equals ~classified_type_map type_expr) )
+  | ( TypeExpr.Record (fields, _)
+    , Some ((_, _, _), TypeExpr.Record (old_fields, _)) )
+    when name = main_type
+         && remove_version_field fields = remove_version_field old_fields ->
     ( name
     , ShallowEqual
         (is_generic, classify_shallow_equals ~classified_type_map type_expr) )
@@ -446,8 +478,11 @@ let rec modification_to_string ?version_when_main_type = function
     let fields =
       List.map field_upgrades ~f:(fun field_upgrade ->
           match field_upgrade, version_when_main_type with
-          | SameField "version", Some new_file_version ->
-            [%string "version = $new_file_version;"]
+          | ( (SameField "version" | ModifiedField ("version", _))
+            , Some new_file_version ) ->
+            [%string
+              "version = $(Version.to_unwrapped_literal_string \
+               new_file_version);"]
           | SameField field_name, _ ->
             [%string "$field_name = old_record.$field_name;"]
           | SameFieldNominal field_name, _ ->
@@ -572,13 +607,13 @@ let to_map : ModuleItem.t list -> ModuleItem.t StringMap.t =
     ~f:(fun map (((name, _, _), _) as item) -> StringMap.add name item map)
     ~init:StringMap.empty
 
-let load_sort_map path =
+let load_sort_map ~version path =
   let sorted_items = load_sort path in
-  let sorted_items, main_type, main_type_param_count =
-    sorted_items |> flatten_module_items
+  let* sorted_items, main_type, main_type_param_count, version =
+    flatten_module_items ~path ~version sorted_items
   in
   let item_map = to_map sorted_items in
-  sorted_items, item_map, main_type, main_type_param_count
+  Ok (sorted_items, item_map, main_type, main_type_param_count, version)
 
 let enclose_module ~header ~module_name ?(impl = false) = function
   | [] ->
@@ -588,22 +623,34 @@ let enclose_module ~header ~module_name ?(impl = false) = function
     [%string "module $module_name $delimiter"]
     :: header :: List.rev ("end" :: lines)
 
-let name_t_module prefix version =
-  [%string "$(String.capitalize_ascii prefix)_$(version)_t"]
+let name_t_module prefix (version : Version.t) =
+  [%string "$(String.capitalize_ascii prefix)_$(Version.to_string version)_t"]
 
 let name_impl_module kind prefix version =
   [%string
-    {|$(String.capitalize_ascii prefix)_$(version)_$(match kind with Config.Native -> "j" | Config.Rescript -> "bs")|}]
+    {|$(String.capitalize_ascii prefix)_$(Version.to_string version)_$(match kind with Config.Native -> "j" | Config.Rescript -> "bs")|}]
 
 let name_upgrader_module ~old_file_version ~new_file_version =
-  [%string "From_$(old_file_version)_to_$new_file_version"]
+  [%string
+    "From_$(Version.to_string old_file_version)_to_$(Version.to_string \
+     new_file_version)"]
 
 let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
-  let _old_sorted_items, old_type_map, old_main_type, old_main_type_param_count =
-    load_sort_map old_file
+  let* ( _old_sorted_items
+       , old_type_map
+       , old_main_type
+       , old_main_type_param_count
+       , old_file_version )
+    =
+    load_sort_map ~version:old_file_version old_file
   in
-  let new_sorted_items, _new_type_map, new_main_type, new_main_type_param_count =
-    load_sort_map new_file
+  let* ( new_sorted_items
+       , _new_type_map
+       , new_main_type
+       , new_main_type_param_count
+       , new_file_version )
+    =
+    load_sort_map ~version:new_file_version new_file
   in
   if new_main_type <> old_main_type then
     Error (`Different_main_type (new_main_type, new_main_type))
@@ -614,7 +661,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
         ~f:
           (fun (impl_list, user_intf_list, fields, classified_type_map) new_item ->
           let name, classified_item =
-            classify_item ~old_type_map ~classified_type_map new_item
+            classify_item ~main_type ~old_type_map ~classified_type_map new_item
           in
           let impl, user_intf, field =
             classified_type_to_strings
@@ -694,6 +741,8 @@ module $new_version : (module type of $new_version_t)|}]
     in
     Ok
       ( main_type
+      , old_file_version
+      , new_file_version
       , { impl_list =
             enclose_module ~module_name ~impl:true ~header:impl_header impl_list
         ; intf_list = enclose_module ~module_name ~header:intf_header intf_list

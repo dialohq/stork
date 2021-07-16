@@ -46,6 +46,12 @@ let error_to_code = function
     11
   | `System_error _ ->
     12
+  | `Empty_atd_file _ ->
+    13
+  | `No_version_field _ ->
+    14
+  | `Incoherent_version_field _ ->
+    15
 
 let handle_errors = function
   | Ok () ->
@@ -74,4 +80,16 @@ let exits =
   Term.exit_info 10 ~doc:"on ATD error when generating serializers"
   ::
   Term.exit_info 11 ~doc:"on using different main types"
-  :: Term.exit_info 12 ~doc:"on failed system call" :: Term.default_exits
+  ::
+  Term.exit_info 12 ~doc:"on failed system call"
+  ::
+  Term.exit_info 13 ~doc:"on running on an empty ATD file"
+  ::
+  Term.exit_info 14 ~doc:"when main type is not a record with a version field"
+  ::
+  Term.exit_info
+    15
+    ~doc:
+      "when the version field is an int but the version cannot be converted to \
+       an int"
+  :: Term.default_exits
