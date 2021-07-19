@@ -162,29 +162,39 @@ let get_version =
   {|let get_version s = 
   get_version_from_json (Yojson.Safe.from_string s)|}
 
-let get_version_from_lexbuf =
-  {|let get_version_from_lexbuf p lb = 
-  get_version_from_json (Yojson.Safe.from_lexbuf p lb)|}
+let get_version_from_file =
+  {|let get_version_from_file fname = 
+  get_version_from_json (Yojson.Safe.from_file ~fname fname)|}
 
-let make_decode_main ~impl_kind ~prefix ~fn_name ~arg ~fn_sig ~match_version
+let make_decode_main
+    ~impl_kind ~prefix ~decode ~fn_name ~arg ~fn_sig ~match_version
   = function
   | [] ->
     assert false
   | latest_version :: tail ->
+    let make_decode_fn module_name =
+      match decode with
+      | Some decode ->
+        decode module_name
+      | None ->
+        [%string "$(module_name).$fn_name $arg"]
+    in
     let version_matches =
       List.map
         ~f:(fun version ->
+          let module_name =
+            Upgrader.name_impl_module impl_kind prefix version
+          in
+          let decode = make_decode_fn module_name in
           [%string
-            "  | %i$version -> $(name_convert_to_latest version) \
-             ($(Upgrader.name_impl_module impl_kind prefix version).$fn_name \
-             $arg)"])
+            "  | %i$version -> $(name_convert_to_latest version) ($decode)"])
         tail
       |> String.concat ~sep:"\n"
     in
     ( [%string
         {|
 let $fn_name $arg = $match_version with
-  | %i$latest_version -> Json.$fn_name $arg
+  | %i$latest_version -> $(make_decode_fn "Json")
 $version_matches
   | v -> invalid_arg ("Unknown document version: " ^ "'" ^ (string_of_int v) ^ "'")
 |}]
@@ -197,61 +207,80 @@ let make_main_of_string ~main_type =
     ~arg
     ~fn_sig:[%string "string -> Types.$main_type"]
     ~match_version:[%string "match (get_version $arg)"]
+    ~decode:None
 
 let make_read_main ~main_type ~impl_kind =
-  let arg, fn_sig, match_version =
+  let fn_name, arg, fn_sig, match_version, decode =
     match impl_kind with
     | Config.Rescript ->
+      let fn_name = [%string "read_$main_type"] in
       let arg = "json" in
       let fn_sig = [%string "Types.$main_type Atdgen_codec_runtime.Decode.t"] in
       let match_version = [%string "match (get_version_from_json $arg)"] in
-      arg, fn_sig, match_version
+      fn_name, arg, fn_sig, match_version, None
     | Config.Native ->
-      let arg = "p lb" in
-      let fn_sig =
-        [%string "Yojson.Safe.lexer_state -> Lexing.lexbuf -> Types.$main_type"]
+      let fn_name = [%string "read_$(main_type)_from_file"] in
+      let arg = "fname" in
+      let fn_sig = [%string "string -> Types.$main_type"] in
+      let match_version = [%string {|match (get_version_from_file fname)|}] in
+      let decode =
+        Some
+          (fun module_name ->
+            [%string
+              "Atdgen_runtime.Util.Json.from_file \
+               $(module_name).read_$(main_type) $arg"])
       in
-      let match_version =
-        [%string
-          {|let Yojson.{ lnum; fname; _ } = p in 
-  let new_p = Yojson.init_lexer ?fname ~lnum () in
-  let ic = open_in_bin (Option.get fname) in
-  let new_lb = Lexing.from_channel ic
-  in match (get_version_from_lexbuf new_p new_lb)|}]
-        (* todo change implementation of lexbuf reuse *)
-      in
-      arg, fn_sig, match_version
+      fn_name, arg, fn_sig, match_version, decode
   in
-  make_decode_main
-    ~fn_name:[%string "read_$main_type"]
-    ~arg
-    ~fn_sig
-    ~impl_kind
-    ~match_version
+  make_decode_main ~fn_name ~arg ~fn_sig ~impl_kind ~match_version ~decode
 
-let make_string_of_main main_type =
+let make_string_of_main ~latest_version main_type =
   let intf =
     [%string "val string_of_$main_type: ?len:int -> Types.$main_type -> string"]
   in
-  let impl = [%string "let string_of_$main_type = Json.string_of_$main_type"] in
+  let impl =
+    [%string
+      "let string_of_$main_type ?len x = Json.string_of_$main_type ?len { x \
+       with Types.version = $(string_of_int latest_version) }"]
+  in
   impl, intf
 
-let make_write_main main_type =
-  let intf =
-    [%string
-      "val write_$main_type: Types.$main_type Atdgen_codec_runtime.Encode.t"]
-  in
-  let impl = [%string "let write_$main_type = Json.write_$main_type"] in
-  impl, intf
+let make_write_main ~impl_kind ~latest_version main_type =
+  match impl_kind with
+  | Config.Rescript ->
+    let intf =
+      [%string
+        "val write_$main_type: Types.$main_type Atdgen_codec_runtime.Encode.t"]
+    in
+    let impl =
+      [%string
+        "let write_$main_type x = Json.write_$main_type { x with Types.version \
+         = $(string_of_int latest_version) }"]
+    in
+    impl, intf
+  | Config.Native ->
+    let intf =
+      [%string "val write_$main_type: Bi_outbuf.t -> Types.$main_type -> unit"]
+    in
+    let impl =
+      [%string
+        "let write_$main_type buf x = Json.write_$main_type buf { x with \
+         Types.version = $(string_of_int latest_version) }"]
+    in
+    impl, intf
 
 let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
+  let latest_version = List.hd versions in
+  let write_main_impl, write_main_intf =
+    make_write_main ~impl_kind ~latest_version main_type
+  in
+  let read_main_impl, read_main_intf =
+    make_read_main ~prefix ~impl_kind ~main_type versions
+  in
   match impl_kind with
   | Config.Native ->
     let string_of_main_impl, string_of_main_intf =
-      make_string_of_main main_type
-    in
-    let read_main_impl, read_main_intf =
-      make_read_main ~prefix ~impl_kind ~main_type versions
+      make_string_of_main ~latest_version main_type
     in
     let main_of_string_impl, main_of_string_intf =
       make_main_of_string ~prefix ~impl_kind ~main_type versions
@@ -259,21 +288,22 @@ let make_read_and_write_main ~prefix ~impl_kind ~main_type versions =
     let impl_list =
       [ make_get_version_from_json impl_kind
       ; get_version
-      ; get_version_from_lexbuf
+      ; get_version_from_file
       ; string_of_main_impl
       ; main_of_string_impl
       ; read_main_impl
+      ; write_main_impl
       ]
     in
     let intf_list =
-      [ main_of_string_intf; string_of_main_intf; read_main_intf ]
+      [ main_of_string_intf
+      ; string_of_main_intf
+      ; read_main_intf
+      ; write_main_intf
+      ]
     in
     impl_list, intf_list
   | Config.Rescript ->
-    let write_main_impl, write_main_intf = make_write_main main_type in
-    let read_main_impl, read_main_intf =
-      make_read_main ~prefix ~impl_kind ~main_type versions
-    in
     let impl_list =
       [ make_get_version_from_json impl_kind; write_main_impl; read_main_impl ]
     in
