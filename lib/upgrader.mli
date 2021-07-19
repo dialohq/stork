@@ -1,3 +1,11 @@
+type path := Stork_error.path
+
+type type_name := Stork_error.type_name
+
+type version := Stork_error.version
+
+type type_param_count := int
+
 type generated =
   { intf_list : string list
   ; impl_list : string list
@@ -8,16 +16,16 @@ type generated =
 [@@deriving show]
 
 val make
-  :  prefix:string
-  -> old_file:string
-  -> old_file_version:string
-  -> new_file:string
-  -> new_file_version:string
-  -> ( string * Version.t * Version.t * generated
-     , [> `Different_main_type of string * string
-       | `Empty_atd_file of string
-       | `Incoherent_version_field of string * string
-       | `No_version_field of string
+  :  prefix:path
+  -> old_file:path
+  -> old_file_version:version
+  -> new_file:path
+  -> new_file_version:version
+  -> ( type_name * Version.t * Version.t * generated
+     , [> `Different_main_type of type_name * type_name
+       | `Empty_atd_file of path
+       | `Incoherent_version_field of path * version
+       | `No_version_field of path
        ] )
      result
 
@@ -32,24 +40,20 @@ val name_upgrader_module
   -> new_file_version:Version.t
   -> string
 
-val name_t_module : string -> Version.t -> string
+val name_t_module : path -> Version.t -> string
 
-val name_impl_module : Config.impl_kind -> string -> Version.t -> string
+val name_impl_module : Config.impl_kind -> path -> Version.t -> string
 
 val load_sort_map
-  :  version:string
-  -> string
-  -> ( ((string * string list * (string * (string * string option) list) list)
-       * Ast.NoLoc.TypeExpr.t)
-       list
-       * ((string * Ast.NoLoc.ModuleItem.type_param * Ast.NoLoc.annot)
-         * Ast.NoLoc.TypeExpr.t)
-         Stdlib.Map.Make(Stdlib.StringLabels).t
-       * string
-       * int
+  :  version:version
+  -> path
+  -> ( Ast.NoLoc.ModuleItem.t list
+       * Ast.NoLoc.ModuleItem.t Map.Make(StringLabels).t
+       * type_name
+       * type_param_count
        * Version.t
-     , [> `Empty_atd_file of string
-       | `Incoherent_version_field of string * string
-       | `No_version_field of string
+     , [> `Empty_atd_file of path
+       | `Incoherent_version_field of path * version
+       | `No_version_field of path
        ] )
      result
