@@ -31,7 +31,7 @@
     "ocaml": "~4.10.0"
   },
   "scripts": {
-    "start": "esy x stork",
+    "start": "esy x dune exec -- stork gen",
     "test": "esy x dune runtest",
     "test:promote": "esy x dune runtest --auto-promote",
     "doc": "esy dune build @doc",
