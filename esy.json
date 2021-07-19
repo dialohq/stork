@@ -28,7 +28,6 @@
     "@opam/ocamlformat": "*",
     "@opam/odoc": "*",
     "@opam/utop": "*",
-    "@reason-native/rely": "*",
     "ocaml": "~4.10.0"
   },
   "scripts": {
