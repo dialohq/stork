@@ -11,16 +11,14 @@ homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
   "ocaml" {>= "4.08.0"}
-  "dune" {>= "2.0"}
+  "dune" {>= "2.9" & >= "2.0"}
   "odoc" {with-doc}
   "cmdliner"
   "logs"
   "fmt"
 ]
-dev-repo: "git+https://github.com/dialohq/stork.git"
-# We need to avoid "@runtest", since it depends on rely
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst" "--root" "."] {dev}
   [
     "dune"
     "build"
@@ -28,7 +26,12 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files"
+    "false"
     "@install"
+    "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
+dev-repo: "git+https://github.com/dialohq/stork.git"

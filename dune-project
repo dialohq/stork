@@ -1,4 +1,4 @@
-(lang dune 2.0)
+(lang dune 2.9)
 
 (name stork)
 
@@ -22,9 +22,9 @@
    (>= 4.08.0))
   (dune
    (>= 2.0))
-  ; Add Rely when released on Opam
-  ; (rely :with-test)
   (odoc :with-doc)
   cmdliner
   logs
   fmt))
+
+(cram enable)
