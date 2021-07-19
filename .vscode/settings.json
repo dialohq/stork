@@ -2,5 +2,10 @@
     "ocaml.sandbox": {
         "kind": "esy",
         "root": "${workspaceFolder:stork}"
-    }
+    },
+    "[cram]": {
+        "files.trimTrailingWhitespace": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
 }
