@@ -124,26 +124,24 @@ let make_get_version_from_json = function
   | Config.Native ->
     {|
 let get_version_from_json = function
-| `Assoc fields ->
-  let version =
-    List.find_map
-      ~f:(function
-        | "version", `String version ->
-          Some (`String version)
-        | "version", `Int version ->
-          Some (`Int version)
-        | _ ->
-          None)
-      fields
-  in
-  (match version with
-  | None ->
-    invalid_arg
-      "The parsed JSON should have a `version` field of type int or string"
-  | Some version ->
-    version)
-| _ ->
-  invalid_arg "The parsed JSON should be an object."
+  | `Assoc fields ->
+    let version =
+      List.find_map
+        ~f:(function
+          | "version", ((`String _ | `Int _) as version) ->
+            Some version
+          | _ ->
+            None)
+        fields
+    in
+    (match version with
+    | None ->
+      invalid_arg
+        "The parsed JSON should have a `version` field of type int or string"
+    | Some version ->
+      version)
+  | _ ->
+    invalid_arg "The parsed JSON should be an object."
 |}
   | Config.Rescript ->
     {|
