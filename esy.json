@@ -35,6 +35,7 @@
     "start": "esy x dune exec -- stork gen",
     "test": "esy x dune runtest",
     "test:promote": "esy x dune runtest --auto-promote",
+    "clean": "esy x dune clean",
     "doc": "esy dune build @doc",
     "doc-path": "esy echo #{self.target_dir}/default/_doc/_html/index.html",
     "format": "esy dune build @fmt --auto-promote",
