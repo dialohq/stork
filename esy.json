@@ -28,6 +28,7 @@
     "@opam/ocamlformat": "*",
     "@opam/odoc": "*",
     "@opam/utop": "*",
+    "@opam/patdiff": "*",
     "ocaml": "~4.10.0"
   },
   "scripts": {
