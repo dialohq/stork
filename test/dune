@@ -1,2 +1,3 @@
-(cram
- (deps %{bin:stork}))
+(library
+ (name test_utils)
+ (libraries yojson))

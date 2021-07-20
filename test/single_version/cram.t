@@ -14,8 +14,6 @@
   > cat single_version.ml
   > echo ---
   > cat single_version.mli
-  > echo ---
-  > cat single_version_user_fns.mli     
   (* Auto-generated from "single_version_1.atd" *)
                 [@@@ocaml.warning "-27-32-35-39"]
   
@@ -1015,5 +1013,3 @@
   val string_of_employee: ?len:int -> Types.employee -> string
   val read_employee_from_file: string -> Types.employee
   val write_employee: Bi_outbuf.t -> Types.employee -> unit
-  ---
-  [@@@ocaml.warning "-34"]
