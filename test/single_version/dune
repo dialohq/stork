@@ -21,8 +21,3 @@
   (glob_files *.json))
  (flags
   (:standard -linkall -g -open StdLabels -w +A-48-42-40)))
-
-(cram
- (deps
-  %{bin:stork}
-  (glob_files *.{atd})))

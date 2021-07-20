@@ -1,4 +1,4 @@
 (cram
  (deps
   %{bin:stork}
-  (glob_files *.{atd})))
+  (glob_files ../*.{atd})))
