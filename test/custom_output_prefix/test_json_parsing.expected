@@ -1,0 +1,8 @@
+{"name":"Paul","age":30,"position":["dev",["Company",{"name":"Dialo"}]],"version":"bar","skills":[{"domain":"design","name":"typography"},{"domain":"computer science","name":"ocaml"}]}
+---
+{"name":"Paul","age":30,"position":["dev",["Company",{"name":"Dialo"}]],"version":"bar","skills":[{"domain":"design","name":"typography"},{"domain":"computer science","name":"ocaml"}]}
+---
+{"name":"Paul","age":30,"position":["dev",["Company",{"name":"Dialo","turnover":133700000}]],"version":"bar","skills":[{"domain":"design","name":"typography"},{"domain":"computer science","name":"ocaml"}]}
+---
+{"name":"Paul","age":30,"position":["dev",["Company",{"name":"Dialo","turnover":133700000}]],"version":"bar","skills":[{"domain":"design","name":"typography"},{"domain":"computer science","name":"ocaml"}]}
+---
