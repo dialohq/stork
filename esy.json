@@ -29,7 +29,7 @@
     "@opam/odoc": "*",
     "@opam/utop": "*",
     "@opam/patdiff": "*",
-    "ocaml": "~4.10.0"
+    "ocaml": "~4.11.0"
   },
   "scripts": {
     "start": "esy x dune exec -- stork gen",
