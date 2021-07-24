@@ -23,6 +23,7 @@
     { name : string
     ; age : int
     ; position : employment
+    ; prev_position : employment option
     ; version : int
     ; skills : skill Atdgen_runtime.Util.ocaml_array
     }

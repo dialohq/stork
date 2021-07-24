@@ -15,6 +15,7 @@ type employee = {
     name: string;
     age: int;
     position: employment;
+    prev_position: employment nullable;
     version: int;
-    skills: skill list <ocaml repr="array">
+    skills: skill list <ocaml repr="array">;
 }

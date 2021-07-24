@@ -26,6 +26,7 @@
     { name : string
     ; age : int
     ; position : employment
+    ; prev_position : employment option
     ; version : int
     ; skills : skill Atdgen_runtime.Util.ocaml_array
     }
@@ -127,9 +128,13 @@
   
   let read_employment = read__2
   
-  let write__3 = Atdgen_codec_runtime.Encode.array write_skill
+  let write__4 = Atdgen_codec_runtime.Encode.array write_skill
   
-  let read__3 = Atdgen_codec_runtime.Decode.array read_skill
+  let read__4 = Atdgen_codec_runtime.Decode.array read_skill
+  
+  let write__3 = Atdgen_codec_runtime.Encode.nullable write_employment
+  
+  let read__3 = Atdgen_codec_runtime.Decode.nullable read_employment
   
   let write_employee =
     Atdgen_codec_runtime.Encode.make (fun (t : employee) ->
@@ -147,10 +152,14 @@
               ~name:"position"
               t.position
           ; Atdgen_codec_runtime.Encode.field
+              write__3
+              ~name:"prev_position"
+              t.prev_position
+          ; Atdgen_codec_runtime.Encode.field
               Atdgen_codec_runtime.Encode.int
               ~name:"version"
               t.version
-          ; Atdgen_codec_runtime.Encode.field write__3 ~name:"skills" t.skills
+          ; Atdgen_codec_runtime.Encode.field write__4 ~name:"skills" t.skills
           ])
   
   let read_employee =
@@ -169,6 +178,10 @@
             Atdgen_codec_runtime.Decode.decode
               (read_employment |> Atdgen_codec_runtime.Decode.field "position")
               json
+        ; prev_position =
+            Atdgen_codec_runtime.Decode.decode
+              (read__3 |> Atdgen_codec_runtime.Decode.field "prev_position")
+              json
         ; version =
             Atdgen_codec_runtime.Decode.decode
               (Atdgen_codec_runtime.Decode.int
@@ -176,6 +189,6 @@
               json
         ; skills =
             Atdgen_codec_runtime.Decode.decode
-              (read__3 |> Atdgen_codec_runtime.Decode.field "skills")
+              (read__4 |> Atdgen_codec_runtime.Decode.field "skills")
               json
         })
