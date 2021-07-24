@@ -44,8 +44,8 @@
     -> string
   (** Serialize a value of type {!tuple_2} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_tuple_2
     :  (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b)
@@ -66,8 +66,8 @@
   val string_of_skill : ?len:int -> skill -> string
   (** Serialize a value of type {!skill} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_skill : Yojson.Safe.lexer_state -> Lexing.lexbuf -> skill
   (** Input JSON data of type {!skill}. *)
@@ -81,8 +81,8 @@
   val string_of_company : ?len:int -> company -> string
   (** Serialize a value of type {!company} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_company : Yojson.Safe.lexer_state -> Lexing.lexbuf -> company
   (** Input JSON data of type {!company}. *)
@@ -96,8 +96,8 @@
   val string_of_employer : ?len:int -> employer -> string
   (** Serialize a value of type {!employer} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_employer : Yojson.Safe.lexer_state -> Lexing.lexbuf -> employer
   (** Input JSON data of type {!employer}. *)
@@ -111,8 +111,8 @@
   val string_of_employment : ?len:int -> employment -> string
   (** Serialize a value of type {!employment} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_employment : Yojson.Safe.lexer_state -> Lexing.lexbuf -> employment
   (** Input JSON data of type {!employment}. *)
@@ -126,8 +126,8 @@
   val string_of_employee : ?len:int -> employee -> string
   (** Serialize a value of type {!employee} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_employee : Yojson.Safe.lexer_state -> Lexing.lexbuf -> employee
   (** Input JSON data of type {!employee}. *)

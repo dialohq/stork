@@ -18,8 +18,8 @@
   val string_of_variant : ?len:int -> variant -> string
   (** Serialize a value of type {!variant} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_variant : Yojson.Safe.lexer_state -> Lexing.lexbuf -> variant
   (** Input JSON data of type {!variant}. *)
@@ -33,8 +33,8 @@
   val string_of_json : ?len:int -> json -> string
   (** Serialize a value of type {!json} into a JSON string.
   
-      @param len specifies the initial length of the buffer used internally.
-      Default: 1024. *)
+      @param len
+        specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_json : Yojson.Safe.lexer_state -> Lexing.lexbuf -> json
   (** Input JSON data of type {!json}. *)
