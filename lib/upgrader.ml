@@ -438,13 +438,22 @@ let old_doc = "old_doc"
 
 let name_converter name = [%string "$(convert)_$name"]
 
-let rec modification_to_string ?version_when_main_type = function
+let rec modification_to_string ~kind ?version_when_main_type =
+  let modification_to_string = modification_to_string ~kind in
+  function
   | Name (New type_name) ->
     [%string "fun _ -> $(make)_$type_name $converter $old_doc"]
   | Name (Modified type_name) ->
     [%string "$(name_converter type_name) $converter $old_doc"]
   | Option modification | Nullable modification ->
-    [%string "Option.map ($(modification_to_string modification))"]
+    let opt_map =
+      match kind with
+      | Config.Rescript ->
+        "Belt.Option.map"
+      | Config.Native ->
+        "Option.map"
+    in
+    [%string "$(opt_map) ($(modification_to_string modification))"]
   | Shared modification | Wrap modification ->
     modification_to_string modification
   | Sum (sum_repr, variant_upgrades) ->
@@ -533,7 +542,7 @@ let generate_type_params ~start = function
     in
     aux ~acc:"" start
 
-let classified_type_to_strings ~main_type ~new_file_version =
+let classified_type_to_strings ~kind ~main_type ~new_file_version =
   let old_main_type = [%string "$old_version.$main_type"] in
   let make name =
     let old_type = [%string "$old_version.$name"] in
@@ -582,6 +591,7 @@ let classified_type_to_strings ~main_type ~new_file_version =
     let fn = name_converter name in
     let fn_impl =
       modification_to_string
+        ~kind
         ~version_when_main_type:new_file_version
         modification
     in
@@ -596,7 +606,7 @@ let classified_type_to_strings ~main_type ~new_file_version =
     Some impl, None, Some field
   | name, ShallowEqual (false, TransitivelyModified modification) ->
     let fn, fn_intf, _, field = make name in
-    let fn_impl = modification_to_string modification in
+    let fn_impl = modification_to_string ~kind modification in
     let impl =
       [%string "let $fn: $fn_intf = fun $converter $old_doc -> $fn_impl"]
     in
@@ -635,7 +645,7 @@ let name_upgrader_module ~old_file_version ~new_file_version =
     "From_$(Version.to_string old_file_version)_to_$(Version.to_string \
      new_file_version)"]
 
-let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
+let make ~prefix ~kind ~old_file ~old_file_version ~new_file ~new_file_version =
   let* ( _old_sorted_items
        , old_type_map
        , old_main_type
@@ -665,6 +675,7 @@ let make ~prefix ~old_file ~old_file_version ~new_file ~new_file_version =
           in
           let impl, user_intf, field =
             classified_type_to_strings
+              ~kind
               ~main_type
               ~new_file_version
               (name, classified_item)
