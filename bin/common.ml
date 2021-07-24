@@ -12,9 +12,6 @@ let envs =
   [ Term.env_info
       "STORK_CACHE_DIR"
       ~doc:"The directory where the application data is stored."
-  ; Term.env_info
-      "STORK_CONFIG_DIR"
-      ~doc:"The directory where the configuration files are stored."
   ]
 
 let term =
