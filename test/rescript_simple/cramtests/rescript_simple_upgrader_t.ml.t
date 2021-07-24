@@ -1,5 +1,5 @@
   $ cd ..
-  $ dune exec -- stork gen *.atd
+  $ dune exec -- stork gen --rescript *.atd
   $ cat rescript_simple_upgrader_t.ml | ocamlformat --impl -
   module From_1_to_2 = struct
     module OldVersion = Rescript_simple_1_t
