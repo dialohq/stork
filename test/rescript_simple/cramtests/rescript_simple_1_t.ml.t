@@ -1,5 +1,5 @@
   $ cd ..
-  $ dune exec -- stork gen *.atd
+  $ dune exec -- stork gen --rescript *.atd
   $ cat rescript_simple_1_t.ml | ocamlformat --impl -
   (* Auto-generated from "rescript_simple_1.atd" *)
   [@@@ocaml.warning "-27-32-35-39"]

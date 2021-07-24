@@ -1,17 +1,13 @@
   $ cd ..
-  $ dune exec -- stork gen *.atd
+  $ dune exec -- stork gen --rescript *.atd
   $ cat rescript_simple.mli | ocamlformat --intf -
   module Types : module type of Rescript_simple_2_t
   
-  module Json : module type of Rescript_simple_2_j
+  module Json : module type of Rescript_simple_2_bs
   
-  val employee_of_string : string -> Types.employee
+  val write_employee : Types.employee Atdgen_codec_runtime.Encode.t
   
-  val string_of_employee : ?len:int -> Types.employee -> string
-  
-  val read_employee_from_file : string -> Types.employee
-  
-  val write_employee : Bi_outbuf.t -> Types.employee -> unit
+  val read_employee : Types.employee Atdgen_codec_runtime.Decode.t
   
   module From_1_to_2 : sig
     module OldVersion : module type of Rescript_simple_1_t

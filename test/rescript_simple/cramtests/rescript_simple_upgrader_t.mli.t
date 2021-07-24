@@ -1,5 +1,5 @@
   $ cd ..
-  $ dune exec -- stork gen *.atd
+  $ dune exec -- stork gen --rescript *.atd
   $ cat rescript_simple_upgrader_t.mli | ocamlformat --intf -
   module From_1_to_2 : sig
     module OldVersion : module type of Rescript_simple_1_t
