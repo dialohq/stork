@@ -17,6 +17,7 @@ type generated =
 
 val make
   :  prefix:path
+  -> kind:Config.impl_kind
   -> old_file:path
   -> old_file_version:version
   -> new_file:path

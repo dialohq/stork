@@ -37,7 +37,7 @@
         ; position = old_record.position |> convert_employment converter old_doc
         ; prev_position =
             old_record.prev_position
-            |> Option.map (convert_employment converter old_doc)
+            |> Belt.Option.map (convert_employment converter old_doc)
         ; version = 2
         ; skills =
             old_record.skills |> Array.map ~f:(convert_skill converter old_doc)

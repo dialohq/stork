@@ -387,6 +387,7 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
         (match
            Upgrader.make
              ~prefix
+             ~kind:impl_kind
              ~old_file:(recreate_path old_file_version)
              ~new_file:(recreate_path new_file_version)
              ~old_file_version
