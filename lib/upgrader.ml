@@ -633,7 +633,8 @@ let enclose_module ~header ~module_name ?(impl = false) = function
   | lines ->
     let delimiter = match impl with true -> "= struct" | false -> ": sig" in
     [%string "module $module_name $delimiter"]
-    :: header :: List.rev ("end" :: lines)
+    :: header
+    :: List.rev ("end" :: lines)
 
 let name_t_module prefix (version : Version.t) =
   [%string "$(String.capitalize_ascii prefix)_$(Version.to_string version)_t"]
