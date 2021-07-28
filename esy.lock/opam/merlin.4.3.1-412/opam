@@ -3,16 +3,16 @@ maintainer:   "defree@gmail.com"
 authors:      "The Merlin team"
 homepage:     "https://github.com/ocaml/merlin"
 bug-reports:  "https://github.com/ocaml/merlin/issues"
-dev-repo: "git+https://github.com/ocaml/merlin.git"
-license: "MIT"
+dev-repo:     "git+https://github.com/ocaml/merlin.git"
+license:      "MIT"
 build: [
   ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" "merlin,dot-merlin-reader" "-j" "1"] {with-test}
+  ["dune" "runtest" "-p" "merlin,dot-merlin-reader" "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.11.0" & < "4.12"}
-  "dune" {>= "2.7.0"}
+  "ocaml" {>= "4.12" & < "4.13"}
+  "dune" {>= "2.9.0"}
   "dot-merlin-reader" {>= "4.0"}
   "yojson" {>= "1.6.0"}
   "conf-jq" {with-test}
@@ -65,18 +65,13 @@ should take care of basic setup.
 See https://github.com/OCamlPro/opam-user-setup
 "
   {success & !user-setup:installed}
-"Since version 4.2, Merlin integration with completion packages company
-and auto-complete has moved to separate modules. Make sure to add
-`(require 'merlin-company)` or `(require 'merlin-ac)` to your emacs
-configuration if you were using one of these."
-  {success}
 ]
-x-commit-hash: "3160ccc7a272920c5fd43ccf867ff4c5d393d5d0"
+x-commit-hash: "ba8ec63cf40b8999238c4639d111ca3bdb1e34cf"
 url {
   src:
-    "https://github.com/ocaml/merlin/releases/download/v4.2-411/merlin-v4.2-411.tbz"
+    "https://github.com/ocaml/merlin/releases/download/v4.3.1-412/merlin-v4.3.1-412.tbz"
   checksum: [
-    "sha256=445a60b55c9defe6725e32ed21228e7c372454ff3e6647657198c3dd498fe5ad"
-    "sha512=4d456415e90f5e4ca0a228864fc9441c7428385d3d96f8c346d169f77640528f8444382c00fbc1c53a8beb0c97411261a9574048c885af60c51a934f1b2ba405"
+    "sha256=59030191e223ac5daf9cf1e406c60275cfa5e521d0414b6e77394318e4fa022a"
+    "sha512=48b02307b074db5af4cae400fd7d257153f3ec2463d01a05df1bb8cb0deafc8db597163c2e0d7adf6a6c720989aac4501f7a338948b35c8b6adad4626abe178c"
   ]
 }
