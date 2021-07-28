@@ -36,11 +36,12 @@
         ; age = old_record.age
         ; position = old_record.position |> convert_employment converter old_doc
         ; prev_position =
-            old_record.prev_position
-            |> Belt.Option.map (convert_employment converter old_doc)
+            ( old_record.prev_position |> fun x ->
+              Belt.Option.map x (convert_employment converter old_doc) )
         ; version = 2
         ; skills =
-            old_record.skills |> Array.map ~f:(convert_skill converter old_doc)
+            ( old_record.skills |> fun x ->
+              Belt.Array.map x (convert_skill converter old_doc) )
         }
   
     let converter =
