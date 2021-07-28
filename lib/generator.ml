@@ -475,20 +475,16 @@ let make_upgraders ?(impl_kind = Config.Native) ?output_prefix = function
         { upgraders with
           intf_list =
             types_module_sig
-            ::
-            json_module_sig :: (read_write_main_intf_list @ upgraders.intf_list)
+            :: json_module_sig
+            :: (read_write_main_intf_list @ upgraders.intf_list)
         ; impl_list =
             disable_warnings_impl
-            ::
-            open_std
-            ::
-            types_module
-            ::
-            json_module
-            ::
-            (upgraders.impl_list
-            @ convert_to_latest_fns
-            @ read_write_main_impl_list)
+            :: open_std
+            :: types_module
+            :: json_module
+            :: (upgraders.impl_list
+               @ convert_to_latest_fns
+               @ read_write_main_impl_list)
         ; user_intf_list = disable_warnings_intf :: upgraders.user_intf_list
         }
     in

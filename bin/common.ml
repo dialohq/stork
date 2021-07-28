@@ -59,34 +59,24 @@ let handle_errors = function
 
 let exits =
   Term.exit_info 3 ~doc:"on indiscriminate errors reported on stderr."
-  ::
-  Term.exit_info 4 ~doc:"on missing required environment variable."
-  ::
-  Term.exit_info 5 ~doc:"on invalid path given as argument."
-  ::
-  Term.exit_info 6 ~doc:"on empty file list given as argument."
-  ::
-  Term.exit_info 7 ~doc:"on invalid atd file given as argument."
-  ::
-  Term.exit_info
-    8
-    ~doc:"on file not having a correct version number given as argument."
-  ::
-  Term.exit_info 9 ~doc:"on files with different prefixes given as argument."
-  ::
-  Term.exit_info 10 ~doc:"on ATD error when generating serializers"
-  ::
-  Term.exit_info 11 ~doc:"on using different main types"
-  ::
-  Term.exit_info 12 ~doc:"on failed system call"
-  ::
-  Term.exit_info 13 ~doc:"on running on an empty ATD file"
-  ::
-  Term.exit_info 14 ~doc:"when main type is not a record with a version field"
-  ::
-  Term.exit_info
-    15
-    ~doc:
-      "when the version field is an int but the version cannot be converted to \
-       an int"
+  :: Term.exit_info 4 ~doc:"on missing required environment variable."
+  :: Term.exit_info 5 ~doc:"on invalid path given as argument."
+  :: Term.exit_info 6 ~doc:"on empty file list given as argument."
+  :: Term.exit_info 7 ~doc:"on invalid atd file given as argument."
+  :: Term.exit_info
+       8
+       ~doc:"on file not having a correct version number given as argument."
+  :: Term.exit_info 9 ~doc:"on files with different prefixes given as argument."
+  :: Term.exit_info 10 ~doc:"on ATD error when generating serializers"
+  :: Term.exit_info 11 ~doc:"on using different main types"
+  :: Term.exit_info 12 ~doc:"on failed system call"
+  :: Term.exit_info 13 ~doc:"on running on an empty ATD file"
+  :: Term.exit_info
+       14
+       ~doc:"when main type is not a record with a version field"
+  :: Term.exit_info
+       15
+       ~doc:
+         "when the version field is an int but the version cannot be converted \
+          to an int"
   :: Term.default_exits
