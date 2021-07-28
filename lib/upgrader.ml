@@ -438,25 +438,22 @@ let old_doc = "old_doc"
 
 let name_converter name = [%string "$(convert)_$name"]
 
-let rec modification_to_string ~kind ?version_when_main_type =
+let rec modification_to_string ~kind ?version_when_main_type modification =
   let modification_to_string = modification_to_string ~kind in
-  function
-  | Name (New type_name) ->
+  let open Config in
+  match kind, modification with
+  | (Rescript | Native), Name (New type_name) ->
     [%string "fun _ -> $(make)_$type_name $converter $old_doc"]
-  | Name (Modified type_name) ->
+  | (Rescript | Native), Name (Modified type_name) ->
     [%string "$(name_converter type_name) $converter $old_doc"]
-  | Option modification | Nullable modification ->
-    let opt_map =
-      match kind with
-      | Config.Rescript ->
-        "Belt.Option.map"
-      | Config.Native ->
-        "Option.map"
-    in
-    [%string "$(opt_map) ($(modification_to_string modification))"]
-  | Shared modification | Wrap modification ->
+  | Rescript, (Option modification | Nullable modification) ->
+    [%string
+      "fun x -> Belt.Option.map x ($(modification_to_string modification))"]
+  | Native, (Option modification | Nullable modification) ->
+    [%string "Option.map ($(modification_to_string modification))"]
+  | (Rescript | Native), (Shared modification | Wrap modification) ->
     modification_to_string modification
-  | Sum (sum_repr, variant_upgrades) ->
+  | (Rescript | Native), Sum (sum_repr, variant_upgrades) ->
     let old_prefix, new_prefix =
       match sum_repr with
       | Polymorphic ->
@@ -483,7 +480,7 @@ let rec modification_to_string ~kind ?version_when_main_type =
       |> String.concat ~sep:"\n"
     in
     [%string "function \n$variants"]
-  | Record field_upgrades ->
+  | (Rescript | Native), Record field_upgrades ->
     let fields =
       List.map field_upgrades ~f:(fun field_upgrade ->
           match field_upgrade, version_when_main_type with
@@ -503,7 +500,7 @@ let rec modification_to_string ~kind ?version_when_main_type =
       |> String.concat ~sep:"\n"
     in
     [%string "fun old_record -> $new_version.{ $fields }"]
-  | Tuple cell_upgrades ->
+  | (Rescript | Native), Tuple cell_upgrades ->
     let tuple_var =
       List.mapi cell_upgrades ~f:(fun i _ -> [%string "a_%i$i"])
       |> String.concat ~sep:", "
@@ -520,11 +517,16 @@ let rec modification_to_string ~kind ?version_when_main_type =
       |> String.concat ~sep:", "
     in
     [%string "fun $tuple_var -> ($cells)"]
-  | List (list_repr, modification) ->
+  | Native, List (list_repr, modification) ->
     let map =
       match list_repr with List -> "List.map" | Array -> "Array.map"
     in
     [%string "$map ~f:($(modification_to_string modification))"]
+  | Rescript, List (list_repr, modification) ->
+    let map =
+      match list_repr with List -> "Belt.List.map" | Array -> "Belt.Array.map"
+    in
+    [%string "fun x -> $map x ($(modification_to_string modification))"]
 
 let generate_type_params ~start = function
   | 0 ->
