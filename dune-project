@@ -21,7 +21,7 @@
   (ocaml
    (>= 4.08.0))
   (dune
-   (>= 2.0))
+   (>= 2.9))
   (odoc :with-doc)
   cmdliner
   logs
