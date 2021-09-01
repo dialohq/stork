@@ -20,8 +20,7 @@
  (depends
   (ocaml
    (>= 4.08.0))
-  (dune
-   (>= 2.9))
+  dune
   (odoc :with-doc)
   cmdliner
   logs
