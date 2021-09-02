@@ -13,7 +13,7 @@
     "@opam/atdgen-runtime": "2.2.1",
     "@opam/biniou": "1.2.1",
     "@opam/cmdliner": "*",
-    "@opam/dune": ">= 2.0",
+    "@opam/dune": ">= 2.9",
     "@opam/fmt": "*",
     "@opam/logs": "*",
     "@opam/ppx_deriving": "5.2.1",
