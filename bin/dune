@@ -5,6 +5,6 @@
  (preprocess
   (pps ppx_string_interpolation))
  (flags
-  (:standard -open StdLabels)))
+  (:standard -open StdLabels -w -70)))
 
 (include_subdirs unqualified)

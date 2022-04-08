@@ -1,3 +1,5 @@
 (library
  (name test_utils)
- (libraries yojson))
+ (libraries yojson)
+ (flags
+  (-w -70)))
