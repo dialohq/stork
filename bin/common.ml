@@ -9,14 +9,14 @@ end
 open Let_syntax
 
 let envs =
-  [ Term.env_info
+  [ Cmd.Env.info
       "STORK_CACHE_DIR"
       ~doc:"The directory where the application data is stored."
   ]
 
 let term =
   let+ log_level =
-    let env = Arg.env_var "STORK_VERBOSITY" in
+    let env = Cmd.Env.info "STORK_VERBOSITY" in
     Logs_cli.level ~docs:Manpage.s_common_options ~env ()
   in
   Fmt_tty.setup_std_outputs ();
@@ -58,25 +58,23 @@ let handle_errors = function
     error_to_code err
 
 let exits =
-  Term.exit_info 3 ~doc:"on indiscriminate errors reported on stderr."
-  :: Term.exit_info 4 ~doc:"on missing required environment variable."
-  :: Term.exit_info 5 ~doc:"on invalid path given as argument."
-  :: Term.exit_info 6 ~doc:"on empty file list given as argument."
-  :: Term.exit_info 7 ~doc:"on invalid atd file given as argument."
-  :: Term.exit_info
+  Cmd.Exit.info 3 ~doc:"on indiscriminate errors reported on stderr."
+  :: Cmd.Exit.info 4 ~doc:"on missing required environment variable."
+  :: Cmd.Exit.info 5 ~doc:"on invalid path given as argument."
+  :: Cmd.Exit.info 6 ~doc:"on empty file list given as argument."
+  :: Cmd.Exit.info 7 ~doc:"on invalid atd file given as argument."
+  :: Cmd.Exit.info
        8
        ~doc:"on file not having a correct version number given as argument."
-  :: Term.exit_info 9 ~doc:"on files with different prefixes given as argument."
-  :: Term.exit_info 10 ~doc:"on ATD error when generating serializers"
-  :: Term.exit_info 11 ~doc:"on using different main types"
-  :: Term.exit_info 12 ~doc:"on failed system call"
-  :: Term.exit_info 13 ~doc:"on running on an empty ATD file"
-  :: Term.exit_info
-       14
-       ~doc:"when main type is not a record with a version field"
-  :: Term.exit_info
+  :: Cmd.Exit.info 9 ~doc:"on files with different prefixes given as argument."
+  :: Cmd.Exit.info 10 ~doc:"on ATD error when generating serializers"
+  :: Cmd.Exit.info 11 ~doc:"on using different main types"
+  :: Cmd.Exit.info 12 ~doc:"on failed system call"
+  :: Cmd.Exit.info 13 ~doc:"on running on an empty ATD file"
+  :: Cmd.Exit.info 14 ~doc:"when main type is not a record with a version field"
+  :: Cmd.Exit.info
        15
        ~doc:
          "when the version field is an int but the version cannot be converted \
           to an int"
-  :: Term.default_exits
+  :: Cmd.Exit.defaults

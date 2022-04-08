@@ -29,4 +29,4 @@
  (deps
   (glob_files *.json))
  (flags
-  (:standard -linkall -g -open StdLabels -w +A-48-42-40)))
+  (:standard -linkall -g -open StdLabels -w +A-48-42-40-70)))

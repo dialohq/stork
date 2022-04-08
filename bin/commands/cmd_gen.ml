@@ -102,7 +102,7 @@ let man =
   ; `P "Generate migrator files for the given $(tfile) ATD files."
   ]
 
-let info = Term.info "gen" ~doc ~sdocs ~exits ~envs ~man
+let info = Cmd.info "gen" ~doc ~sdocs ~exits ~envs ~man
 
 let term =
   let open Common.Let_syntax in
@@ -137,4 +137,4 @@ let term =
   in
   run ?output_prefix ~rescript ~git files |> Common.handle_errors
 
-let cmd = term, info
+let cmd = Cmd.v info term

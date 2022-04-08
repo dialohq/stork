@@ -26,16 +26,15 @@ let man =
   ; `P "Paul Tsnobiladze, $(i,https://github.com/tsnobip)"
   ]
 
-let default_cmd =
-  let term =
-    let open Common.Let_syntax in
-    Term.ret
-    @@ let+ _ = Common.term in
-       `Help (`Pager, None)
-  in
-  let info =
-    Term.info "stork" ~version:"%%VERSION%%" ~doc ~sdocs ~exits ~man ~envs
-  in
-  term, info
+let default =
+  let open Common.Let_syntax in
+  Term.ret
+  @@ let+ _ = Common.term in
+     `Help (`Pager, None)
 
-let () = Term.(exit_status @@ eval_choice default_cmd cmds)
+let default_cmd_info =
+  Cmd.info "stork" ~version:"%%VERSION%%" ~doc ~sdocs ~exits ~man ~envs
+
+(* let () = Term.(exit_status @@ eval_choice default_cmd cmds) *)
+
+let () = Cmd.group ~default default_cmd_info cmds |> Cmd.eval' |> exit
