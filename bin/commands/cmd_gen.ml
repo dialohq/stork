@@ -1,6 +1,6 @@
 open Stork
 
-let atdgen ?output_prefix ~options file =
+let atdgen ?output_prefix ~options ~type_attr file =
   let prefix_option =
     match output_prefix with
     | Some prefix ->
@@ -8,14 +8,19 @@ let atdgen ?output_prefix ~options file =
     | None ->
       ""
   in
-  Sys.command [%string "atdgen $options $(prefix_option)$(file)"]
+  let type_attr =
+    List.fold_left ~init:"" type_attr ~f:(fun s type_attr ->
+        [%string "$(s) -type-attr $(type_attr)"])
+  in
+  Sys.command [%string "atdgen $options $(prefix_option) $(type_attr) $(file)"]
 
 let atdgen_j ?(rescript = false) =
   atdgen ~options:(if rescript then " -bs" else "-j -j-std")
 
 let atdgen_t = atdgen ~options:"-t"
 
-let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
+let rec atdgen ?(rescript = false) ?output_prefix:original_prefix ~type_attr
+  = function
   | [] ->
     Ok ()
   | file :: tail ->
@@ -27,10 +32,11 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix = function
         original_prefix
     in
     (match
-       atdgen_t ?output_prefix file, atdgen_j ?output_prefix ~rescript file
+       ( atdgen_t ?output_prefix ~type_attr file
+       , atdgen_j ?output_prefix ~type_attr ~rescript file )
      with
     | 0, 0 ->
-      atdgen ~rescript ?output_prefix:original_prefix tail
+      atdgen ~rescript ~type_attr ?output_prefix:original_prefix tail
     | 0, i | i, _ ->
       Error (`Atd_error (i, file)))
 
@@ -59,7 +65,7 @@ let rec checkout ~git_file ~temp_dir = function
     | retval ->
       Error (`System_error (cmd, retval)))
 
-let run ?output_prefix ?(rescript = false) ?(git = None) files =
+let run ?output_prefix ?(rescript = false) ?(git = None) ~type_attr files =
   let open Letops.Result in
   let* files =
     match git with
@@ -83,7 +89,7 @@ let run ?output_prefix ?(rescript = false) ?(git = None) files =
   let impl_kind =
     match rescript with true -> Config.Rescript | false -> Config.Native
   in
-  Result.bind (atdgen ?output_prefix ~rescript files) (fun () ->
+  Result.bind (atdgen ?output_prefix ~rescript ~type_attr files) (fun () ->
       Generator.main ~impl_kind ?output_prefix files)
   |> Result.map (fun _ -> ())
 
@@ -134,7 +140,14 @@ let term =
     in
     let docv = "RESCRIPT" in
     Arg.(value & flag & info [ "rescript" ] ~doc ~docv)
+  and+ type_attr =
+    let doc =
+      "Insert '[@@ATTR]' after OCaml type definitions. Option can be used \
+       multiple times to specify several attributes"
+    in
+    let docv = "ATTR" in
+    Arg.(value & opt_all string [] & info [ "type-attr" ] ~doc ~docv)
   in
-  run ?output_prefix ~rescript ~git files |> Common.handle_errors
+  run ?output_prefix ~rescript ~git ~type_attr files |> Common.handle_errors
 
 let cmd = Cmd.v info term
