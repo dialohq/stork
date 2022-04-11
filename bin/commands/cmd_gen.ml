@@ -89,6 +89,7 @@ let run
     ?atdgen_opt
     ?atdgen_t_opt
     ?atdgen_j_opt
+    ~no_gen
     files
   =
   let open Letops.Result in
@@ -115,14 +116,17 @@ let run
     match rescript with true -> Config.Rescript | false -> Config.Native
   in
   Result.bind
-    (atdgen
-       ?output_prefix
-       ~rescript
-       ~type_attr
-       ?atdgen_opt
-       ?atdgen_t_opt
-       ?atdgen_j_opt
-       files)
+    (if no_gen then
+       Ok ()
+    else
+      atdgen
+        ?output_prefix
+        ~rescript
+        ~type_attr
+        ?atdgen_opt
+        ?atdgen_t_opt
+        ?atdgen_j_opt
+        files)
     (fun () -> Generator.main ~impl_kind ?output_prefix files)
   |> Result.map (fun _ -> ())
 
@@ -192,6 +196,13 @@ let term =
     let doc = "Forward OPTION to atdgen -j" in
     let docv = "OPTION" in
     Arg.(value & opt (some string) None & info [ "atdgen-j-opt" ] ~doc ~docv)
+  and+ no_gen =
+    let doc =
+      "Prevent Stork from calling atdgen. Use this if you want to generate the \
+       `_t`, `_j`/`_bs` files yourself"
+    in
+    let docv = "FLAG" in
+    Arg.(value & flag & info [ "no_gen" ] ~doc ~docv)
   in
   run
     ?output_prefix
@@ -201,6 +212,7 @@ let term =
     ?atdgen_opt
     ?atdgen_t_opt
     ?atdgen_j_opt
+    ~no_gen
     files
   |> Common.handle_errors
 
