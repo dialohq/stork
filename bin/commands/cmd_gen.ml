@@ -1,6 +1,6 @@
 open Stork
 
-let atdgen ?output_prefix ~options ~type_attr file =
+let atdgen ?output_prefix ~options ~type_attr ?(atdgen_opt = "") file =
   let prefix_option =
     match output_prefix with
     | Some prefix ->
@@ -12,14 +12,24 @@ let atdgen ?output_prefix ~options ~type_attr file =
     List.fold_left ~init:"" type_attr ~f:(fun s type_attr ->
         [%string "$(s) -type-attr $(type_attr)"])
   in
-  Sys.command [%string "atdgen $options $(prefix_option) $(type_attr) $(file)"]
+  Sys.command
+    [%string
+      "atdgen $options $(prefix_option) $(type_attr) $(atdgen_opt) $(file)"]
 
-let atdgen_j ?(rescript = false) =
-  atdgen ~options:(if rescript then " -bs" else "-j -j-std")
+let atdgen_j ?atdgen_opt ?(rescript = false) ?(atdgen_j_opt = "") =
+  let main_opt = if rescript then " -bs" else "-j -j-std" in
+  atdgen ?atdgen_opt ~options:[%string "$(main_opt) $(atdgen_j_opt)"]
 
-let atdgen_t = atdgen ~options:"-t"
+let atdgen_t ?atdgen_opt ?(atdgen_t_opt = "") =
+  atdgen ?atdgen_opt ~options:[%string "-t $(atdgen_t_opt)"]
 
-let rec atdgen ?(rescript = false) ?output_prefix:original_prefix ~type_attr
+let rec atdgen
+    ?(rescript = false)
+    ?output_prefix:original_prefix
+    ~type_attr
+    ?atdgen_opt
+    ?atdgen_t_opt
+    ?atdgen_j_opt
   = function
   | [] ->
     Ok ()
@@ -32,8 +42,14 @@ let rec atdgen ?(rescript = false) ?output_prefix:original_prefix ~type_attr
         original_prefix
     in
     (match
-       ( atdgen_t ?output_prefix ~type_attr file
-       , atdgen_j ?output_prefix ~type_attr ~rescript file )
+       ( atdgen_t ?output_prefix ~type_attr ?atdgen_opt ?atdgen_t_opt file
+       , atdgen_j
+           ?output_prefix
+           ~type_attr
+           ?atdgen_opt
+           ?atdgen_j_opt
+           ~rescript
+           file )
      with
     | 0, 0 ->
       atdgen ~rescript ~type_attr ?output_prefix:original_prefix tail
@@ -65,7 +81,16 @@ let rec checkout ~git_file ~temp_dir = function
     | retval ->
       Error (`System_error (cmd, retval)))
 
-let run ?output_prefix ?(rescript = false) ?(git = None) ~type_attr files =
+let run
+    ?output_prefix
+    ?(rescript = false)
+    ?(git = None)
+    ~type_attr
+    ?atdgen_opt
+    ?atdgen_t_opt
+    ?atdgen_j_opt
+    files
+  =
   let open Letops.Result in
   let* files =
     match git with
@@ -89,8 +114,16 @@ let run ?output_prefix ?(rescript = false) ?(git = None) ~type_attr files =
   let impl_kind =
     match rescript with true -> Config.Rescript | false -> Config.Native
   in
-  Result.bind (atdgen ?output_prefix ~rescript ~type_attr files) (fun () ->
-      Generator.main ~impl_kind ?output_prefix files)
+  Result.bind
+    (atdgen
+       ?output_prefix
+       ~rescript
+       ~type_attr
+       ?atdgen_opt
+       ?atdgen_t_opt
+       ?atdgen_j_opt
+       files)
+    (fun () -> Generator.main ~impl_kind ?output_prefix files)
   |> Result.map (fun _ -> ())
 
 open Cmdliner
@@ -147,7 +180,28 @@ let term =
     in
     let docv = "ATTR" in
     Arg.(value & opt_all string [] & info [ "type-attr" ] ~doc ~docv)
+  and+ atdgen_opt =
+    let doc = "Forward OPTION to atdgen -t and atdgen -j" in
+    let docv = "OPTION" in
+    Arg.(value & opt (some string) None & info [ "atdgen-opt" ] ~doc ~docv)
+  and+ atdgen_t_opt =
+    let doc = "Forward OPTION to atdgen -t" in
+    let docv = "OPTION" in
+    Arg.(value & opt (some string) None & info [ "atdgen-t-opt" ] ~doc ~docv)
+  and+ atdgen_j_opt =
+    let doc = "Forward OPTION to atdgen -j" in
+    let docv = "OPTION" in
+    Arg.(value & opt (some string) None & info [ "atdgen-j-opt" ] ~doc ~docv)
   in
-  run ?output_prefix ~rescript ~git ~type_attr files |> Common.handle_errors
+  run
+    ?output_prefix
+    ~rescript
+    ~git
+    ~type_attr
+    ?atdgen_opt
+    ?atdgen_t_opt
+    ?atdgen_j_opt
+    files
+  |> Common.handle_errors
 
 let cmd = Cmd.v info term
