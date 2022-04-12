@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -44,6 +48,6 @@ jobs:
 
       - name: Run tests
         run: esy test
-        
+
       - name: Export dependencies
         run: esy export-dependencies
