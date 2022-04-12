@@ -3,10 +3,8 @@ open Stork
 let atdgen ?output_prefix ~options ~type_attr ?(atdgen_opt = "") file =
   let prefix_option =
     match output_prefix with
-    | Some prefix ->
-      [%string "-o $prefix "]
-    | None ->
-      ""
+    | Some prefix -> [%string "-o $prefix "]
+    | None -> ""
   in
   let type_attr =
     List.fold_left ~init:"" type_attr ~f:(fun s type_attr ->
@@ -31,8 +29,7 @@ let rec atdgen
     ?atdgen_t_opt
     ?atdgen_j_opt
   = function
-  | [] ->
-    Ok ()
+  | [] -> Ok ()
   | file :: tail ->
     let open Letops.Result in
     let* _, _, version = Generator.split_elements file in
@@ -42,23 +39,15 @@ let rec atdgen
         original_prefix
     in
     (match
-       ( atdgen_t ?output_prefix ~type_attr ?atdgen_opt ?atdgen_t_opt file
-       , atdgen_j
-           ?output_prefix
-           ~type_attr
-           ?atdgen_opt
-           ?atdgen_j_opt
-           ~rescript
+       ( atdgen_t ?output_prefix ~type_attr ?atdgen_opt ?atdgen_t_opt file,
+         atdgen_j ?output_prefix ~type_attr ?atdgen_opt ?atdgen_j_opt ~rescript
            file )
      with
-    | 0, 0 ->
-      atdgen ~rescript ~type_attr ?output_prefix:original_prefix tail
-    | 0, i | i, _ ->
-      Error (`Atd_error (i, file)))
+    | 0, 0 -> atdgen ~rescript ~type_attr ?output_prefix:original_prefix tail
+    | 0, i | i, _ -> Error (`Atd_error (i, file)))
 
 let rec checkout ~git_file ~temp_dir = function
-  | [] ->
-    Ok []
+  | [] -> Ok []
   | head :: tail ->
     let open Letops.Result in
     let* version, commit = Generator.split_commit head in
@@ -69,17 +58,14 @@ let rec checkout ~git_file ~temp_dir = function
     (* When no commit hash is given, take what's in the working directory *)
     let cmd =
       match commit with
-      | Some commit ->
-        "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file
-      | None ->
-        "cp " ^ git_file ^ " " ^ temp_file
+      | Some commit -> "git show " ^ commit ^ ":" ^ git_file ^ " > " ^ temp_file
+      | None -> "cp " ^ git_file ^ " " ^ temp_file
     in
     (match Sys.command cmd with
     | 0 ->
       let* tail = checkout ~git_file ~temp_dir tail in
       Ok (temp_file :: tail)
-    | retval ->
-      Error (`System_error (cmd, retval)))
+    | retval -> Error (`System_error (cmd, retval)))
 
 let run
     ?output_prefix
@@ -95,8 +81,7 @@ let run
   let open Letops.Result in
   let* files =
     match git with
-    | None ->
-      Ok files
+    | None -> Ok files
     | Some git_file ->
       let* cache_dir = Config.cache_dir in
       (* We need to create the cache dir if it doesn't exist.
@@ -105,10 +90,8 @@ let run
       let* _ =
         let cmd = "mkdir -p " ^ cache_dir in
         match Sys.command cmd with
-        | 0 ->
-          Ok ()
-        | retval ->
-          Error (`System_error (cmd, retval))
+        | 0 -> Ok ()
+        | retval -> Error (`System_error (cmd, retval))
       in
       checkout ~git_file ~temp_dir:cache_dir files
   in
@@ -116,33 +99,24 @@ let run
     match rescript with true -> Config.Rescript | false -> Config.Native
   in
   Result.bind
-    (if no_gen then
-       Ok ()
+    (if no_gen then Ok ()
     else
-      atdgen
-        ?output_prefix
-        ~rescript
-        ~type_attr
-        ?atdgen_opt
-        ?atdgen_t_opt
-        ?atdgen_j_opt
-        files)
+      atdgen ?output_prefix ~rescript ~type_attr ?atdgen_opt ?atdgen_t_opt
+        ?atdgen_j_opt files)
     (fun () -> Generator.main ~impl_kind ?output_prefix files)
   |> Result.map (fun _ -> ())
 
 open Cmdliner
 
 let doc = "Generate migrator files for the given ATD files"
-
 let sdocs = Manpage.s_common_options
-
 let exits = Common.exits
-
 let envs = Common.envs
 
 let man =
-  [ `S Manpage.s_description
-  ; `P "Generate migrator files for the given $(tfile) ATD files."
+  [
+    `S Manpage.s_description;
+    `P "Generate migrator files for the given $(tfile) ATD files.";
   ]
 
 let info = Cmd.info "gen" ~doc ~sdocs ~exits ~envs ~man
@@ -204,16 +178,8 @@ let term =
     let docv = "FLAG" in
     Arg.(value & flag & info [ "no_gen" ] ~doc ~docv)
   in
-  run
-    ?output_prefix
-    ~rescript
-    ~git
-    ~type_attr
-    ?atdgen_opt
-    ?atdgen_t_opt
-    ?atdgen_j_opt
-    ~no_gen
-    files
+  run ?output_prefix ~rescript ~git ~type_attr ?atdgen_opt ?atdgen_t_opt
+    ?atdgen_j_opt ~no_gen files
   |> Common.handle_errors
 
 let cmd = Cmd.v info term

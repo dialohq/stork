@@ -9,7 +9,5 @@ module Kind : sig
 end
 
 val to_literal_string : t -> string
-
 val to_unwrapped_literal_string : t -> string
-
 val to_string : t -> string

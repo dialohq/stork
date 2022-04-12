@@ -1,17 +1,16 @@
   $ cd ..
   $ dune exec -- stork gen *.atd
-  $ cat single_version_1_t.ml | ocamlformat --impl -
+  $ cat single_version_1_t.ml | ocamlformat --enable-outside-detected-project --impl -
   (* Auto-generated from "single_version_1.atd" *)
-  [@@@ocaml.warning "-27-32-35-39"]
+  [@@@ocaml.warning "-27-32-33-35-39"]
   
   type 'b tuple_2 = string * 'b
-  
   type skill = string tuple_2
   
-  type company =
-    { name : string
-    ; address : string
-    }
+  type company = {
+    name : string;
+    address : string;
+  }
   
   type employer =
     [ `Self
@@ -20,10 +19,10 @@
   
   type employment = employer tuple_2
   
-  type employee =
-    { name : string
-    ; age : int
-    ; position : employment
-    ; version : int
-    ; skills : skill list
-    }
+  type employee = {
+    name : string;
+    age : int;
+    position : employment;
+    version : int;
+    skills : skill list;
+  }

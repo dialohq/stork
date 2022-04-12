@@ -25,7 +25,7 @@
     "@opam/dune-release": "*",
     "@opam/merlin": "*",
     "@opam/ocaml-lsp-server": "*",
-    "@opam/ocamlformat": "~0.19.0",
+    "@opam/ocamlformat": "0.21.0",
     "@opam/odoc": "*",
     "@opam/utop": "*",
     "@opam/patdiff": "*",

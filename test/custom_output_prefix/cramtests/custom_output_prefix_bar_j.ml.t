@@ -1,20 +1,20 @@
   $ cd ..
   $ dune exec -- stork gen -o custom_output_prefix original_output_prefix_1.atd original_output_prefix_bar.atd
-  $ cat custom_output_prefix_bar_j.ml | ocamlformat --impl -
+  $ cat custom_output_prefix_bar_j.ml | ocamlformat --enable-outside-detected-project --impl -
   (* Auto-generated from "original_output_prefix_bar.atd" *)
-  [@@@ocaml.warning "-27-32-35-39"]
+  [@@@ocaml.warning "-27-32-33-35-39"]
   
   type 'b tuple_2 = 'b Custom_output_prefix_bar_t.tuple_2
   
-  type skill = Custom_output_prefix_bar_t.skill =
-    { domain : string
-    ; name : string
-    }
+  type skill = Custom_output_prefix_bar_t.skill = {
+    domain : string;
+    name : string;
+  }
   
-  type company = Custom_output_prefix_bar_t.company =
-    { name : string
-    ; turnover : int option
-    }
+  type company = Custom_output_prefix_bar_t.company = {
+    name : string;
+    turnover : int option;
+  }
   
   type employer = Custom_output_prefix_bar_t.employer =
     | Self
@@ -22,13 +22,13 @@
   
   type employment = Custom_output_prefix_bar_t.employment
   
-  type employee = Custom_output_prefix_bar_t.employee =
-    { name : string
-    ; age : int
-    ; position : employment
-    ; version : string
-    ; skills : skill Atdgen_runtime.Util.ocaml_array
-    }
+  type employee = Custom_output_prefix_bar_t.employee = {
+    name : string;
+    age : int;
+    position : employment;
+    version : string;
+    skills : skill Atdgen_runtime.Util.ocaml_array;
+  }
   
   let write_tuple_2 write__b ob x =
     Bi_outbuf.add_char ob '[';
@@ -63,24 +63,19 @@
         (try
            Yojson.Safe.read_space p lb;
            Yojson.Safe.read_tuple_sep2 p std_tuple lb
-         with
-        | Yojson.End_of_tuple ->
-          end_of_tuple := true);
+         with Yojson.End_of_tuple -> end_of_tuple := true);
         x
       in
       (if not !end_of_tuple then
-         try
-           while true do
-             Yojson.Safe.skip_json p lb;
-             Yojson.Safe.read_space p lb;
-             Yojson.Safe.read_tuple_sep2 p std_tuple lb
-           done
-         with
-         | Yojson.End_of_tuple ->
-           ());
+       try
+         while true do
+           Yojson.Safe.skip_json p lb;
+           Yojson.Safe.read_space p lb;
+           Yojson.Safe.read_tuple_sep2 p std_tuple lb
+         done
+       with Yojson.End_of_tuple -> ());
       x0, x1
-    with
-    | Yojson.End_of_tuple ->
+    with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
   let tuple_2_of_string read__b s =
@@ -90,16 +85,10 @@
    fun ob (x : skill) ->
     Bi_outbuf.add_char ob '{';
     let is_first = ref true in
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"domain\":";
     Yojson.Safe.write_string ob x.domain;
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"name\":";
     Yojson.Safe.write_string ob x.name;
     Bi_outbuf.add_char ob '}'
@@ -128,10 +117,8 @@
             && String.unsafe_get s (pos + 1) = 'a'
             && String.unsafe_get s (pos + 2) = 'm'
             && String.unsafe_get s (pos + 3) = 'e'
-          then
-            1
-          else
-            -1
+          then 1
+          else -1
         | 6 ->
           if
             String.unsafe_get s pos = 'd'
@@ -140,22 +127,16 @@
             && String.unsafe_get s (pos + 3) = 'a'
             && String.unsafe_get s (pos + 4) = 'i'
             && String.unsafe_get s (pos + 5) = 'n'
-          then
-            0
-          else
-            -1
-        | _ ->
-          -1
+          then 0
+          else -1
+        | _ -> -1
       in
       let i = Yojson.Safe.map_ident p f lb in
       Atdgen_runtime.Oj_run.read_until_field_value p lb;
       (match i with
-      | 0 ->
-        field_domain := Some (Atdgen_runtime.Oj_run.read_string p lb)
-      | 1 ->
-        field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
-      | _ ->
-        Yojson.Safe.skip_json p lb);
+      | 0 -> field_domain := Some (Atdgen_runtime.Oj_run.read_string p lb)
+      | 1 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+      | _ -> Yojson.Safe.skip_json p lb);
       while true do
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_object_sep p lb;
@@ -170,10 +151,8 @@
               && String.unsafe_get s (pos + 1) = 'a'
               && String.unsafe_get s (pos + 2) = 'm'
               && String.unsafe_get s (pos + 3) = 'e'
-            then
-              1
-            else
-              -1
+            then 1
+            else -1
           | 6 ->
             if
               String.unsafe_get s pos = 'd'
@@ -182,38 +161,28 @@
               && String.unsafe_get s (pos + 3) = 'a'
               && String.unsafe_get s (pos + 4) = 'i'
               && String.unsafe_get s (pos + 5) = 'n'
-            then
-              0
-            else
-              -1
-          | _ ->
-            -1
+            then 0
+            else -1
+          | _ -> -1
         in
         let i = Yojson.Safe.map_ident p f lb in
         Atdgen_runtime.Oj_run.read_until_field_value p lb;
         match i with
-        | 0 ->
-          field_domain := Some (Atdgen_runtime.Oj_run.read_string p lb)
-        | 1 ->
-          field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
-        | _ ->
-          Yojson.Safe.skip_json p lb
+        | 0 -> field_domain := Some (Atdgen_runtime.Oj_run.read_string p lb)
+        | 1 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+        | _ -> Yojson.Safe.skip_json p lb
       done;
       assert false
-    with
-    | Yojson.End_of_object ->
-      ({ domain =
+    with Yojson.End_of_object ->
+      ({
+         domain =
            (match !field_domain with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "domain")
-       ; name =
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "domain");
+         name =
            (match !field_name with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "name")
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "name");
        }
         : skill)
   
@@ -242,14 +211,11 @@
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_gt p lb;
         (Some x : _ option)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
     | `Double_quote ->
       (match Yojson.Safe.finish_string p lb with
-      | "None" ->
-        (None : _ option)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | "None" -> (None : _ option)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
     | `Square_bracket ->
       (match Atdgen_runtime.Oj_run.read_string p lb with
       | "Some" ->
@@ -260,8 +226,7 @@
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_rbr p lb;
         (Some x : _ option)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
   
   let _1_of_string s = read__1 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
@@ -269,20 +234,13 @@
    fun ob (x : company) ->
     Bi_outbuf.add_char ob '{';
     let is_first = ref true in
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"name\":";
     Yojson.Safe.write_string ob x.name;
     (match x.turnover with
-    | None ->
-      ()
+    | None -> ()
     | Some x ->
-      if !is_first then
-        is_first := false
-      else
-        Bi_outbuf.add_char ob ',';
+      if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
       Bi_outbuf.add_string ob "\"turnover\":";
       Yojson.Safe.write_int ob x);
     Bi_outbuf.add_char ob '}'
@@ -311,10 +269,8 @@
             && String.unsafe_get s (pos + 1) = 'a'
             && String.unsafe_get s (pos + 2) = 'm'
             && String.unsafe_get s (pos + 3) = 'e'
-          then
-            0
-          else
-            -1
+          then 0
+          else -1
         | 8 ->
           if
             String.unsafe_get s pos = 't'
@@ -325,23 +281,18 @@
             && String.unsafe_get s (pos + 5) = 'v'
             && String.unsafe_get s (pos + 6) = 'e'
             && String.unsafe_get s (pos + 7) = 'r'
-          then
-            1
-          else
-            -1
-        | _ ->
-          -1
+          then 1
+          else -1
+        | _ -> -1
       in
       let i = Yojson.Safe.map_ident p f lb in
       Atdgen_runtime.Oj_run.read_until_field_value p lb;
       (match i with
-      | 0 ->
-        field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+      | 0 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
       | 1 ->
         if not (Yojson.Safe.read_null_if_possible p lb) then
           field_turnover := Some (Atdgen_runtime.Oj_run.read_int p lb)
-      | _ ->
-        Yojson.Safe.skip_json p lb);
+      | _ -> Yojson.Safe.skip_json p lb);
       while true do
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_object_sep p lb;
@@ -356,10 +307,8 @@
               && String.unsafe_get s (pos + 1) = 'a'
               && String.unsafe_get s (pos + 2) = 'm'
               && String.unsafe_get s (pos + 3) = 'e'
-            then
-              0
-            else
-              -1
+            then 0
+            else -1
           | 8 ->
             if
               String.unsafe_get s pos = 't'
@@ -370,34 +319,27 @@
               && String.unsafe_get s (pos + 5) = 'v'
               && String.unsafe_get s (pos + 6) = 'e'
               && String.unsafe_get s (pos + 7) = 'r'
-            then
-              1
-            else
-              -1
-          | _ ->
-            -1
+            then 1
+            else -1
+          | _ -> -1
         in
         let i = Yojson.Safe.map_ident p f lb in
         Atdgen_runtime.Oj_run.read_until_field_value p lb;
         match i with
-        | 0 ->
-          field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+        | 0 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
         | 1 ->
           if not (Yojson.Safe.read_null_if_possible p lb) then
             field_turnover := Some (Atdgen_runtime.Oj_run.read_int p lb)
-        | _ ->
-          Yojson.Safe.skip_json p lb
+        | _ -> Yojson.Safe.skip_json p lb
       done;
       assert false
-    with
-    | Yojson.End_of_object ->
-      ({ name =
+    with Yojson.End_of_object ->
+      ({
+         name =
            (match !field_name with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "name")
-       ; turnover = !field_turnover
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "name");
+         turnover = !field_turnover;
        }
         : company)
   
@@ -407,8 +349,7 @@
   let write_employer : _ -> employer -> _ =
    fun ob x ->
     match x with
-    | Self ->
-      Bi_outbuf.add_string ob "\"Self\""
+    | Self -> Bi_outbuf.add_string ob "\"Self\""
     | Company x ->
       Bi_outbuf.add_string ob "[\"Company\",";
       write_company ob x;
@@ -434,14 +375,11 @@
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_gt p lb;
         (Company x : employer)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
     | `Double_quote ->
       (match Yojson.Safe.finish_string p lb with
-      | "Self" ->
-        (Self : employer)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | "Self" -> (Self : employer)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
     | `Square_bracket ->
       (match Atdgen_runtime.Oj_run.read_string p lb with
       | "Company" ->
@@ -452,8 +390,7 @@
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_rbr p lb;
         (Company x : employer)
-      | x ->
-        Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
   
   let employer_of_string s =
     read_employer (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
@@ -491,28 +428,22 @@
         (try
            Yojson.Safe.read_space p lb;
            Yojson.Safe.read_tuple_sep2 p std_tuple lb
-         with
-        | Yojson.End_of_tuple ->
-          end_of_tuple := true);
+         with Yojson.End_of_tuple -> end_of_tuple := true);
         x
       in
       (if not !end_of_tuple then
-         try
-           while true do
-             Yojson.Safe.skip_json p lb;
-             Yojson.Safe.read_space p lb;
-             Yojson.Safe.read_tuple_sep2 p std_tuple lb
-           done
-         with
-         | Yojson.End_of_tuple ->
-           ());
+       try
+         while true do
+           Yojson.Safe.skip_json p lb;
+           Yojson.Safe.read_space p lb;
+           Yojson.Safe.read_tuple_sep2 p std_tuple lb
+         done
+       with Yojson.End_of_tuple -> ());
       x0, x1
-    with
-    | Yojson.End_of_tuple ->
+    with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
   let _2_of_string s = read__2 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
-  
   let write_employment = write__2
   
   let string_of_employment ?(len = 1024) x =
@@ -533,41 +464,25 @@
     Bi_outbuf.contents ob
   
   let read__3 = Atdgen_runtime.Oj_run.read_array read_skill
-  
   let _3_of_string s = read__3 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
   let write_employee : _ -> employee -> _ =
    fun ob (x : employee) ->
     Bi_outbuf.add_char ob '{';
     let is_first = ref true in
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"name\":";
     Yojson.Safe.write_string ob x.name;
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"age\":";
     Yojson.Safe.write_int ob x.age;
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"position\":";
     write_employment ob x.position;
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"version\":";
     Yojson.Safe.write_string ob x.version;
-    if !is_first then
-      is_first := false
-    else
-      Bi_outbuf.add_char ob ',';
+    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
     Bi_outbuf.add_string ob "\"skills\":";
     write__3 ob x.skills;
     Bi_outbuf.add_char ob '}'
@@ -598,20 +513,16 @@
             String.unsafe_get s pos = 'a'
             && String.unsafe_get s (pos + 1) = 'g'
             && String.unsafe_get s (pos + 2) = 'e'
-          then
-            1
-          else
-            -1
+          then 1
+          else -1
         | 4 ->
           if
             String.unsafe_get s pos = 'n'
             && String.unsafe_get s (pos + 1) = 'a'
             && String.unsafe_get s (pos + 2) = 'm'
             && String.unsafe_get s (pos + 3) = 'e'
-          then
-            0
-          else
-            -1
+          then 0
+          else -1
         | 6 ->
           if
             String.unsafe_get s pos = 's'
@@ -620,10 +531,8 @@
             && String.unsafe_get s (pos + 3) = 'l'
             && String.unsafe_get s (pos + 4) = 'l'
             && String.unsafe_get s (pos + 5) = 's'
-          then
-            4
-          else
-            -1
+          then 4
+          else -1
         | 7 ->
           if
             String.unsafe_get s pos = 'v'
@@ -633,10 +542,8 @@
             && String.unsafe_get s (pos + 4) = 'i'
             && String.unsafe_get s (pos + 5) = 'o'
             && String.unsafe_get s (pos + 6) = 'n'
-          then
-            3
-          else
-            -1
+          then 3
+          else -1
         | 8 ->
           if
             String.unsafe_get s pos = 'p'
@@ -647,28 +554,19 @@
             && String.unsafe_get s (pos + 5) = 'i'
             && String.unsafe_get s (pos + 6) = 'o'
             && String.unsafe_get s (pos + 7) = 'n'
-          then
-            2
-          else
-            -1
-        | _ ->
-          -1
+          then 2
+          else -1
+        | _ -> -1
       in
       let i = Yojson.Safe.map_ident p f lb in
       Atdgen_runtime.Oj_run.read_until_field_value p lb;
       (match i with
-      | 0 ->
-        field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
-      | 1 ->
-        field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
-      | 2 ->
-        field_position := Some (read_employment p lb)
-      | 3 ->
-        field_version := Some (Atdgen_runtime.Oj_run.read_string p lb)
-      | 4 ->
-        field_skills := Some (read__3 p lb)
-      | _ ->
-        Yojson.Safe.skip_json p lb);
+      | 0 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+      | 1 -> field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
+      | 2 -> field_position := Some (read_employment p lb)
+      | 3 -> field_version := Some (Atdgen_runtime.Oj_run.read_string p lb)
+      | 4 -> field_skills := Some (read__3 p lb)
+      | _ -> Yojson.Safe.skip_json p lb);
       while true do
         Yojson.Safe.read_space p lb;
         Yojson.Safe.read_object_sep p lb;
@@ -682,20 +580,16 @@
               String.unsafe_get s pos = 'a'
               && String.unsafe_get s (pos + 1) = 'g'
               && String.unsafe_get s (pos + 2) = 'e'
-            then
-              1
-            else
-              -1
+            then 1
+            else -1
           | 4 ->
             if
               String.unsafe_get s pos = 'n'
               && String.unsafe_get s (pos + 1) = 'a'
               && String.unsafe_get s (pos + 2) = 'm'
               && String.unsafe_get s (pos + 3) = 'e'
-            then
-              0
-            else
-              -1
+            then 0
+            else -1
           | 6 ->
             if
               String.unsafe_get s pos = 's'
@@ -704,10 +598,8 @@
               && String.unsafe_get s (pos + 3) = 'l'
               && String.unsafe_get s (pos + 4) = 'l'
               && String.unsafe_get s (pos + 5) = 's'
-            then
-              4
-            else
-              -1
+            then 4
+            else -1
           | 7 ->
             if
               String.unsafe_get s pos = 'v'
@@ -717,10 +609,8 @@
               && String.unsafe_get s (pos + 4) = 'i'
               && String.unsafe_get s (pos + 5) = 'o'
               && String.unsafe_get s (pos + 6) = 'n'
-            then
-              3
-            else
-              -1
+            then 3
+            else -1
           | 8 ->
             if
               String.unsafe_get s pos = 'p'
@@ -731,62 +621,43 @@
               && String.unsafe_get s (pos + 5) = 'i'
               && String.unsafe_get s (pos + 6) = 'o'
               && String.unsafe_get s (pos + 7) = 'n'
-            then
-              2
-            else
-              -1
-          | _ ->
-            -1
+            then 2
+            else -1
+          | _ -> -1
         in
         let i = Yojson.Safe.map_ident p f lb in
         Atdgen_runtime.Oj_run.read_until_field_value p lb;
         match i with
-        | 0 ->
-          field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
-        | 1 ->
-          field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
-        | 2 ->
-          field_position := Some (read_employment p lb)
-        | 3 ->
-          field_version := Some (Atdgen_runtime.Oj_run.read_string p lb)
-        | 4 ->
-          field_skills := Some (read__3 p lb)
-        | _ ->
-          Yojson.Safe.skip_json p lb
+        | 0 -> field_name := Some (Atdgen_runtime.Oj_run.read_string p lb)
+        | 1 -> field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
+        | 2 -> field_position := Some (read_employment p lb)
+        | 3 -> field_version := Some (Atdgen_runtime.Oj_run.read_string p lb)
+        | 4 -> field_skills := Some (read__3 p lb)
+        | _ -> Yojson.Safe.skip_json p lb
       done;
       assert false
-    with
-    | Yojson.End_of_object ->
-      ({ name =
+    with Yojson.End_of_object ->
+      ({
+         name =
            (match !field_name with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "name")
-       ; age =
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "name");
+         age =
            (match !field_age with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "age")
-       ; position =
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "age");
+         position =
            (match !field_position with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "position")
-       ; version =
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "position");
+         version =
            (match !field_version with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "version")
-       ; skills =
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "version");
+         skills =
            (match !field_skills with
-           | Some x ->
-             x
-           | None ->
-             Atdgen_runtime.Oj_run.missing_field p "skills")
+           | Some x -> x
+           | None -> Atdgen_runtime.Oj_run.missing_field p "skills");
        }
         : employee)
   

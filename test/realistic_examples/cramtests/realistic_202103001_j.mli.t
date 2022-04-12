@@ -1,22 +1,22 @@
   $ cd ..
   $ dune exec -- stork gen *.atd
-  $ cat realistic_202103001_j.mli | ocamlformat --intf -
+  $ cat realistic_202103001_j.mli | ocamlformat --enable-outside-detected-project --intf -
   (* Auto-generated from "realistic_202103001.atd" *)
-  [@@@ocaml.warning "-27-32-35-39"]
+  [@@@ocaml.warning "-27-32-33-35-39"]
   
   type variable_ref_type = Realistic_202103001_t.variable_ref_type
   
-  type variable_ref = Realistic_202103001_t.variable_ref =
-    { variableType : variable_ref_type
-    ; variableId : string
-    }
+  type variable_ref = Realistic_202103001_t.variable_ref = {
+    variableType : variable_ref_type;
+    variableId : string;
+  }
   
   type grammar_case = Realistic_202103001_t.grammar_case
   
-  type declensed_variable = Realistic_202103001_t.declensed_variable =
-    { ref : variable_ref
-    ; grammarCase : grammar_case
-    }
+  type declensed_variable = Realistic_202103001_t.declensed_variable = {
+    ref : variable_ref;
+    grammarCase : grammar_case;
+  }
   
   type prompt_item = Realistic_202103001_t.prompt_item =
     | Text of string
@@ -25,88 +25,85 @@
   
   type prompt = Realistic_202103001_t.prompt
   
-  type variant = Realistic_202103001_t.variant =
-    { id : string
-    ; value : prompt
-    }
+  type variant = Realistic_202103001_t.variant = {
+    id : string;
+    value : prompt;
+  }
   
-  type variable_expression = Realistic_202103001_t.variable_expression =
-    { name : string
-    ; ref : variable_ref
-    }
+  type variable_expression = Realistic_202103001_t.variable_expression = {
+    name : string;
+    ref : variable_ref;
+  }
   
-  type variable_expr_token = Realistic_202103001_t.variable_expr_token =
-    { value : variable_expression }
+  type variable_expr_token = Realistic_202103001_t.variable_expr_token = {
+    value : variable_expression;
+  }
   
   type var_string = Realistic_202103001_t.var_string = { testValue : string }
-  
   type var_pesel = Realistic_202103001_t.var_pesel = { testValue : string }
-  
   type var_number = Realistic_202103001_t.var_number = { testValue : float }
-  
   type var_number_or_unspecified = Realistic_202103001_t.var_number_or_unspecified
-  
   type var_nip = Realistic_202103001_t.var_nip = { testValue : string }
   
-  type date = Realistic_202103001_t.date =
-    { year : int
-    ; month : int
-    ; day : int
-    }
+  type date = Realistic_202103001_t.date = {
+    year : int;
+    month : int;
+    day : int;
+  }
   
   type var_date = Realistic_202103001_t.var_date = { testValue : date }
-  
   type var_date_or_unspecified = Realistic_202103001_t.var_date_or_unspecified
   
-  type decimal_amount = Realistic_202103001_t.decimal_amount =
-    { main : int
-    ; sub : int
-    }
+  type decimal_amount = Realistic_202103001_t.decimal_amount = {
+    main : int;
+    sub : int;
+  }
   
   type code = Realistic_202103001_t.code
   
-  type currency_PLN = Realistic_202103001_t.currency_PLN =
-    { amount : decimal_amount
-    ; code : code
-    }
+  type currency_PLN = Realistic_202103001_t.currency_PLN = {
+    amount : decimal_amount;
+    code : code;
+  }
   
   type currency = Realistic_202103001_t.currency
   
-  type var_currency = Realistic_202103001_t.var_currency =
-    { testValue : currency }
+  type var_currency = Realistic_202103001_t.var_currency = {
+    testValue : currency;
+  }
   
   type primitive_variable_type = Realistic_202103001_t.primitive_variable_type
   
-  type structure = Realistic_202103001_t.structure =
-    { name : string
-    ; variableType : primitive_variable_type
-    }
+  type structure = Realistic_202103001_t.structure = {
+    name : string;
+    variableType : primitive_variable_type;
+  }
   
   type primitive_var = Realistic_202103001_t.primitive_var
   
-  type example_value = Realistic_202103001_t.example_value =
-    { name : string
-    ; value : primitive_var
-    }
+  type example_value = Realistic_202103001_t.example_value = {
+    name : string;
+    value : primitive_var;
+  }
   
   type example_item = Realistic_202103001_t.example_item
   
-  type var_collection = Realistic_202103001_t.var_collection =
-    { structure : structure Atdgen_runtime.Util.ocaml_array
-    ; exampleItems : example_item Atdgen_runtime.Util.ocaml_array
-    }
+  type var_collection = Realistic_202103001_t.var_collection = {
+    structure : structure Atdgen_runtime.Util.ocaml_array;
+    exampleItems : example_item Atdgen_runtime.Util.ocaml_array;
+  }
   
   type var = Realistic_202103001_t.var
   
-  type user_intent_key = Realistic_202103001_t.user_intent_key =
-    { groupId : string
-    ; id : string
-    }
+  type user_intent_key = Realistic_202103001_t.user_intent_key = {
+    groupId : string;
+    id : string;
+  }
   
-  type operator_expr_token = Realistic_202103001_t.operator_expr_token =
-    { tokenType : string
-    ; operator : string
-    }
+  type operator_expr_token = Realistic_202103001_t.operator_expr_token = {
+    tokenType : string;
+    operator : string;
+  }
   
   type constant_token = Realistic_202103001_t.constant_token = { value : string }
   
@@ -115,8 +112,9 @@
     | Variable of variable_expr_token
     | Constant of constant_token
   
-  type brackets = Realistic_202103001_t.brackets =
-    { value : basic_token Atdgen_runtime.Util.ocaml_array }
+  type brackets = Realistic_202103001_t.brackets = {
+    value : basic_token Atdgen_runtime.Util.ocaml_array;
+  }
   
   type basic_value = Realistic_202103001_t.basic_value = { value : basic_token }
   
@@ -126,33 +124,34 @@
   
   type expression = Realistic_202103001_t.expression
   
-  type user_intent = Realistic_202103001_t.user_intent =
-    { id : string
-    ; name : string
-    ; expression : expression
-    }
+  type user_intent = Realistic_202103001_t.user_intent = {
+    id : string;
+    name : string;
+    expression : expression;
+  }
   
-  type user_intent_group = Realistic_202103001_t.user_intent_group =
-    { id : string
-    ; extendedModelId : string
-    ; extendedModelLabels : string Atdgen_runtime.Util.ocaml_array
-    ; intents : user_intent Atdgen_runtime.Util.ocaml_array
-    }
+  type user_intent_group = Realistic_202103001_t.user_intent_group = {
+    id : string;
+    extendedModelId : string;
+    extendedModelLabels : string Atdgen_runtime.Util.ocaml_array;
+    intents : user_intent Atdgen_runtime.Util.ocaml_array;
+  }
   
   type status_step = Realistic_202103001_t.status_step = { id : string }
   
-  type status = Realistic_202103001_t.status =
-    { id : string
-    ; key : string
-    ; value : string
-    }
+  type status = Realistic_202103001_t.status = {
+    id : string;
+    key : string;
+    value : string;
+  }
   
   type reaction_step = Realistic_202103001_t.reaction_step =
     | Prompt of prompt
     | Status of status_step
   
-  type output_repeat = Realistic_202103001_t.output_repeat =
-    { variantId : string }
+  type output_repeat = Realistic_202103001_t.output_repeat = {
+    variantId : string;
+  }
   
   type output_link = Realistic_202103001_t.output_link = { requestId : string }
   
@@ -161,109 +160,108 @@
     | Repeat of output_repeat
     | Link of output_link
   
-  type reaction_case = Realistic_202103001_t.reaction_case =
-    { steps : reaction_step Atdgen_runtime.Util.ocaml_array
-    ; output : output option
-    }
+  type reaction_case = Realistic_202103001_t.reaction_case = {
+    steps : reaction_step Atdgen_runtime.Util.ocaml_array;
+    output : output option;
+  }
   
-  type reaction = Realistic_202103001_t.reaction =
-    { matchCounterRef : string option
-    ; cases : reaction_case Atdgen_runtime.Util.ocaml_array
-    }
+  type reaction = Realistic_202103001_t.reaction = {
+    matchCounterRef : string option;
+    cases : reaction_case Atdgen_runtime.Util.ocaml_array;
+  }
   
-  type model_intent_key = Realistic_202103001_t.model_intent_key =
-    { groupId : string option
-    ; id : string
-    }
+  type model_intent_key = Realistic_202103001_t.model_intent_key = {
+    groupId : string option;
+    id : string;
+  }
   
   type intent_key = Realistic_202103001_t.intent_key =
     | Model of model_intent_key
     | User of user_intent_key
   
-  type configuredModel = Realistic_202103001_t.configuredModel =
-    { modelId : string
-    ; parameterId : string
-    }
+  type configuredModel = Realistic_202103001_t.configuredModel = {
+    modelId : string;
+    parameterId : string;
+  }
   
-  type branch = Realistic_202103001_t.branch =
-    { id : string
-    ; intentKey : intent_key
-    ; isGuardian : bool
-    ; reaction : reaction
-    }
+  type branch = Realistic_202103001_t.branch = {
+    id : string;
+    intentKey : intent_key;
+    isGuardian : bool;
+    reaction : reaction;
+  }
   
-  type request = Realistic_202103001_t.request =
-    { id : string
-    ; name : string
-    ; initialVariantId : string
-    ; variants : variant Atdgen_runtime.Util.ocaml_array
-    ; noMatch : reaction
-    ; noInput : reaction
-    ; branches : branch Atdgen_runtime.Util.ocaml_array
-    ; configuredModels : configuredModel Atdgen_runtime.Util.ocaml_array
-    }
+  type request = Realistic_202103001_t.request = {
+    id : string;
+    name : string;
+    initialVariantId : string;
+    variants : variant Atdgen_runtime.Util.ocaml_array;
+    noMatch : reaction;
+    noInput : reaction;
+    branches : branch Atdgen_runtime.Util.ocaml_array;
+    configuredModels : configuredModel Atdgen_runtime.Util.ocaml_array;
+  }
   
-  type introduction = Realistic_202103001_t.introduction =
-    { prompt : prompt option
-    ; requestId : string option
-    }
+  type introduction = Realistic_202103001_t.introduction = {
+    prompt : prompt option;
+    requestId : string option;
+  }
   
-  type plan = Realistic_202103001_t.plan =
-    { introduction : introduction
-    ; requests : request Atdgen_runtime.Util.ocaml_array
-    }
+  type plan = Realistic_202103001_t.plan = {
+    introduction : introduction;
+    requests : request Atdgen_runtime.Util.ocaml_array;
+  }
   
-  type model_variable = Realistic_202103001_t.model_variable =
-    { key : string
-    ; type_ : primitive_variable_type
-    }
+  type model_variable = Realistic_202103001_t.model_variable = {
+    key : string;
+    type_ : primitive_variable_type;
+  }
   
-  type model_response_schema = Realistic_202103001_t.model_response_schema =
-    { modelId : string
-    ; variables : model_variable Atdgen_runtime.Util.ocaml_array
-    }
+  type model_response_schema = Realistic_202103001_t.model_response_schema = {
+    modelId : string;
+    variables : model_variable Atdgen_runtime.Util.ocaml_array;
+  }
   
-  type metadata = Realistic_202103001_t.metadata =
-    { created_at : date
-    ; created_by : string
-    }
+  type metadata = Realistic_202103001_t.metadata = {
+    created_at : date;
+    created_by : string;
+  }
   
-  type input_variable = Realistic_202103001_t.input_variable =
-    { id : string
-    ; name : string
-    ; variableType : var
-    }
+  type input_variable = Realistic_202103001_t.input_variable = {
+    id : string;
+    name : string;
+    variableType : var;
+  }
   
   type gender = Realistic_202103001_t.gender
-  
   type environment = Realistic_202103001_t.environment = { gender : gender }
   
-  type input_variables = Realistic_202103001_t.input_variables =
-    { userDefined : input_variable Atdgen_runtime.Util.ocaml_array
-    ; environment : environment
-    }
+  type input_variables = Realistic_202103001_t.input_variables = {
+    userDefined : input_variable Atdgen_runtime.Util.ocaml_array;
+    environment : environment;
+  }
   
-  type dialogData = Realistic_202103001_t.dialogData =
-    { inputVariables : input_variables
-    ; statuses : status Atdgen_runtime.Util.ocaml_array
-    ; userIntents : user_intent_group Atdgen_runtime.Util.ocaml_array
-    ; modelResponseSchema : model_response_schema Atdgen_runtime.Util.ocaml_array
-    }
+  type dialogData = Realistic_202103001_t.dialogData = {
+    inputVariables : input_variables;
+    statuses : status Atdgen_runtime.Util.ocaml_array;
+    userIntents : user_intent_group Atdgen_runtime.Util.ocaml_array;
+    modelResponseSchema : model_response_schema Atdgen_runtime.Util.ocaml_array;
+  }
   
-  type dialog = Realistic_202103001_t.dialog =
-    { id : string
-    ; plan : plan
-    ; data : dialogData
-    }
+  type dialog = Realistic_202103001_t.dialog = {
+    id : string;
+    plan : plan;
+    data : dialogData;
+  }
   
   type deploy_env = Realistic_202103001_t.deploy_env
   
-  type dialog_file = Realistic_202103001_t.dialog_file =
-    { version : int
-    ; deploy_env : deploy_env
-    ; dialog : dialog
-    ; metadata : metadata
-    }
+  type dialog_file = Realistic_202103001_t.dialog_file = {
+    version : int;
+    deploy_env : deploy_env;
+    dialog : dialog;
+    metadata : metadata;
+  }
   
   val write_variable_ref_type : Bi_outbuf.t -> variable_ref_type -> unit
   (** Output a JSON value of type {!variable_ref_type}. *)
@@ -275,9 +273,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_variable_ref_type
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> variable_ref_type
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    variable_ref_type
   (** Input JSON data of type {!variable_ref_type}. *)
   
   val variable_ref_type_of_string : string -> variable_ref_type
@@ -323,9 +321,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_declensed_variable
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> declensed_variable
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    declensed_variable
   (** Input JSON data of type {!declensed_variable}. *)
   
   val declensed_variable_of_string : string -> declensed_variable
@@ -386,9 +384,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_variable_expression
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> variable_expression
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    variable_expression
   (** Input JSON data of type {!variable_expression}. *)
   
   val variable_expression_of_string : string -> variable_expression
@@ -404,9 +402,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_variable_expr_token
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> variable_expr_token
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    variable_expr_token
   (** Input JSON data of type {!variable_expr_token}. *)
   
   val variable_expr_token_of_string : string -> variable_expr_token
@@ -458,24 +456,24 @@
   (** Deserialize JSON data of type {!var_number}. *)
   
   val write_var_number_or_unspecified
-    :  Bi_outbuf.t
-    -> var_number_or_unspecified
-    -> unit
+    :  Bi_outbuf.t ->
+    var_number_or_unspecified ->
+    unit
   (** Output a JSON value of type {!var_number_or_unspecified}. *)
   
   val string_of_var_number_or_unspecified
-    :  ?len:int
-    -> var_number_or_unspecified
-    -> string
+    :  ?len:int ->
+    var_number_or_unspecified ->
+    string
   (** Serialize a value of type {!var_number_or_unspecified} into a JSON string.
   
       @param len
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_var_number_or_unspecified
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> var_number_or_unspecified
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    var_number_or_unspecified
   (** Input JSON data of type {!var_number_or_unspecified}. *)
   
   val var_number_or_unspecified_of_string : string -> var_number_or_unspecified
@@ -527,24 +525,24 @@
   (** Deserialize JSON data of type {!var_date}. *)
   
   val write_var_date_or_unspecified
-    :  Bi_outbuf.t
-    -> var_date_or_unspecified
-    -> unit
+    :  Bi_outbuf.t ->
+    var_date_or_unspecified ->
+    unit
   (** Output a JSON value of type {!var_date_or_unspecified}. *)
   
   val string_of_var_date_or_unspecified
-    :  ?len:int
-    -> var_date_or_unspecified
-    -> string
+    :  ?len:int ->
+    var_date_or_unspecified ->
+    string
   (** Serialize a value of type {!var_date_or_unspecified} into a JSON string.
   
       @param len
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_var_date_or_unspecified
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> var_date_or_unspecified
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    var_date_or_unspecified
   (** Input JSON data of type {!var_date_or_unspecified}. *)
   
   val var_date_or_unspecified_of_string : string -> var_date_or_unspecified
@@ -560,9 +558,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_decimal_amount
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> decimal_amount
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    decimal_amount
   (** Input JSON data of type {!decimal_amount}. *)
   
   val decimal_amount_of_string : string -> decimal_amount
@@ -629,24 +627,24 @@
   (** Deserialize JSON data of type {!var_currency}. *)
   
   val write_primitive_variable_type
-    :  Bi_outbuf.t
-    -> primitive_variable_type
-    -> unit
+    :  Bi_outbuf.t ->
+    primitive_variable_type ->
+    unit
   (** Output a JSON value of type {!primitive_variable_type}. *)
   
   val string_of_primitive_variable_type
-    :  ?len:int
-    -> primitive_variable_type
-    -> string
+    :  ?len:int ->
+    primitive_variable_type ->
+    string
   (** Serialize a value of type {!primitive_variable_type} into a JSON string.
   
       @param len
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_primitive_variable_type
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> primitive_variable_type
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    primitive_variable_type
   (** Input JSON data of type {!primitive_variable_type}. *)
   
   val primitive_variable_type_of_string : string -> primitive_variable_type
@@ -677,9 +675,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_primitive_var
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> primitive_var
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    primitive_var
   (** Input JSON data of type {!primitive_var}. *)
   
   val primitive_var_of_string : string -> primitive_var
@@ -695,9 +693,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_example_value
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> example_value
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    example_value
   (** Input JSON data of type {!example_value}. *)
   
   val example_value_of_string : string -> example_value
@@ -728,9 +726,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_var_collection
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> var_collection
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    var_collection
   (** Input JSON data of type {!var_collection}. *)
   
   val var_collection_of_string : string -> var_collection
@@ -761,9 +759,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_user_intent_key
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> user_intent_key
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    user_intent_key
   (** Input JSON data of type {!user_intent_key}. *)
   
   val user_intent_key_of_string : string -> user_intent_key
@@ -779,9 +777,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_operator_expr_token
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> operator_expr_token
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    operator_expr_token
   (** Input JSON data of type {!operator_expr_token}. *)
   
   val operator_expr_token_of_string : string -> operator_expr_token
@@ -797,9 +795,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_constant_token
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> constant_token
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    constant_token
   (** Input JSON data of type {!constant_token}. *)
   
   val constant_token_of_string : string -> constant_token
@@ -860,9 +858,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_expression_token
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> expression_token
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    expression_token
   (** Input JSON data of type {!expression_token}. *)
   
   val expression_token_of_string : string -> expression_token
@@ -908,9 +906,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_user_intent_group
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> user_intent_group
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    user_intent_group
   (** Input JSON data of type {!user_intent_group}. *)
   
   val user_intent_group_of_string : string -> user_intent_group
@@ -956,9 +954,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_reaction_step
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> reaction_step
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    reaction_step
   (** Input JSON data of type {!reaction_step}. *)
   
   val reaction_step_of_string : string -> reaction_step
@@ -974,9 +972,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_output_repeat
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> output_repeat
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    output_repeat
   (** Input JSON data of type {!output_repeat}. *)
   
   val output_repeat_of_string : string -> output_repeat
@@ -1022,9 +1020,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_reaction_case
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> reaction_case
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    reaction_case
   (** Input JSON data of type {!reaction_case}. *)
   
   val reaction_case_of_string : string -> reaction_case
@@ -1055,9 +1053,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_model_intent_key
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> model_intent_key
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    model_intent_key
   (** Input JSON data of type {!model_intent_key}. *)
   
   val model_intent_key_of_string : string -> model_intent_key
@@ -1088,9 +1086,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_configuredModel
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> configuredModel
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    configuredModel
   (** Input JSON data of type {!configuredModel}. *)
   
   val configuredModel_of_string : string -> configuredModel
@@ -1166,9 +1164,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_model_variable
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> model_variable
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    model_variable
   (** Input JSON data of type {!model_variable}. *)
   
   val model_variable_of_string : string -> model_variable
@@ -1178,18 +1176,18 @@
   (** Output a JSON value of type {!model_response_schema}. *)
   
   val string_of_model_response_schema
-    :  ?len:int
-    -> model_response_schema
-    -> string
+    :  ?len:int ->
+    model_response_schema ->
+    string
   (** Serialize a value of type {!model_response_schema} into a JSON string.
   
       @param len
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_model_response_schema
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> model_response_schema
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    model_response_schema
   (** Input JSON data of type {!model_response_schema}. *)
   
   val model_response_schema_of_string : string -> model_response_schema
@@ -1220,9 +1218,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_input_variable
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> input_variable
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    input_variable
   (** Input JSON data of type {!input_variable}. *)
   
   val input_variable_of_string : string -> input_variable
@@ -1268,9 +1266,9 @@
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_input_variables
-    :  Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> input_variables
+    :  Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    input_variables
   (** Input JSON data of type {!input_variables}. *)
   
   val input_variables_of_string : string -> input_variables

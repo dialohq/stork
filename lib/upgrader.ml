@@ -1,13 +1,13 @@
 open Ast.NoLoc
 open Letops.Result
 
-type generated =
-  { intf_list : string list
-  ; impl_list : string list
-  ; user_intf_list : string list
-  ; upgrader_t : string list
-  ; upgrader_t_intf : string list
-  }
+type generated = {
+  intf_list : string list;
+  impl_list : string list;
+  user_intf_list : string list;
+  upgrader_t : string list;
+  upgrader_t_intf : string list;
+}
 [@@deriving show]
 
 type sum_repr =
@@ -59,10 +59,10 @@ type generic = bool
 type upgrade =
   | New of generic
   | ShallowEqual of generic * shallow_equal
-  | Modified of
-      { was_generic : generic
-      ; is_generic : generic
-      }
+  | Modified of {
+      was_generic : generic;
+      is_generic : generic;
+    }
 
 module StringMap = Map.Make (String)
 
@@ -82,64 +82,55 @@ let get_version_field_type (field_list : Atd.Ast.field list)
         Some Version.Kind.String
       | `Field (_, ("version", _, _), Atd.Ast.Name (_, (_, "int", _), _)) ->
         Some Version.Kind.Int
-      | `Field _ | `Inherit _ ->
-        None)
+      | `Field _ | `Inherit _ -> None)
     field_list
 
 let flatten_module_items ~path ~version sorted_modules =
   let rec aux sorted_modules flat_module_items =
     match sorted_modules with
-    | [] | [ (_, []) ] ->
-      Error (`Empty_atd_file path)
-    | [ ( _flag
-        , [ (Atd.Ast.Type
-               ( _
-               , (main_type_name, main_type_param, _)
-               , Atd.Ast.Record (_, field_list, _) ) as main_type)
-          ] )
-      ] ->
+    | [] | [ (_, []) ] -> Error (`Empty_atd_file path)
+    | [
+     ( _flag,
+       [
+         (Atd.Ast.Type
+            ( _,
+              (main_type_name, main_type_param, _),
+              Atd.Ast.Record (_, field_list, _) ) as main_type);
+       ] );
+    ] ->
       let* version =
         match get_version_field_type field_list with
-        | Some Version.Kind.String ->
-          Ok (Version.String version)
+        | Some Version.Kind.String -> Ok (Version.String version)
         | Some Version.Kind.Int ->
           (match int_of_string_opt version with
-          | None ->
-            Error (`Incoherent_version_field (path, version))
-          | Some version ->
-            Ok (Version.Int version))
-        | None ->
-          Error (`No_version_field path)
+          | None -> Error (`Incoherent_version_field (path, version))
+          | Some version -> Ok (Version.Int version))
+        | None -> Error (`No_version_field path)
       in
       Ok
-        ( ModuleItem.from_loc main_type :: flat_module_items
-        , main_type_name
-        , List.length main_type_param
-        , version )
-    | [ _ ] ->
-      Error (`No_version_field path)
-    | (_flag, []) :: modules ->
-      aux modules flat_module_items
+        ( ModuleItem.from_loc main_type :: flat_module_items,
+          main_type_name,
+          List.length main_type_param,
+          version )
+    | [ _ ] -> Error (`No_version_field path)
+    | (_flag, []) :: modules -> aux modules flat_module_items
     | (flag, module_item :: tail) :: modules ->
-      aux
-        ((flag, tail) :: modules)
+      aux ((flag, tail) :: modules)
         (ModuleItem.from_loc module_item :: flat_module_items)
   in
   let* reverse_module_items, main_type_name, main_type_param_count, version =
     aux sorted_modules []
   in
   Ok
-    ( List.rev reverse_module_items
-    , main_type_name
-    , main_type_param_count
-    , version )
+    ( List.rev reverse_module_items,
+      main_type_name,
+      main_type_param_count,
+      version )
 
 let filter_ocaml_annot : annot -> annot_field list option =
   List.find_map ~f:(function
-      | "ocaml", ocaml_annot ->
-        Some ocaml_annot
-      | _ ->
-        None)
+    | "ocaml", ocaml_annot -> Some ocaml_annot
+    | _ -> None)
 
 let filter_repr_annot : annot_field list -> string option =
   List.find_map ~f:(function "repr", repr -> repr | _ -> None)
@@ -147,30 +138,22 @@ let filter_repr_annot : annot_field list -> string option =
 let annot_to_list_repr annot : list_repr =
   let ocaml_annot = filter_ocaml_annot annot in
   match Option.bind ocaml_annot filter_repr_annot with
-  | Some "array" ->
-    Array
-  | Some other ->
-    failwith ("unknown list repr: " ^ other)
-  | None ->
-    List
+  | Some "array" -> Array
+  | Some other -> failwith ("unknown list repr: " ^ other)
+  | None -> List
 
 let annot_to_sum_repr annot : sum_repr =
   let ocaml_annot = filter_ocaml_annot annot in
   match Option.bind ocaml_annot filter_repr_annot with
-  | Some "classic" ->
-    Classic
-  | Some other ->
-    failwith ("unknown sum repr: " ^ other)
-  | None ->
-    Polymorphic
+  | Some "classic" -> Classic
+  | Some other -> failwith ("unknown sum repr: " ^ other)
+  | None -> Polymorphic
 
 let replace_type_vars ~concrete_params ~tvars =
   let tvarMap =
     List.fold_left2
       ~f:(fun map tvar concrete_param -> StringMap.add tvar concrete_param map)
-      ~init:StringMap.empty
-      tvars
-      concrete_params
+      ~init:StringMap.empty tvars concrete_params
   in
   let rec aux = function
     | TypeExpr.Sum (variants, annot) ->
@@ -188,20 +171,13 @@ let replace_type_vars ~concrete_params ~tvars =
     | TypeExpr.Tuple (cells, annot) ->
       let cells = List.map cells ~f:(fun (t, annot) -> aux t, annot) in
       TypeExpr.Tuple (cells, annot)
-    | TypeExpr.List (t, annot) ->
-      TypeExpr.List (aux t, annot)
-    | TypeExpr.Option (t, annot) ->
-      TypeExpr.Option (aux t, annot)
-    | TypeExpr.Nullable (t, annot) ->
-      TypeExpr.Nullable (aux t, annot)
-    | TypeExpr.Shared (t, annot) ->
-      TypeExpr.Shared (aux t, annot)
-    | TypeExpr.Wrap (t, annot) ->
-      TypeExpr.Wrap (aux t, annot)
-    | TypeExpr.Name _ as name ->
-      name
-    | TypeExpr.Tvar var ->
-      StringMap.find var tvarMap
+    | TypeExpr.List (t, annot) -> TypeExpr.List (aux t, annot)
+    | TypeExpr.Option (t, annot) -> TypeExpr.Option (aux t, annot)
+    | TypeExpr.Nullable (t, annot) -> TypeExpr.Nullable (aux t, annot)
+    | TypeExpr.Shared (t, annot) -> TypeExpr.Shared (aux t, annot)
+    | TypeExpr.Wrap (t, annot) -> TypeExpr.Wrap (aux t, annot)
+    | TypeExpr.Name _ as name -> name
+    | TypeExpr.Tvar var -> StringMap.find var tvarMap
   in
   aux
 
@@ -212,42 +188,32 @@ let is_not_empty = function [] -> false | _ :: _ -> true
 let rec classify_shallow_equals ~classified_type_map = function
   | TypeExpr.List (type_expr, annot) ->
     (match classify_shallow_equals ~classified_type_map type_expr with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
+    | Same -> Same
+    | SameNominal -> SameNominal
     | TransitivelyModified modification ->
       TransitivelyModified (List (annot_to_list_repr annot, modification)))
   | TypeExpr.Option (type_expr, _) ->
     (match classify_shallow_equals ~classified_type_map type_expr with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
+    | Same -> Same
+    | SameNominal -> SameNominal
     | TransitivelyModified modification ->
       TransitivelyModified (Option modification))
   | TypeExpr.Nullable (type_expr, _) ->
     (match classify_shallow_equals ~classified_type_map type_expr with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
+    | Same -> Same
+    | SameNominal -> SameNominal
     | TransitivelyModified modification ->
       TransitivelyModified (Nullable modification))
   | TypeExpr.Shared (type_expr, _) ->
     (match classify_shallow_equals ~classified_type_map type_expr with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
+    | Same -> Same
+    | SameNominal -> SameNominal
     | TransitivelyModified modification ->
       TransitivelyModified (Shared modification))
   | TypeExpr.Wrap (type_expr, _) ->
     (match classify_shallow_equals ~classified_type_map type_expr with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
+    | Same -> Same
+    | SameNominal -> SameNominal
     | TransitivelyModified modification ->
       TransitivelyModified (Wrap modification))
   | TypeExpr.Name ((("unit" | "bool" | "int" | "float" | "string"), _), _) ->
@@ -256,30 +222,21 @@ let rec classify_shallow_equals ~classified_type_map = function
     failwith "Abstract types should only appear in top level"
   | TypeExpr.Name ((type_name, []), _) ->
     (match StringMap.find_opt type_name classified_type_map with
-    | None ->
-      failwith ("unknown type " ^ type_name) (* should not happen *)
-    | Some (ShallowEqual (_, Same), _) ->
-      Same
-    | Some (ShallowEqual (_, SameNominal), _) ->
-      SameNominal
+    | None -> failwith ("unknown type " ^ type_name) (* should not happen *)
+    | Some (ShallowEqual (_, Same), _) -> Same
+    | Some (ShallowEqual (_, SameNominal), _) -> SameNominal
     | Some (ShallowEqual (_, TransitivelyModified _), _) ->
       TransitivelyModified (Name (Modified type_name))
-    | Some (New _, _) ->
-      TransitivelyModified (Name (New type_name))
-    | Some (Modified _, _) ->
-      TransitivelyModified (Name (Modified type_name)))
+    | Some (New _, _) -> TransitivelyModified (Name (New type_name))
+    | Some (Modified _, _) -> TransitivelyModified (Name (Modified type_name)))
   | TypeExpr.Name ((type_name, concrete_params), _) ->
     let rec parameter_list_kind ~current = function
-      | [] ->
-        current
+      | [] -> current
       | param :: tail ->
         (match classify_shallow_equals ~classified_type_map param with
-        | Same ->
-          parameter_list_kind ~current tail
-        | SameNominal ->
-          parameter_list_kind ~current:SameNominal tail
-        | TransitivelyModified _ as modified ->
-          modified)
+        | Same -> parameter_list_kind ~current tail
+        | SameNominal -> parameter_list_kind ~current:SameNominal tail
+        | TransitivelyModified _ as modified -> modified)
     in
     let parameter_list_kind =
       parameter_list_kind ~current:Same concrete_params
@@ -287,10 +244,8 @@ let rec classify_shallow_equals ~classified_type_map = function
     (match
        parameter_list_kind, StringMap.find_opt type_name classified_type_map
      with
-    | _, None ->
-      failwith ("unknown type " ^ type_name) (* should not happen *)
-    | Same, Some (ShallowEqual (_, Same), _) ->
-      Same
+    | _, None -> failwith ("unknown type " ^ type_name) (* should not happen *)
+    | Same, Some (ShallowEqual (_, Same), _) -> Same
     | (Same | SameNominal), Some (ShallowEqual (_, (Same | SameNominal)), _) ->
       SameNominal
     | _, Some (_, ((_, tvars, _), type_expr)) ->
@@ -298,45 +253,35 @@ let rec classify_shallow_equals ~classified_type_map = function
         replace_type_vars ~tvars ~concrete_params type_expr
       in
       classify_shallow_equals ~classified_type_map expanded_named_type)
-  | TypeExpr.Tvar _ ->
-    Same
+  | TypeExpr.Tvar _ -> Same
   | TypeExpr.Record (fields, _) ->
     let same = ref true in
     let field_upgrades =
       List.map fields ~f:(fun ((field_name, field_kind, _), type_expr) ->
           match classify_shallow_equals ~classified_type_map type_expr with
-          | Same ->
-            SameField field_name
-          | SameNominal ->
-            SameFieldNominal field_name
+          | Same -> SameField field_name
+          | SameNominal -> SameFieldNominal field_name
           | TransitivelyModified modification ->
             let () = same := false in
             ModifiedField
-              ( field_name
-              , match field_kind with
-                | TypeExpr.Required | TypeExpr.With_default ->
-                  modification
-                | TypeExpr.Optional ->
-                  Option modification ))
+              ( field_name,
+                match field_kind with
+                | TypeExpr.Required | TypeExpr.With_default -> modification
+                | TypeExpr.Optional -> Option modification ))
     in
     (match !same with
-    | true ->
-      SameNominal
-    | false ->
-      TransitivelyModified (Record field_upgrades))
+    | true -> SameNominal
+    | false -> TransitivelyModified (Record field_upgrades))
   | TypeExpr.Sum (variants, annot) ->
     let variant_upgrades =
       List.map variants ~f:(fun ((variant_name, _), type_expr) ->
           let upgrade_kind =
             match type_expr with
-            | None ->
-              SameVariant variant_name
+            | None -> SameVariant variant_name
             | Some type_expr ->
               (match classify_shallow_equals ~classified_type_map type_expr with
-              | Same ->
-                SameVariantWithPayload variant_name
-              | SameNominal ->
-                SameVariantWithNominalPayload variant_name
+              | Same -> SameVariantWithPayload variant_name
+              | SameNominal -> SameVariantWithNominalPayload variant_name
               | TransitivelyModified modification ->
                 ModifiedVariantWithPayload (variant_name, modification))
           in
@@ -345,12 +290,9 @@ let rec classify_shallow_equals ~classified_type_map = function
     let rec aux ~current = function
       | [] ->
         (match current with
-        | `Same when annot_to_sum_repr annot = Polymorphic ->
-          Same
-        | `SameNominal | `Same ->
-          SameNominal)
-      | (SameVariant _ | SameVariantWithPayload _) :: tail ->
-        aux ~current tail
+        | `Same when annot_to_sum_repr annot = Polymorphic -> Same
+        | `SameNominal | `Same -> SameNominal)
+      | (SameVariant _ | SameVariantWithPayload _) :: tail -> aux ~current tail
       | SameVariantWithNominalPayload _ :: tail ->
         aux ~current:`SameNominal tail
       | ModifiedVariantWithPayload _ :: _ ->
@@ -361,31 +303,21 @@ let rec classify_shallow_equals ~classified_type_map = function
     let cell_upgrades =
       List.map cells ~f:(fun (type_expr, _) ->
           match classify_shallow_equals ~classified_type_map type_expr with
-          | Same ->
-            SameCell
-          | SameNominal ->
-            SameCellNominal
-          | TransitivelyModified modification ->
-            ModifiedCell modification)
+          | Same -> SameCell
+          | SameNominal -> SameCellNominal
+          | TransitivelyModified modification -> ModifiedCell modification)
     in
     let rec aux ~current = function
-      | [] ->
-        current
-      | SameCell :: tail ->
-        aux ~current tail
-      | SameCellNominal :: tail ->
-        aux ~current:SameNominal tail
-      | ModifiedCell modif :: _ ->
-        TransitivelyModified modif
+      | [] -> current
+      | SameCell :: tail -> aux ~current tail
+      | SameCellNominal :: tail -> aux ~current:SameNominal tail
+      | ModifiedCell modif :: _ -> TransitivelyModified modif
     in
     let upgrade_kind = aux ~current:Same cell_upgrades in
     (match upgrade_kind with
-    | Same ->
-      Same
-    | SameNominal ->
-      SameNominal
-    | TransitivelyModified _ ->
-      TransitivelyModified (Tuple cell_upgrades))
+    | Same -> Same
+    | SameNominal -> SameNominal
+    | TransitivelyModified _ -> TransitivelyModified (Tuple cell_upgrades))
 
 let remove_version_field =
   List.filter ~f:(function ("version", _, _), _ -> false | _ -> true)
@@ -398,44 +330,39 @@ let classify_item
   =
   let is_generic = is_not_empty type_param in
   match type_expr, StringMap.find_opt name old_type_map with
-  | _, None ->
-    name, (New is_generic : upgrade)
+  | _, None -> name, (New is_generic : upgrade)
   | TypeExpr.Name (("abstract", _), _), Some ((_, old_type_param, _), _) ->
     let was_generic = is_not_empty old_type_param in
     name, Modified { is_generic; was_generic }
   | _, Some old_item when old_item = new_item ->
-    ( name
-    , ShallowEqual
+    ( name,
+      ShallowEqual
         (is_generic, classify_shallow_equals ~classified_type_map type_expr) )
-  | ( TypeExpr.Record (fields, _)
-    , Some ((_, _, _), TypeExpr.Record (old_fields, _)) )
+  | ( TypeExpr.Record (fields, _),
+      Some ((_, _, _), TypeExpr.Record (old_fields, _)) )
     when name = main_type
          && remove_version_field fields = remove_version_field old_fields ->
-    ( name
-    , ShallowEqual
+    ( name,
+      ShallowEqual
         (is_generic, classify_shallow_equals ~classified_type_map type_expr) )
   | _, Some ((_, old_type_param, _), _) ->
     let was_generic = is_not_empty old_type_param in
     name, Modified { is_generic; was_generic }
 
 let old_version = "OldVersion"
-
 let new_version = "NewVersion"
 
 let upgrader_t_name prefix =
   [%string "$(String.capitalize_ascii prefix)_upgrader_t"]
 
 let converter = "converter"
-
 let convert = "convert"
-
 let make = "make"
 
 let user_fns_module_name prefix =
   [%string "$(String.capitalize_ascii prefix)_user_fns"]
 
 let old_doc = "old_doc"
-
 let name_converter name = [%string "$(convert)_$name"]
 
 let rec modification_to_string ~kind ?version_when_main_type modification =
@@ -456,27 +383,25 @@ let rec modification_to_string ~kind ?version_when_main_type modification =
   | (Rescript | Native), Sum (sum_repr, variant_upgrades) ->
     let old_prefix, new_prefix =
       match sum_repr with
-      | Polymorphic ->
-        "`", "`"
-      | Classic ->
-        [%string "$old_version."], [%string "$new_version."]
+      | Polymorphic -> "`", "`"
+      | Classic -> [%string "$old_version."], [%string "$new_version."]
     in
     let variants =
       List.map variant_upgrades ~f:(function
-          | SameVariant variant_name ->
-            [%string "| $old_prefix$variant_name -> $new_prefix$variant_name"]
-          | SameVariantWithPayload variant_name ->
-            [%string
-              "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
-               payload"]
-          | SameVariantWithNominalPayload variant_name ->
-            [%string
-              "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
-               (Obj.magic payload)"]
-          | ModifiedVariantWithPayload (variant_name, modification) ->
-            [%string
-              "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
-               (payload |> ($(modification_to_string modification)))"])
+        | SameVariant variant_name ->
+          [%string "| $old_prefix$variant_name -> $new_prefix$variant_name"]
+        | SameVariantWithPayload variant_name ->
+          [%string
+            "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
+             payload"]
+        | SameVariantWithNominalPayload variant_name ->
+          [%string
+            "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
+             (Obj.magic payload)"]
+        | ModifiedVariantWithPayload (variant_name, modification) ->
+          [%string
+            "| $old_prefix$variant_name payload -> $new_prefix$variant_name \
+             (payload |> ($(modification_to_string modification)))"])
       |> String.concat ~sep:"\n"
     in
     [%string "function \n$variants"]
@@ -484,8 +409,8 @@ let rec modification_to_string ~kind ?version_when_main_type modification =
     let fields =
       List.map field_upgrades ~f:(fun field_upgrade ->
           match field_upgrade, version_when_main_type with
-          | ( (SameField "version" | ModifiedField ("version", _))
-            , Some new_file_version ) ->
+          | ( (SameField "version" | ModifiedField ("version", _)),
+              Some new_file_version ) ->
             [%string
               "version = $(Version.to_unwrapped_literal_string \
                new_file_version);"]
@@ -508,10 +433,8 @@ let rec modification_to_string ~kind ?version_when_main_type modification =
     let tuple_var = [%string "($tuple_var)"] in
     let cells =
       List.mapi cell_upgrades ~f:(fun i -> function
-        | SameCell ->
-          [%string "a_%i$i"]
-        | SameCellNominal ->
-          [%string "Obj.magic a_%i$i"]
+        | SameCell -> [%string "a_%i$i"]
+        | SameCellNominal -> [%string "Obj.magic a_%i$i"]
         | ModifiedCell modification ->
           [%string "a_%i$i |> ($(modification_to_string modification))"])
       |> String.concat ~sep:", "
@@ -529,15 +452,12 @@ let rec modification_to_string ~kind ?version_when_main_type modification =
     [%string "fun x -> $map x ($(modification_to_string modification))"]
 
 let generate_type_params ~start = function
-  | 0 ->
-    ""
-  | 1 ->
-    [%string "'a_%i$start "]
+  | 0 -> ""
+  | 1 -> [%string "'a_%i$start "]
   | n ->
     let rec aux ~acc i =
       match n - i with
-      | 1 ->
-        [%string "($(acc)'a_%i$i) "]
+      | 1 -> [%string "($(acc)'a_%i$i) "]
       | _ ->
         let acc = [%string "$(acc)'a_%i$i, "] in
         aux ~acc (i + 1)
@@ -562,10 +482,8 @@ let classified_type_to_strings ~kind ~main_type ~new_file_version =
   | name, ShallowEqual (true, _)
   | name, Modified { is_generic = true; _ }
   | name, Modified { was_generic = true; _ } ->
-    if name = main_type then
-      failwith "The main type cannot be generic"
-    else
-      None, None, None
+    if name = main_type then failwith "The main type cannot be generic"
+    else None, None, None
   | name, ShallowEqual (false, Same) ->
     let fn, _, _, field = make name in
     let impl = [%string "let $fn _ _ x = x"] in
@@ -574,8 +492,7 @@ let classified_type_to_strings ~kind ~main_type ~new_file_version =
     let fn, fn_intf, _, field = make name in
     let impl = [%string "let $fn: $fn_intf = fun _ _  x -> Obj.magic x"] in
     Some impl, None, Some field
-  | _, (New _ : upgrade) ->
-    None, None, None
+  | _, (New _ : upgrade) -> None, None, None
   | name, Modified _ when name = main_type ->
     (* not sure how to ensure that version is correctly updated in this case *)
     let old_type = [%string "$old_version.$name"] in
@@ -592,9 +509,7 @@ let classified_type_to_strings ~kind ~main_type ~new_file_version =
     when name = main_type ->
     let fn = name_converter name in
     let fn_impl =
-      modification_to_string
-        ~kind
-        ~version_when_main_type:new_file_version
+      modification_to_string ~kind ~version_when_main_type:new_file_version
         modification
     in
     let fn_intf =
@@ -628,12 +543,10 @@ let load_sort_map ~version path =
   Ok (sorted_items, item_map, main_type, main_type_param_count, version)
 
 let enclose_module ~header ~module_name ?(impl = false) = function
-  | [] ->
-    []
+  | [] -> []
   | lines ->
     let delimiter = match impl with true -> "= struct" | false -> ": sig" in
-    [%string "module $module_name $delimiter"]
-    :: header
+    [%string "module $module_name $delimiter"] :: header
     :: List.rev ("end" :: lines)
 
 let name_t_module prefix (version : Version.t) =
@@ -649,19 +562,19 @@ let name_upgrader_module ~old_file_version ~new_file_version =
      new_file_version)"]
 
 let make ~prefix ~kind ~old_file ~old_file_version ~new_file ~new_file_version =
-  let* ( _old_sorted_items
-       , old_type_map
-       , old_main_type
-       , old_main_type_param_count
-       , old_file_version )
+  let* ( _old_sorted_items,
+         old_type_map,
+         old_main_type,
+         old_main_type_param_count,
+         old_file_version )
     =
     load_sort_map ~version:old_file_version old_file
   in
-  let* ( new_sorted_items
-       , _new_type_map
-       , new_main_type
-       , new_main_type_param_count
-       , new_file_version )
+  let* ( new_sorted_items,
+         _new_type_map,
+         new_main_type,
+         new_main_type_param_count,
+         new_file_version )
     =
     load_sort_map ~version:new_file_version new_file
   in
@@ -677,10 +590,7 @@ let make ~prefix ~kind ~old_file ~old_file_version ~new_file ~new_file_version =
             classify_item ~main_type ~old_type_map ~classified_type_map new_item
           in
           let impl, user_intf, field =
-            classified_type_to_strings
-              ~kind
-              ~main_type
-              ~new_file_version
+            classified_type_to_strings ~kind ~main_type ~new_file_version
               (name, classified_item)
           in
           let add_if_some l = function None -> l | Some el -> el :: l in
@@ -739,8 +649,7 @@ module $new_version : (module type of $new_version_t)|}]
       generate_type_params old_main_type_param_count ~start:0
     in
     let new_main_type_params =
-      generate_type_params
-        new_main_type_param_count
+      generate_type_params new_main_type_param_count
         ~start:old_main_type_param_count
     in
     let main_converter_type =
@@ -749,28 +658,25 @@ module $new_version : (module type of $new_version_t)|}]
          $new_main_type_params$(new_version).$main_type"]
     in
     let intf_list =
-      [ [%string "val $convert: $main_converter_type"]
-      ; [%string "val $converter: converter"]
+      [
+        [%string "val $convert: $main_converter_type"];
+        [%string "val $converter: converter"];
       ]
     in
     Ok
-      ( main_type
-      , old_file_version
-      , new_file_version
-      , { impl_list =
-            enclose_module ~module_name ~impl:true ~header:impl_header impl_list
-        ; intf_list = enclose_module ~module_name ~header:intf_header intf_list
-        ; user_intf_list =
-            enclose_module ~module_name ~header:intf_header user_intf_list
-        ; upgrader_t =
-            enclose_module
-              ~module_name
-              ~impl:true
-              ~header:upgrader_t_header
-              [ converter_type ]
-        ; upgrader_t_intf =
-            enclose_module
-              ~module_name
-              ~header:upgrader_t_intf_header
-              [ converter_type ]
+      ( main_type,
+        old_file_version,
+        new_file_version,
+        {
+          impl_list =
+            enclose_module ~module_name ~impl:true ~header:impl_header impl_list;
+          intf_list = enclose_module ~module_name ~header:intf_header intf_list;
+          user_intf_list =
+            enclose_module ~module_name ~header:intf_header user_intf_list;
+          upgrader_t =
+            enclose_module ~module_name ~impl:true ~header:upgrader_t_header
+              [ converter_type ];
+          upgrader_t_intf =
+            enclose_module ~module_name ~header:upgrader_t_intf_header
+              [ converter_type ];
         } )
