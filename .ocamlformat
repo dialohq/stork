@@ -1,10 +1,7 @@
-profile = sparse
-break-cases = nested
-break-fun-decl = smart
+profile = default
+break-fun-decl = fit-or-vertical
 cases-exp-indent = 2
-if-then-else = fit-or-vertical
 parens-tuple = multi-line-only
-parens-tuple-patterns = multi-line-only
 parens-ite = false
 infix-precedence = parens
 break-infix-before-func = false
@@ -16,3 +13,4 @@ wrap-comments = true
 parse-docstrings = true
 let-binding-spacing = compact
 type-decl = sparse
+leading-nested-match-parens = true

@@ -1,8 +1,6 @@
 module NoLoc : sig
   type annot = annot_section list [@@deriving show]
-
   and annot_section = string * annot_field list [@@deriving show]
-
   and annot_field = string * string option [@@deriving show]
 
   module TypeExpr : sig
@@ -13,11 +11,8 @@ module NoLoc : sig
     [@@deriving show]
 
     type type_inst = string * t list [@@deriving show]
-
     and variant = (string * annot) * t option [@@deriving show]
-
     and field = (string * field_kind * annot) * t [@@deriving show]
-
     and cell = t * annot [@@deriving show]
 
     and t =
@@ -36,7 +31,6 @@ module NoLoc : sig
 
   module ModuleItem : sig
     type type_param = string list [@@deriving show]
-
     type t = (string * type_param * annot) * TypeExpr.t [@@deriving show]
 
     val from_loc : Atd.Ast.module_item -> t

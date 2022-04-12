@@ -2,9 +2,7 @@ module NoLoc = struct
   open Atd.Ast
 
   type annot = annot_section list [@@deriving show]
-
   and annot_section = string * annot_field list [@@deriving show]
-
   and annot_field = string * string option [@@deriving show]
 
   let annot_from_loc annot =
@@ -22,11 +20,8 @@ module NoLoc = struct
     [@@deriving show]
 
     type type_inst = string * t list [@@deriving show]
-
     and variant = (string * annot) * t option [@@deriving show]
-
     and field = (string * field_kind * annot) * t [@@deriving show]
-
     and cell = t * annot [@@deriving show]
 
     and t =
@@ -83,13 +78,11 @@ module NoLoc = struct
         Wrap (from_loc type_expr, annot_from_loc annot)
       | Name (_loc, type_inst, annot) ->
         Name (type_inst_from_loc type_inst, annot_from_loc annot)
-      | Tvar (_loc, name) ->
-        Tvar name
+      | Tvar (_loc, name) -> Tvar name
   end
 
   module ModuleItem = struct
     type type_param = string list [@@deriving show]
-
     type t = (string * type_param * annot) * TypeExpr.t [@@deriving show]
 
     let from_loc

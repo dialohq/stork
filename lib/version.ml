@@ -9,15 +9,11 @@ module Kind = struct
 end
 
 let to_literal_string = function
-  | Int v ->
-    [%string {|`Int %i$v|}]
-  | String s ->
-    [%string {|`String "$s"|}]
+  | Int v -> [%string {|`Int %i$v|}]
+  | String s -> [%string {|`String "$s"|}]
 
 let to_unwrapped_literal_string = function
-  | Int v ->
-    [%string {|%i$v|}]
-  | String s ->
-    [%string {|"$s"|}]
+  | Int v -> [%string {|%i$v|}]
+  | String s -> [%string {|"$s"|}]
 
 let to_string = function Int v -> string_of_int v | String s -> s

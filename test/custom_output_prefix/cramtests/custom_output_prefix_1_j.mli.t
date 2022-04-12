@@ -1,17 +1,16 @@
   $ cd ..
   $ dune exec -- stork gen -o custom_output_prefix original_output_prefix_1.atd original_output_prefix_bar.atd
-  $ cat custom_output_prefix_1_j.mli | ocamlformat --intf -
+  $ cat custom_output_prefix_1_j.mli | ocamlformat --enable-outside-detected-project --intf -
   (* Auto-generated from "original_output_prefix_1.atd" *)
-  [@@@ocaml.warning "-27-32-35-39"]
+  [@@@ocaml.warning "-27-32-33-35-39"]
   
   type 'b tuple_2 = 'b Custom_output_prefix_1_t.tuple_2
-  
   type skill = Custom_output_prefix_1_t.skill
   
-  type company = Custom_output_prefix_1_t.company =
-    { name : string
-    ; address : string
-    }
+  type company = Custom_output_prefix_1_t.company = {
+    name : string;
+    address : string;
+  }
   
   type employer = Custom_output_prefix_1_t.employer =
     | Self
@@ -19,42 +18,42 @@
   
   type employment = Custom_output_prefix_1_t.employment
   
-  type employee = Custom_output_prefix_1_t.employee =
-    { name : string
-    ; age : int
-    ; position : employment
-    ; version : int
-    ; skills : skill Atdgen_runtime.Util.ocaml_array
-    }
+  type employee = Custom_output_prefix_1_t.employee = {
+    name : string;
+    age : int;
+    position : employment;
+    version : int;
+    skills : skill Atdgen_runtime.Util.ocaml_array;
+  }
   
   val write_tuple_2
-    :  (Bi_outbuf.t -> 'b -> unit)
-    -> Bi_outbuf.t
-    -> 'b tuple_2
-    -> unit
+    :  (Bi_outbuf.t -> 'b -> unit) ->
+    Bi_outbuf.t ->
+    'b tuple_2 ->
+    unit
   (** Output a JSON value of type {!tuple_2}. *)
   
   val string_of_tuple_2
-    :  (Bi_outbuf.t -> 'b -> unit)
-    -> ?len:int
-    -> 'b tuple_2
-    -> string
+    :  (Bi_outbuf.t -> 'b -> unit) ->
+    ?len:int ->
+    'b tuple_2 ->
+    string
   (** Serialize a value of type {!tuple_2} into a JSON string.
   
       @param len
         specifies the initial length of the buffer used internally. Default: 1024. *)
   
   val read_tuple_2
-    :  (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b)
-    -> Yojson.Safe.lexer_state
-    -> Lexing.lexbuf
-    -> 'b tuple_2
+    :  (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b) ->
+    Yojson.Safe.lexer_state ->
+    Lexing.lexbuf ->
+    'b tuple_2
   (** Input JSON data of type {!tuple_2}. *)
   
   val tuple_2_of_string
-    :  (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b)
-    -> string
-    -> 'b tuple_2
+    :  (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b) ->
+    string ->
+    'b tuple_2
   (** Deserialize JSON data of type {!tuple_2}. *)
   
   val write_skill : Bi_outbuf.t -> skill -> unit

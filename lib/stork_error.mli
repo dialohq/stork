@@ -1,13 +1,8 @@
 type path = string
-
 type type_name = string
-
 type version = string
-
 type var_name = string
-
 type error_code = int
-
 type command = string
 
 type t =
@@ -26,9 +21,6 @@ type t =
   ]
 
 val to_string : t -> string
-
 val missing_env : var_name -> t
-
 val invalid_path : path -> t
-
 val empty_list : t
