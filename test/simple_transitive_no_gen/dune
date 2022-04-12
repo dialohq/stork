@@ -1,0 +1,44 @@
+(rule
+ (targets simple_transitive_change_1_t.ml simple_transitive_change_1_t.mli)
+ (deps simple_transitive_change_1.atd)
+ (action
+  (run atdgen -t %{deps})))
+
+(rule
+ (targets simple_transitive_change_1_j.ml simple_transitive_change_1_j.mli)
+ (deps simple_transitive_change_1.atd)
+ (action
+  (run atdgen -j -j-std %{deps})))
+
+(rule
+ (targets simple_transitive_change_2_t.ml simple_transitive_change_2_t.mli)
+ (deps simple_transitive_change_2.atd)
+ (action
+  (run atdgen -t %{deps})))
+
+(rule
+ (targets simple_transitive_change_2_j.ml simple_transitive_change_2_j.mli)
+ (deps simple_transitive_change_2.atd)
+ (action
+  (run atdgen -j -j-std %{deps})))
+
+(rule
+ (targets
+  simple_transitive_change_upgrader_t.ml
+  simple_transitive_change_upgrader_t.mli
+  simple_transitive_change.ml
+  simple_transitive_change.mli
+  simple_transitive_change_user_fns.mli)
+ (deps
+  (:atd
+   (glob_files *.atd)))
+ (action
+  (run %{bin:stork} gen --no-gen %{atd})))
+
+(tests
+ (names test_json_parsing)
+ (libraries yojson stork test_utils)
+ (deps
+  (glob_files *.json))
+ (flags
+  (:standard -linkall -g -open StdLabels -w +A-48-42-40-70)))

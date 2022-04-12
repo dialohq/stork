@@ -1,0 +1,25 @@
+{
+    "name": "Paul",
+    "age": 30,
+    "position": [
+        "dev",
+        [
+            "Company",
+            {
+                "name": "Dialo",
+                "address": "Canary Islands"
+            }
+        ]
+    ],
+    "skills": [
+        [
+            "design",
+            "typography"
+        ],
+        [
+            "computer science",
+            "ocaml"
+        ]
+    ],
+    "version": 1
+}

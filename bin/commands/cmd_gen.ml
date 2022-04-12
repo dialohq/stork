@@ -109,8 +109,11 @@ let run
 open Cmdliner
 
 let doc = "Generate migrator files for the given ATD files"
+
 let sdocs = Manpage.s_common_options
+
 let exits = Common.exits
+
 let envs = Common.envs
 
 let man =
@@ -176,7 +179,7 @@ let term =
        `_t`, `_j`/`_bs` files yourself"
     in
     let docv = "FLAG" in
-    Arg.(value & flag & info [ "no_gen" ] ~doc ~docv)
+    Arg.(value & flag & info [ "no-gen" ] ~doc ~docv)
   in
   run ?output_prefix ~rescript ~git ~type_attr ?atdgen_opt ?atdgen_t_opt
     ?atdgen_j_opt ~no_gen files

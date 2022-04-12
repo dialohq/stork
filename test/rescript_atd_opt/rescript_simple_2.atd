@@ -1,0 +1,24 @@
+type company = {
+    name: string;
+    ?turnover: int option;
+}
+
+type employer = [ Self | Company of company ] <ocaml repr="classic">
+
+type 'b tuple_2 = (string * 'b)
+
+type employment = employer tuple_2
+
+type skill = {
+    domain: string;
+    name: string;
+}
+
+type employee = {
+    name: string;
+    age: int;
+    position: employment;
+    prev_position: employment nullable;
+    version: int;
+    skills: skill list <ocaml repr="array">
+}
