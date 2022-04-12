@@ -109,11 +109,8 @@ let run
 open Cmdliner
 
 let doc = "Generate migrator files for the given ATD files"
-
 let sdocs = Manpage.s_common_options
-
 let exits = Common.exits
-
 let envs = Common.envs
 
 let man =
@@ -162,16 +159,22 @@ let term =
     let docv = "ATTR" in
     Arg.(value & opt_all string [] & info [ "type-attr" ] ~doc ~docv)
   and+ atdgen_opt =
-    let doc = "Forward OPTION to atdgen -t and atdgen -j" in
-    let docv = "OPTION" in
+    let doc =
+      {|Forward "-atdgen-opt=value" to atdgen -t and atdgen -j. You might have to quote it. For example use --atdgen_opt="-type-attr=genType -deriving-conv"|}
+    in
+    let docv = {|"-atdgen-opt=value"|} in
     Arg.(value & opt (some string) None & info [ "atdgen-opt" ] ~doc ~docv)
   and+ atdgen_t_opt =
-    let doc = "Forward OPTION to atdgen -t" in
-    let docv = "OPTION" in
+    let doc =
+      {|Forward "-atdgen-opt=value" to atdgen -t. You might have to quote it. For example use --atdgen_t_opt="-type-attr=genType -deriving-conv"|}
+    in
+    let docv = {|"-atdgen-opt=value"|} in
     Arg.(value & opt (some string) None & info [ "atdgen-t-opt" ] ~doc ~docv)
   and+ atdgen_j_opt =
-    let doc = "Forward OPTION to atdgen -j" in
-    let docv = "OPTION" in
+    let doc =
+      {|Forward "-atdgen-opt=value" to atdgen -j. You might have to quote it. For example use --atdgen_j_opt="-type-attr=genType -deriving-conv"|}
+    in
+    let docv = {|"-atdgen-opt=value"|} in
     Arg.(value & opt (some string) None & info [ "atdgen-j-opt" ] ~doc ~docv)
   and+ no_gen =
     let doc =
