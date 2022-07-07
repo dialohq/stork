@@ -13,41 +13,28 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+        ocaml-compiler:
+          - 4.14.x
     steps:
-      - uses: actions/setup-node@v1
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
         with:
-          node-version: 12
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os != 'macos-latest' }}
 
-      - uses: actions/checkout@v2
-      - name: Cache esy dependencies
-        uses: actions/cache@v1
-        id: cache
-        with:
-          path: _export
-          key: ${{ runner.OS }}-build-${{ hashFiles('esy.lock/index.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-
-      - name: Install esy
-        run: npm install -g esy@latest
-
-      - name: Import dependencies
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: esy import-build _export/*
-
-      - name: Install dependencies
-        run: esy install
-
-      - name: Build
-        run: esy build --release
+      - name: Install opam packages
+        run: opam install . --with-test --locked
 
       - name: Check formatting
-        run: esy format
+        run: opam exec -- dune build @fmt
+        if: ${{ matrix.os == 'ubuntu-latest' && always() }}
 
-      - name: Run tests
-        run: esy test
+      - name: Run build
+        run: opam exec -- dune build
 
-      - name: Export dependencies
-        run: esy export-dependencies
+      - name: Run the unit tests
+        run: opam exec -- dune test
+        timeout-minutes: 2
