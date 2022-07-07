@@ -16,6 +16,28 @@ Then, build the project with:
 dune build
 ```
 
+### Updating a dependency
+
+If you update the dependencies in `dune-project` run
+
+```bash
+dune build
+```
+
+to update the opam file, then
+
+```bash
+opam reinstall --working-dir .
+```
+
+to sync the dependencies with your switch and finally
+
+```bash
+opam lock .
+```
+
+to update the lock file.
+
 ### Running Binary
 
 After building the project, you can run the main binary that is produced.
@@ -39,26 +61,6 @@ You can then accept the correction of the cram tests with:
 ```bash
 dune promote
 ```
-
-### Building documentation
-
-Documentation for the libraries in the project can be generated with:
-
-```bash
-dune build @doc
-```
-
-### Releasing
-
-To create a release and publish it on Opam, first update the `CHANGES.md` file with the last changes and the version that you want to release.
-The, you can run the script `script/release.sh`. The script will perform the following actions:
-
-- Create a tag with the version found in `stork.opam`, and push it to your repository.
-- Create the distribution archive.
-- Publish the distribution archive to a GitHub Release.
-- Submit a PR on Opam's repository.
-
-When the release is published on GitHub, the CI/CD will trigger the `Release` workflow which will compile binaries for all supported platforms and add them to the GitHub Release as assets.
 
 ### Repository Structure
 

@@ -10,8 +10,8 @@ homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
   "astring" {= "0.8.5" & dev}
-  "atd" {= "2.9.1"}
-  "atdgen" {= "2.9.1"}
+  "atd" {= "2.4.1"}
+  "atdgen" {= "2.4.1"}
   "atdgen-runtime" {= "2.9.1"}
   "base" {= "v0.15.0" & dev}
   "base-bigarray" {= "base"}
@@ -21,7 +21,7 @@ depends: [
   "base_bigstring" {= "v0.15.0" & dev}
   "base_quickcheck" {= "v0.15.0" & dev}
   "bin_prot" {= "v0.15.0" & dev}
-  "biniou" {= "1.2.1"}
+  "biniou" {= "1.2.2"}
   "camlp-streams" {= "5.0.1"}
   "camomile" {= "1.0.2" & dev}
   "charInfo_width" {= "1.1.0" & dev}
@@ -70,7 +70,7 @@ depends: [
   "ocaml_intrinsics" {= "v0.15.2" & dev}
   "ocamlbuild" {= "0.14.1"}
   "ocamlfind" {= "1.9.5"}
-  "ocamlformat" {= "0.22.4" & dev}
+  "ocamlformat" {= "0.21.0" & dev}
   "ocamlformat-rpc-lib" {= "0.22.4" & dev}
   "ocp-indent" {= "1.8.1" & dev}
   "ocplib-endian" {= "1.2"}
@@ -149,17 +149,15 @@ depends: [
 build: [
   ["dune" "subst"] {dev}
   [
-    "dune"
-    "build"
-    "-p"
-    name
-    "-j"
-    jobs
-    "--promote-install-files=false"
-    "@install"
-    "@runtest" {with-test}
-    "@doc" {with-doc}
-  ]
-  ["dune" "install" "-p" name "--create-install-files" name]
+  "dune"
+  "build"
+  "-p"
+  name
+  "-j"
+  jobs
+  "@install"
+  "@runtest" {with-test}
+  "@doc" {with-doc}
+]
 ]
 dev-repo: "git+https://github.com/dialohq/stork.git"

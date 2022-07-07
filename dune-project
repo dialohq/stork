@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.3)
 
 (name stork)
 
@@ -21,20 +21,22 @@
   (ocaml
    (>= 4.08.0))
   dune
-  (odoc :with-doc)
   cmdliner
   logs
   fmt
-  atd
-  atdgen
+  (atd
+   (= 2.4.1))
+  (atdgen
+   (= 2.4.1))
   biniou
   logs
   ppx_deriving
   (ppx_string_interpolation :build)
   yojson
   (ocaml-lsp-server :dev)
-  (ocamlformat :dev)
+  (ocamlformat
+   (and
+    :dev
+    (= 0.21.0)))
   (patdiff :dev)
   (utop :dev)))
-
-(cram enable)
