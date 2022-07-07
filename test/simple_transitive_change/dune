@@ -18,3 +18,11 @@
    (glob_files *.atd)))
  (action
   (run %{bin:stork} gen %{atd})))
+
+(tests
+ (names test_json_parsing)
+ (libraries yojson stork test_utils)
+ (deps
+  (glob_files *.json))
+ (flags
+  (:standard -linkall -g -open StdLabels -w +A-48-42-40-70)))
