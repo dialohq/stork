@@ -16,6 +16,17 @@ depends: [
   "cmdliner"
   "logs"
   "fmt"
+  "atd"
+  "atdgen"
+  "biniou"
+  "logs"
+  "ppx_deriving"
+  "ppx_string_interpolation" {build}
+  "yojson"
+  "ocaml-lsp-server" {dev}
+  "ocamlformat" {dev}
+  "patdiff" {dev}
+  "utop" {dev}
 ]
 build: [
   ["dune" "subst"] {dev}

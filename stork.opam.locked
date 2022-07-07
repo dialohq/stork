@@ -1,0 +1,165 @@
+opam-version: "2.0"
+name: "stork"
+version: "~dev"
+synopsis: "A JSON migrator CLI for ATD"
+description: "A JSON migrator CLI for ATD"
+maintainer: "Paul Tsnobiladzé"
+authors: "Paul Tsnobiladzé"
+license: "MIT"
+homepage: "https://github.com/dialohq/stork"
+bug-reports: "https://github.com/dialohq/stork/issues"
+depends: [
+  "astring" {= "0.8.5" & dev}
+  "atd" {= "2.9.1"}
+  "atdgen" {= "2.9.1"}
+  "atdgen-runtime" {= "2.9.1"}
+  "base" {= "v0.15.0" & dev}
+  "base-bigarray" {= "base"}
+  "base-bytes" {= "base"}
+  "base-threads" {= "base"}
+  "base-unix" {= "base"}
+  "base_bigstring" {= "v0.15.0" & dev}
+  "base_quickcheck" {= "v0.15.0" & dev}
+  "bin_prot" {= "v0.15.0" & dev}
+  "biniou" {= "1.2.1"}
+  "camlp-streams" {= "5.0.1"}
+  "camomile" {= "1.0.2" & dev}
+  "charInfo_width" {= "1.1.0" & dev}
+  "cmdliner" {= "1.1.1"}
+  "conf-libpcre" {= "1" & dev}
+  "conf-pkg-config" {= "2" & dev}
+  "core" {= "v0.15.0" & dev}
+  "core_kernel" {= "v0.15.0" & dev}
+  "core_unix" {= "v0.15.0" & dev}
+  "cppo" {= "1.6.9"}
+  "csexp" {= "1.5.1"}
+  "dune" {= "3.3.1"}
+  "dune-build-info" {= "3.3.1" & dev}
+  "dune-configurator" {= "3.3.1"}
+  "dune-rpc" {= "3.3.1" & dev}
+  "dyn" {= "3.3.1" & dev}
+  "easy-format" {= "1.3.4"}
+  "either" {= "1.0.0" & dev}
+  "expect_test_helpers_core" {= "v0.15.0" & dev}
+  "fiber" {= "3.3.1" & dev}
+  "fieldslib" {= "v0.15.0" & dev}
+  "fix" {= "20220121" & dev}
+  "fmt" {= "0.9.0"}
+  "fpath" {= "0.7.3" & dev}
+  "gen" {= "1.0"}
+  "int_repr" {= "v0.15.0" & dev}
+  "jane-street-headers" {= "v0.15.0" & dev}
+  "jst-config" {= "v0.15.1" & dev}
+  "lambda-term" {= "3.2.0" & dev}
+  "logs" {= "0.7.0"}
+  "lwt" {= "5.6.1"}
+  "lwt_log" {= "1.1.1" & dev}
+  "lwt_react" {= "1.2.0" & dev}
+  "menhir" {= "20220210"}
+  "menhirLib" {= "20220210"}
+  "menhirSdk" {= "20220210"}
+  "mew" {= "0.1.0" & dev}
+  "mew_vi" {= "0.5.0" & dev}
+  "num" {= "1.4" & dev}
+  "ocaml" {= "4.14.0"}
+  "ocaml-compiler-libs" {= "v0.12.4"}
+  "ocaml-config" {= "2"}
+  "ocaml-lsp-server" {= "1.12.2" & dev}
+  "ocaml-system" {= "4.14.0"}
+  "ocaml-version" {= "3.4.0" & dev}
+  "ocaml_intrinsics" {= "v0.15.2" & dev}
+  "ocamlbuild" {= "0.14.1"}
+  "ocamlfind" {= "1.9.5"}
+  "ocamlformat" {= "0.22.4" & dev}
+  "ocamlformat-rpc-lib" {= "0.22.4" & dev}
+  "ocp-indent" {= "1.8.1" & dev}
+  "ocplib-endian" {= "1.2"}
+  "octavius" {= "1.2.2" & dev}
+  "odoc-parser" {= "1.0.0" & dev}
+  "omd" {= "1.3.1" & dev}
+  "ordering" {= "3.3.1" & dev}
+  "parsexp" {= "v0.15.0" & dev}
+  "patdiff" {= "v0.15.0" & dev}
+  "patience_diff" {= "v0.15.0" & dev}
+  "pcre" {= "7.5.0" & dev}
+  "pp" {= "1.1.2" & dev}
+  "ppx_assert" {= "v0.15.0" & dev}
+  "ppx_base" {= "v0.15.0" & dev}
+  "ppx_bench" {= "v0.15.0" & dev}
+  "ppx_bin_prot" {= "v0.15.0" & dev}
+  "ppx_cold" {= "v0.15.0" & dev}
+  "ppx_compare" {= "v0.15.0" & dev}
+  "ppx_custom_printf" {= "v0.15.0" & dev}
+  "ppx_derivers" {= "1.2.1"}
+  "ppx_deriving" {= "5.2.1"}
+  "ppx_disable_unused_warnings" {= "v0.15.0" & dev}
+  "ppx_enumerate" {= "v0.15.0" & dev}
+  "ppx_expect" {= "v0.15.0" & dev}
+  "ppx_fields_conv" {= "v0.15.0" & dev}
+  "ppx_fixed_literal" {= "v0.15.0" & dev}
+  "ppx_hash" {= "v0.15.0" & dev}
+  "ppx_here" {= "v0.15.0" & dev}
+  "ppx_ignore_instrumentation" {= "v0.15.0" & dev}
+  "ppx_inline_test" {= "v0.15.0" & dev}
+  "ppx_jane" {= "v0.15.0" & dev}
+  "ppx_let" {= "v0.15.0" & dev}
+  "ppx_log" {= "v0.15.0" & dev}
+  "ppx_module_timer" {= "v0.15.0" & dev}
+  "ppx_optcomp" {= "v0.15.0" & dev}
+  "ppx_optional" {= "v0.15.0" & dev}
+  "ppx_pipebang" {= "v0.15.0" & dev}
+  "ppx_sexp_conv" {= "v0.15.1" & dev}
+  "ppx_sexp_message" {= "v0.15.0" & dev}
+  "ppx_sexp_value" {= "v0.15.0" & dev}
+  "ppx_stable" {= "v0.15.0" & dev}
+  "ppx_string" {= "v0.15.0" & dev}
+  "ppx_string_interpolation" {= "1.0.1"}
+  "ppx_typerep_conv" {= "v0.15.0" & dev}
+  "ppx_variants_conv" {= "v0.15.0" & dev}
+  "ppx_yojson_conv_lib" {= "v0.15.0" & dev}
+  "ppxlib" {= "0.27.0"}
+  "re" {= "1.10.4"}
+  "react" {= "1.2.2" & dev}
+  "result" {= "1.5"}
+  "sedlex" {= "3.0"}
+  "seq" {= "base"}
+  "sexp_pretty" {= "v0.15.0" & dev}
+  "sexplib" {= "v0.15.0" & dev}
+  "sexplib0" {= "v0.15.1"}
+  "spawn" {= "v0.15.1" & dev}
+  "splittable_random" {= "v0.15.0" & dev}
+  "stdio" {= "v0.15.0" & dev}
+  "stdlib-shims" {= "0.3.0"}
+  "stdune" {= "3.3.1" & dev}
+  "time_now" {= "v0.15.0" & dev}
+  "timezone" {= "v0.15.0" & dev}
+  "topkg" {= "1.0.5"}
+  "trie" {= "1.0.0" & dev}
+  "typerep" {= "v0.15.0" & dev}
+  "uchar" {= "0.0.2"}
+  "utop" {= "2.9.2" & dev}
+  "uucp" {= "14.0.0" & dev}
+  "uuseg" {= "14.0.0" & dev}
+  "uutf" {= "1.0.3" & dev}
+  "variantslib" {= "v0.15.0" & dev}
+  "xdg" {= "3.3.1" & dev}
+  "yojson" {= "1.7.0"}
+  "zed" {= "3.1.0" & dev}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "--promote-install-files=false"
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+  ["dune" "install" "-p" name "--create-install-files" name]
+]
+dev-repo: "git+https://github.com/dialohq/stork.git"

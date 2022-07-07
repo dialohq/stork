@@ -24,6 +24,17 @@
   (odoc :with-doc)
   cmdliner
   logs
-  fmt))
+  fmt
+  atd
+  atdgen
+  biniou
+  logs
+  ppx_deriving
+  (ppx_string_interpolation :build)
+  yojson
+  (ocaml-lsp-server :dev)
+  (ocamlformat :dev)
+  (patdiff :dev)
+  (utop :dev)))
 
 (cram enable)
