@@ -11,22 +11,22 @@ homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
   "ocaml" {>= "4.08.0"}
-  "dune" {>= "2.9"}
-  "odoc" {with-doc}
+  "dune" {>= "3.3"}
   "cmdliner"
   "logs"
   "fmt"
-  "atd"
-  "atdgen"
+  "atd" {= "2.4.1"}
+  "atdgen" {= "2.4.1"}
   "biniou"
   "logs"
   "ppx_deriving"
   "ppx_string_interpolation" {build}
   "yojson"
   "ocaml-lsp-server" {dev}
-  "ocamlformat" {dev}
+  "ocamlformat" {dev & = "0.21.0"}
   "patdiff" {dev}
   "utop" {dev}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}
@@ -37,11 +37,9 @@ build: [
     name
     "-j"
     jobs
-    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
-  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/dialohq/stork.git"
