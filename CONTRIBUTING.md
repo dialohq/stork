@@ -2,28 +2,26 @@
 
 ## Setup your development environment
 
-You need Esy, you can install the latest version from [npm](https://npmjs.com):
+You need Opam, you can install it by following [Opam's documentation](https://opam.ocaml.org/doc/Install.html).
+
+With Opam installed, you can install the dependencies in a new local switch with:
 
 ```bash
-yarn global add esy@latest
-# Or
-npm install -g esy@latest
+opam switch . --locked
 ```
 
-Then run the `esy` command from this project root to install and build depenencies.
+Then, build the project with:
 
 ```bash
-esy
+dune build
 ```
-
-This project uses [Dune](https://dune.build/) as a build system, if you add a dependency in your `package.json` file, don't forget to add it to your `dune` and `dune-project` files too.
 
 ### Running Binary
 
 After building the project, you can run the main binary that is produced.
 
 ```bash
-esy start
+dune exec stork
 ```
 
 ### Running Tests
@@ -31,7 +29,15 @@ esy start
 You can run the test compiled executable:
 
 ```bash
-esy test
+dune test
+```
+
+### Updating Tests
+
+You can then accept the correction of the cram tests with:
+
+```bash
+dune promote
 ```
 
 ### Building documentation
@@ -39,13 +45,8 @@ esy test
 Documentation for the libraries in the project can be generated with:
 
 ```bash
-esy doc
-open-cli $(esy doc-path)
+dune build @doc
 ```
-
-This assumes you have a command like [open-cli](https://github.com/sindresorhus/open-cli) installed on your system.
-
-> NOTE: On macOS, you can use the system command `open`, for instance `open $(esy doc-path)`
 
 ### Releasing
 
@@ -54,14 +55,10 @@ The, you can run the script `script/release.sh`. The script will perform the fol
 
 - Create a tag with the version found in `stork.opam`, and push it to your repository.
 - Create the distribution archive.
-- Publish the distribution archive to a Github Release.
+- Publish the distribution archive to a GitHub Release.
 - Submit a PR on Opam's repository.
 
-When the release is published on Github, the CI/CD will trigger the `Release` workflow which will perform the following actions
-
-- Compile binaries for all supported platforms.
-- Create an NPM release containing the pre-built binaries.
-- Publish the NPM release to the registry.
+When the release is published on GitHub, the CI/CD will trigger the `Release` workflow which will compile binaries for all supported platforms and add them to the GitHub Release as assets.
 
 ### Repository Structure
 
@@ -70,13 +67,13 @@ The following snippet describes Stork's repository structure.
 ```text
 .
 ├── .github/
-|   Contains Github specific files such as actions definitions and issue templates.
+|   Contains GitHub specific files such as actions definitions and issue templates.
 │
 ├── bin/
 |   Source for Stork's binary. This links to the library defined in `lib/`.
 │
 ├── lib/
-|   Source for Stork's library. Contains Stork's core functionnalities.
+|   Source for Stork's library. Contains Stork's core functionalities.
 │
 ├── test/
 |   Unit tests and integration tests for Stork.
@@ -87,13 +84,12 @@ The following snippet describes Stork's repository structure.
 │
 ├── LICENSE
 │
-├── package.json
-|   Esy package definition.
-|   To know more about creating Esy packages, see https://esy.sh/docs/en/configuration.html.
-│
 ├── README.md
-│
-└── stork.opam
-    Opam package definition.
-    To know more about creating and publishing opam packages, see https://opam.ocaml.org/doc/Packaging.html.
+|
+├── stork.opam
+|   Opam package definition.
+|   To know more about creating and publishing opam packages, see https://opam.ocaml.org/doc/Packaging.html
+|
+└── stork.opam.locked
+    Opam lock file.
 ```

@@ -1,7 +1,7 @@
 {
     "ocaml.sandbox": {
-        "kind": "esy",
-        "root": "${workspaceFolder:stork}"
+        "kind": "opam",
+        "switch": "${workspaceFolder:stork}"
     },
     "[cram]": {
         "files.trimTrailingWhitespace": false,
