@@ -1,4 +1,4 @@
-(lang dune 3.3)
+(lang dune 2.9)
 
 (name stork)
 
@@ -12,6 +12,8 @@
 (maintainers "Paul Tsnobiladz\195\169")
 
 (generate_opam_files true)
+
+(cram enable)
 
 (package
  (name stork)
