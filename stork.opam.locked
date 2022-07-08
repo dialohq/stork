@@ -75,6 +75,7 @@ depends: [
   "ocp-indent" {= "1.8.1" & dev}
   "ocplib-endian" {= "1.2"}
   "octavius" {= "1.2.2" & dev}
+  "odoc" {= "2.1.1" & with-doc}
   "odoc-parser" {= "1.0.0" & dev}
   "omd" {= "1.3.1" & dev}
   "ordering" {= "3.3.1" & dev}
@@ -136,6 +137,7 @@ depends: [
   "topkg" {= "1.0.5"}
   "trie" {= "1.0.0" & dev}
   "typerep" {= "v0.15.0" & dev}
+  "tyxml" {= "4.5.0" & with-doc}
   "uchar" {= "0.0.2"}
   "utop" {= "2.9.2" & dev}
   "uucp" {= "14.0.0" & dev}
@@ -155,9 +157,11 @@ build: [
   name
   "-j"
   jobs
+  "--promote-install-files=false"
   "@install"
   "@runtest" {with-test}
   "@doc" {with-doc}
 ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/dialohq/stork.git"
