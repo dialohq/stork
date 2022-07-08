@@ -27,7 +27,7 @@ dune build
 to update the opam file, then
 
 ```bash
-opam reinstall --working-dir .
+opam reinstall --working-dir --with-doc --with-test .
 ```
 
 to sync the dependencies with your switch and finally

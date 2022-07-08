@@ -41,4 +41,5 @@
     :dev
     (= 0.21.0)))
   (patdiff :dev)
-  (utop :dev)))
+  (utop :dev)
+  (odoc :with-doc)))
