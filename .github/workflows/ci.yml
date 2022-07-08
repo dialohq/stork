@@ -26,14 +26,14 @@ jobs:
           dune-cache: ${{ matrix.os != 'macos-latest' }}
 
       - name: Install opam packages
-        run: opam install . --with-test --locked
+        run: opam install . --with-test --deps-only --locked
+      
+      - name: Run build
+        run: opam exec -- dune build
 
       - name: Check formatting
         run: opam exec -- dune build @fmt
         if: ${{ matrix.os == 'ubuntu-latest' && always() }}
-
-      - name: Run build
-        run: opam exec -- dune build
 
       - name: Run the unit tests
         run: opam exec -- dune test
