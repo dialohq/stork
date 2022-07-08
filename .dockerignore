@@ -1,0 +1,29 @@
+# ocamlbuild working directory
+_build/
+
+# ocamlbuild targets
+*.byte
+*.native
+
+# Merlin configuring file for Vim and Emacs
+.merlin
+
+# Dune generated files
+*.install
+
+# Local OPAM switch
+_opam/
+
+# Esy generated files
+_esy/
+_release/
+_export/
+npm-debug.log
+yarn-error.log
+node_modules/
+
+# Stork generated files
+*_to_*_upgrader.ml
+*_to_*_upgrader.mli
+*_to_*_user_fns.mli
+serializers/
