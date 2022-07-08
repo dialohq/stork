@@ -22,6 +22,10 @@
  (depends
   (ocaml
    (>= 4.08.0))
+  (ocaml-base-compiler
+   (and
+    :dev
+    (= 4.14.0)))
   dune
   cmdliner
   logs

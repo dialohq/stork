@@ -11,6 +11,7 @@ homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
   "ocaml" {>= "4.08.0"}
+  "ocaml-base-compiler" {dev & = "4.14.0"}
   "dune" {>= "2.9"}
   "cmdliner"
   "logs"

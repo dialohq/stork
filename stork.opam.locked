@@ -23,8 +23,6 @@ depends: [
   "bin_prot" {= "v0.15.0" & dev}
   "biniou" {= "1.2.2"}
   "camlp-streams" {= "5.0.1"}
-  "camomile" {= "1.0.2" & dev}
-  "charInfo_width" {= "1.1.0" & dev}
   "cmdliner" {= "1.1.1"}
   "conf-libpcre" {= "1" & dev}
   "conf-pkg-config" {= "2" & dev}
@@ -50,10 +48,9 @@ depends: [
   "int_repr" {= "v0.15.0" & dev}
   "jane-street-headers" {= "v0.15.0" & dev}
   "jst-config" {= "v0.15.1" & dev}
-  "lambda-term" {= "3.2.0" & dev}
+  "lambda-term" {= "3.3.1" & dev}
   "logs" {= "0.7.0"}
   "lwt" {= "5.6.1"}
-  "lwt_log" {= "1.1.1" & dev}
   "lwt_react" {= "1.2.0" & dev}
   "menhir" {= "20220210"}
   "menhirLib" {= "20220210"}
@@ -62,10 +59,11 @@ depends: [
   "mew_vi" {= "0.5.0" & dev}
   "num" {= "1.4" & dev}
   "ocaml" {= "4.14.0"}
+  "ocaml-base-compiler" {= "4.14.0" & dev & = "4.14.0"}
   "ocaml-compiler-libs" {= "v0.12.4"}
   "ocaml-config" {= "2"}
   "ocaml-lsp-server" {= "1.12.2" & dev}
-  "ocaml-system" {= "4.14.0"}
+  "ocaml-options-vanilla" {= "1"}
   "ocaml-version" {= "3.4.0" & dev}
   "ocaml_intrinsics" {= "v0.15.2" & dev}
   "ocamlbuild" {= "0.14.1"}
@@ -76,7 +74,7 @@ depends: [
   "ocplib-endian" {= "1.2"}
   "octavius" {= "1.2.2" & dev}
   "odoc" {= "2.1.1" & with-doc}
-  "odoc-parser" {= "1.0.0" & dev}
+  "odoc-parser" {= "1.0.1" & dev}
   "omd" {= "1.3.1" & dev}
   "ordering" {= "3.3.1" & dev}
   "parsexp" {= "v0.15.0" & dev}
@@ -139,14 +137,14 @@ depends: [
   "typerep" {= "v0.15.0" & dev}
   "tyxml" {= "4.5.0" & with-doc}
   "uchar" {= "0.0.2"}
-  "utop" {= "2.9.2" & dev}
+  "utop" {= "2.10.0" & dev}
   "uucp" {= "14.0.0" & dev}
   "uuseg" {= "14.0.0" & dev}
   "uutf" {= "1.0.3" & dev}
   "variantslib" {= "v0.15.0" & dev}
   "xdg" {= "3.3.1" & dev}
   "yojson" {= "1.7.0"}
-  "zed" {= "3.1.0" & dev}
+  "zed" {= "3.2.0" & dev}
 ]
 build: [
   ["dune" "subst"] {dev}
