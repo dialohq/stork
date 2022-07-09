@@ -1,11 +1,19 @@
-FROM ocaml/opam:ubuntu-22.04-ocaml-4.14 as app
+FROM ubuntu:jammy
+RUN apt-get -y update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential \
+  curl git rsync sudo unzip nano libcap-dev libx11-dev bubblewrap \ 
+  pkg-config libpcre3-dev
+RUN apt-get -y install opam
+RUN opam repo set-url default https://opam.ocaml.org
+
+RUN opam switch create 4.14 --packages=ocaml-base-compiler.4.14.0
+RUN opam pin add -k version ocaml-base-compiler 4.14.0
+RUN opam install -y opam-depext
 
 WORKDIR /app
 
-RUN sudo apt -y install pkg-config libpcre3-dev
-
 COPY stork.opam stork.opam.locked ./
-RUN opam repo set-url default https://opam.ocaml.org
 RUN opam update
 RUN opam install . --deps-only --locked --with-test
 
