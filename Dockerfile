@@ -19,6 +19,4 @@ RUN opam install . --deps-only --locked --with-test
 
 COPY . ./
 
-RUN opam install . --locked --with-test
-
 ENTRYPOINT ["opam", "exec", "--"]
