@@ -5,6 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential \
   curl git rsync sudo unzip nano libcap-dev libx11-dev bubblewrap \ 
   pkg-config libpcre3-dev
 RUN apt-get -y install opam
+RUN opam init
 RUN opam repo set-url default https://opam.ocaml.org
 
 RUN opam switch create 4.14 --packages=ocaml-base-compiler.4.14.0
