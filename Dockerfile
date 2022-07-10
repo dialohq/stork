@@ -16,7 +16,6 @@ WORKDIR /app
 
 COPY stork.opam stork.opam.locked ./
 RUN opam update
-RUN opam install . --deps-only --locked --with-test
 
 COPY . ./
 
