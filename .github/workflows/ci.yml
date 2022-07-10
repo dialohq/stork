@@ -23,10 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: User docker-container driver # docker container doesn't support cache export to registry
+      - name: User docker-container driver
         uses: docker/setup-buildx-action@v1
         with:
-          driver: docker-container
+          driver: docker
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
