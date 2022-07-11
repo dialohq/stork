@@ -10,7 +10,7 @@ module NoLoc : sig
       | With_default
     [@@deriving show]
 
-    type    type_inst = string * t list [@@deriving show]
+    type type_inst = string * t list [@@deriving show]
     and variant = (string * annot) * t option [@@deriving show]
     and field = (string * field_kind * annot) * t [@@deriving show]
     and cell = t * annot [@@deriving show]
