@@ -7,7 +7,7 @@ You need Opam, you can install it by following [Opam's documentation](https://op
 With Opam installed, you can install the dependencies in a new local switch with:
 
 ```bash
-opam switch . --locked --with-test --with-doc
+opam switch create . --locked --with-test --with-doc
 ```
 
 Then, build the project with:
