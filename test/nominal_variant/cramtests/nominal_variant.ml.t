@@ -4,6 +4,8 @@
   [@@@ocaml.warning "-32-33-44"]
   
   open StdLabels
+  module Types = Nominal_variant_2_t
+  module Json = Nominal_variant_2_j
   
   module From_1_to_2 = struct
     include Nominal_variant_user_fns.From_1_to_2
