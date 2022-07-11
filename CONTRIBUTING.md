@@ -24,7 +24,8 @@ If you update the dependencies in `dune-project` run
 dune build
 ```
 
-to update the opam file, then
+to update the opam file, then run
+(but doesn't really work cf https://github.com/ocaml/opam/issues/5178)
 
 ```bash
 opam reinstall --working-dir --with-doc --with-test .
