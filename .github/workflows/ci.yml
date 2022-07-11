@@ -58,7 +58,7 @@ jobs:
         run: echo "TEST_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Check formatting
-        run: docker run -t --rm ${{ env.TEST_IMAGE }} dune build @fmt
+        run: docker run --rm ${{ env.TEST_IMAGE }} dune build @fmt
 
       - name: Run tests
-        run: docker run -t --rm ${{ env.TEST_IMAGE }} dune build @runtest
+        run: docker run --rm ${{ env.TEST_IMAGE }} dune build @runtest
