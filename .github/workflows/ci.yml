@@ -39,6 +39,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-
             type=ref,event=pr,prefix=pr-
+            type=raw,value=buildcache,enable=true
 
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -47,7 +48,9 @@ jobs:
           load: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.tags[1] }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=inline
 
       - name: Set TEST_IMAGE
