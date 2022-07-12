@@ -41,6 +41,9 @@ jobs:
             type=ref,event=pr,prefix=pr-
             type=raw,value=buildcache,enable=true
 
+      - name: Set TEST_IMAGE
+        run: echo "TEST_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
@@ -49,13 +52,10 @@ jobs:
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            type=registry,ref=${{ env.TEST_IMAGE }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{github.event.number}}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=inline
-
-      - name: Set TEST_IMAGE
-        run: echo "TEST_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Check formatting
         run: docker run --rm ${{ env.TEST_IMAGE }} dune build @fmt
