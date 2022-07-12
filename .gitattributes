@@ -5,6 +5,10 @@ esy.lock/* linguist-generated=true
 *.ml linguist-language=OCaml
 *.mli linguist-language=OCaml
 
+# Tell github that .ml.t and .mli.t CRAM test files are OCaml
+*.ml.t linguist-language=OCaml
+*.mli.t linguist-language=OCaml
+
 # Disable syntax detection for .spin
 .spin linguist-language=Text
 
