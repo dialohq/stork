@@ -5,21 +5,9 @@
   [@@@ocaml.warning "-27-32-33-35-39"]
   
   type 'b tuple_2 = string * 'b
-  
-  type skill = {
-    domain : string;
-    name : string;
-  }
-  
-  type company = {
-    name : string;
-    turnover : int option;
-  }
-  
-  type employer =
-    | Self
-    | Company of company
-  
+  type skill = { domain : string; name : string }
+  type company = { name : string; turnover : int option }
+  type employer = Self | Company of company
   type employment = employer tuple_2
   
   type employee = {

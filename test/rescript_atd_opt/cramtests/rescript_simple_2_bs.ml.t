@@ -5,21 +5,14 @@
   [@@@ocaml.warning "-27-32-33-35-39"]
   
   type 'b tuple_2 = 'b Rescript_simple_2_t.tuple_2
-  
-  type skill = Rescript_simple_2_t.skill = {
-    domain : string;
-    name : string;
-  }
+  type skill = Rescript_simple_2_t.skill = { domain : string; name : string }
   
   type company = Rescript_simple_2_t.company = {
     name : string;
     turnover : int option;
   }
   
-  type employer = Rescript_simple_2_t.employer =
-    | Self
-    | Company of company
-  
+  type employer = Rescript_simple_2_t.employer = Self | Company of company
   type employment = Rescript_simple_2_t.employment
   
   type employee = Rescript_simple_2_t.employee = {
@@ -98,12 +91,12 @@
         match x with
         | Self -> Atdgen_codec_runtime.Encode.constr0 "Self"
         | Company x ->
-          Atdgen_codec_runtime.Encode.constr1 "Company" write_company x)
+            Atdgen_codec_runtime.Encode.constr1 "Company" write_company x)
   
   let read_employer =
     Atdgen_codec_runtime.Decode.enum
       [
-        "Self", `Single (Self : employer);
+        ("Self", `Single (Self : employer));
         ( "Company",
           `Decode
             (read_company

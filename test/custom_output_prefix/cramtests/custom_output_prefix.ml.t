@@ -10,24 +10,26 @@
   module From_1_to_bar = struct
     include Custom_output_prefix_user_fns.From_1_to_bar
   
-    let convert_employer
-        :  converter -> OldVersion.employee -> OldVersion.employer ->
-        NewVersion.employer
-      =
+    let convert_employer :
+        converter ->
+        OldVersion.employee ->
+        OldVersion.employer ->
+        NewVersion.employer =
      fun converter old_doc -> function
       | OldVersion.Self -> NewVersion.Self
       | OldVersion.Company payload ->
-        NewVersion.Company (payload |> convert_company converter old_doc)
+          NewVersion.Company (payload |> convert_company converter old_doc)
   
-    let convert_employment
-        :  converter -> OldVersion.employee -> OldVersion.employment ->
-        NewVersion.employment
-      =
+    let convert_employment :
+        converter ->
+        OldVersion.employee ->
+        OldVersion.employment ->
+        NewVersion.employment =
      fun converter old_doc (a_0, a_1) ->
-      a_0, a_1 |> convert_employer converter old_doc
+      (a_0, a_1 |> convert_employer converter old_doc)
   
     let convert_employee : converter -> OldVersion.employee -> NewVersion.employee
-      =
+        =
      fun converter old_doc ->
       old_doc |> fun old_record ->
       NewVersion.
@@ -57,19 +59,20 @@
   let version_to_string = function `Int v -> string_of_int v | `String s -> s
   
   let get_version_from_json = function
-    | `Assoc fields ->
-      let version =
-        List.find_map
-          ~f:(function
-            | "version", ((`String _ | `Int _) as version) -> Some version
-            | _ -> None)
-          fields
-      in
-      (match version with
-      | None ->
-        invalid_arg
-          "The parsed JSON should have a `version` field of type int or string"
-      | Some version -> version)
+    | `Assoc fields -> (
+        let version =
+          List.find_map
+            ~f:(function
+              | "version", ((`String _ | `Int _) as version) -> Some version
+              | _ -> None)
+            fields
+        in
+        match version with
+        | None ->
+            invalid_arg
+              "The parsed JSON should have a `version` field of type int or \
+               string"
+        | Some version -> version)
     | _ -> invalid_arg "The parsed JSON should be an object."
   
   let get_version s = get_version_from_json (Yojson.Safe.from_string s)
@@ -84,16 +87,16 @@
     match get_version s with
     | `String "bar" -> Json.employee_of_string s
     | `Int 1 ->
-      convert_from_1_to_latest (Custom_output_prefix_1_j.employee_of_string s)
+        convert_from_1_to_latest (Custom_output_prefix_1_j.employee_of_string s)
     | v -> invalid_arg ("Unknown document version: '" ^ version_to_string v ^ "'")
   
   let read_employee_from_file fname =
     match get_version_from_file fname with
     | `String "bar" -> Atdgen_runtime.Util.Json.from_file Json.read_employee fname
     | `Int 1 ->
-      convert_from_1_to_latest
-        (Atdgen_runtime.Util.Json.from_file Custom_output_prefix_1_j.read_employee
-           fname)
+        convert_from_1_to_latest
+          (Atdgen_runtime.Util.Json.from_file
+             Custom_output_prefix_1_j.read_employee fname)
     | v -> invalid_arg ("Unknown document version: '" ^ version_to_string v ^ "'")
   
   let write_employee buf x =

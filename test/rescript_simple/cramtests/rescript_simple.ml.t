@@ -10,24 +10,26 @@
   module From_1_to_2 = struct
     include Rescript_simple_user_fns.From_1_to_2
   
-    let convert_employer
-        :  converter -> OldVersion.employee -> OldVersion.employer ->
-        NewVersion.employer
-      =
+    let convert_employer :
+        converter ->
+        OldVersion.employee ->
+        OldVersion.employer ->
+        NewVersion.employer =
      fun converter old_doc -> function
       | OldVersion.Self -> NewVersion.Self
       | OldVersion.Company payload ->
-        NewVersion.Company (payload |> convert_company converter old_doc)
+          NewVersion.Company (payload |> convert_company converter old_doc)
   
-    let convert_employment
-        :  converter -> OldVersion.employee -> OldVersion.employment ->
-        NewVersion.employment
-      =
+    let convert_employment :
+        converter ->
+        OldVersion.employee ->
+        OldVersion.employment ->
+        NewVersion.employment =
      fun converter old_doc (a_0, a_1) ->
-      a_0, a_1 |> convert_employer converter old_doc
+      (a_0, a_1 |> convert_employer converter old_doc)
   
     let convert_employee : converter -> OldVersion.employee -> NewVersion.employee
-      =
+        =
      fun converter old_doc ->
       old_doc |> fun old_record ->
       NewVersion.
@@ -77,10 +79,10 @@
     let version = Belt.Option.map versionJson Js.Json.classify in
     match version with
     | Some (Js.Json.JSONString version) -> `String version
-    | Some (Js.Json.JSONNumber version) ->
-      (match toInteger version with
-      | Some version -> `Int version
-      | None -> invalid_arg invalid_arg_message)
+    | Some (Js.Json.JSONNumber version) -> (
+        match toInteger version with
+        | Some version -> `Int version
+        | None -> invalid_arg invalid_arg_message)
     | Some _ | None -> invalid_arg invalid_arg_message
   
   let write_employee x = Json.write_employee { x with Types.version = 2 }

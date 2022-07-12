@@ -6,18 +6,8 @@
   
   type 'b tuple_2 = string * 'b [@@genType]
   type skill = string tuple_2 [@@genType]
-  
-  type company = {
-    name : string;
-    address : string;
-  }
-  [@@genType]
-  
-  type employer =
-    | Self
-    | Company of company
-  [@@genType]
-  
+  type company = { name : string; address : string } [@@genType]
+  type employer = Self | Company of company [@@genType]
   type employment = employer tuple_2 [@@genType]
   
   type employee = {

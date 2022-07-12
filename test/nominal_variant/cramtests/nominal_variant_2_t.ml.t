@@ -5,9 +5,4 @@
   [@@@ocaml.warning "-27-32-33-35-39"]
   
   type variant = Field
-  
-  type json = {
-    variant : variant;
-    field2 : string;
-    version : int;
-  }
+  type json = { variant : variant; field2 : string; version : int }
