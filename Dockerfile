@@ -1,25 +1,13 @@
-
-FROM ubuntu:jammy
-RUN apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential \
-    curl git rsync sudo unzip nano libcap-dev libx11-dev bubblewrap \ 
-    pkg-config libpcre3-dev
-RUN apt-get -y install opam
-RUN opam init --disable-sandboxing -y
-RUN opam update -y
-
-RUN opam switch create 4.14 --packages=ocaml-base-compiler.4.14.0
-RUN opam install -y opam-depext
+FROM ocaml/opam:ubuntu-22.04-ocaml-4.14 as app
 
 WORKDIR /app
 
+RUN sudo apt -y install pkg-config libpcre3-dev
+
 COPY stork.opam stork.opam.locked ./
-
-# until https://github.com/ocaml/opam/issues/5177 is fixed:
-RUN opam install ocamlformat.0.21.0 -y
-
-RUN opam install . --deps-only --locked --with-test -y
+RUN opam repo set-url default https://opam.ocaml.org
+RUN opam update
+RUN opam install . --deps-only --locked --with-test
 
 COPY . ./
 
