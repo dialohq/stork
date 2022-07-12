@@ -6,12 +6,7 @@
   
   type 'b tuple_2 = 'b Single_version_1_t.tuple_2
   type skill = Single_version_1_t.skill
-  
-  type company = Single_version_1_t.company = {
-    name : string;
-    address : string;
-  }
-  
+  type company = Single_version_1_t.company = { name : string; address : string }
   type employer = Single_version_1_t.employer
   type employment = Single_version_1_t.employment
   
@@ -67,7 +62,7 @@
            Yojson.Safe.read_tuple_sep2 p std_tuple lb
          done
        with Yojson.End_of_tuple -> ());
-      x0, x1
+      (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
@@ -118,7 +113,7 @@
            Yojson.Safe.read_tuple_sep2 p std_tuple lb
          done
        with Yojson.End_of_tuple -> ());
-      x0, x1
+      (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
@@ -166,24 +161,24 @@
           invalid_arg "out-of-bounds substring position or length";
         match len with
         | 4 ->
-          if
-            String.unsafe_get s pos = 'n'
-            && String.unsafe_get s (pos + 1) = 'a'
-            && String.unsafe_get s (pos + 2) = 'm'
-            && String.unsafe_get s (pos + 3) = 'e'
-          then 0
-          else -1
+            if
+              String.unsafe_get s pos = 'n'
+              && String.unsafe_get s (pos + 1) = 'a'
+              && String.unsafe_get s (pos + 2) = 'm'
+              && String.unsafe_get s (pos + 3) = 'e'
+            then 0
+            else -1
         | 7 ->
-          if
-            String.unsafe_get s pos = 'a'
-            && String.unsafe_get s (pos + 1) = 'd'
-            && String.unsafe_get s (pos + 2) = 'd'
-            && String.unsafe_get s (pos + 3) = 'r'
-            && String.unsafe_get s (pos + 4) = 'e'
-            && String.unsafe_get s (pos + 5) = 's'
-            && String.unsafe_get s (pos + 6) = 's'
-          then 1
-          else -1
+            if
+              String.unsafe_get s pos = 'a'
+              && String.unsafe_get s (pos + 1) = 'd'
+              && String.unsafe_get s (pos + 2) = 'd'
+              && String.unsafe_get s (pos + 3) = 'r'
+              && String.unsafe_get s (pos + 4) = 'e'
+              && String.unsafe_get s (pos + 5) = 's'
+              && String.unsafe_get s (pos + 6) = 's'
+            then 1
+            else -1
         | _ -> -1
       in
       let i = Yojson.Safe.map_ident p f lb in
@@ -201,24 +196,24 @@
             invalid_arg "out-of-bounds substring position or length";
           match len with
           | 4 ->
-            if
-              String.unsafe_get s pos = 'n'
-              && String.unsafe_get s (pos + 1) = 'a'
-              && String.unsafe_get s (pos + 2) = 'm'
-              && String.unsafe_get s (pos + 3) = 'e'
-            then 0
-            else -1
+              if
+                String.unsafe_get s pos = 'n'
+                && String.unsafe_get s (pos + 1) = 'a'
+                && String.unsafe_get s (pos + 2) = 'm'
+                && String.unsafe_get s (pos + 3) = 'e'
+              then 0
+              else -1
           | 7 ->
-            if
-              String.unsafe_get s pos = 'a'
-              && String.unsafe_get s (pos + 1) = 'd'
-              && String.unsafe_get s (pos + 2) = 'd'
-              && String.unsafe_get s (pos + 3) = 'r'
-              && String.unsafe_get s (pos + 4) = 'e'
-              && String.unsafe_get s (pos + 5) = 's'
-              && String.unsafe_get s (pos + 6) = 's'
-            then 1
-            else -1
+              if
+                String.unsafe_get s pos = 'a'
+                && String.unsafe_get s (pos + 1) = 'd'
+                && String.unsafe_get s (pos + 2) = 'd'
+                && String.unsafe_get s (pos + 3) = 'r'
+                && String.unsafe_get s (pos + 4) = 'e'
+                && String.unsafe_get s (pos + 5) = 's'
+                && String.unsafe_get s (pos + 6) = 's'
+              then 1
+              else -1
           | _ -> -1
         in
         let i = Yojson.Safe.map_ident p f lb in
@@ -249,9 +244,9 @@
     match x with
     | `Self -> Bi_outbuf.add_string ob "\"Self\""
     | `Company x ->
-      Bi_outbuf.add_string ob "[\"Company\",";
-      write_company ob x;
-      Bi_outbuf.add_char ob ']'
+        Bi_outbuf.add_string ob "[\"Company\",";
+        write_company ob x;
+        Bi_outbuf.add_char ob ']'
   
   let string_of_employer ?(len = 1024) x =
     let ob = Bi_outbuf.create len in
@@ -261,34 +256,34 @@
   let read_employer p lb =
     Yojson.Safe.read_space p lb;
     match Yojson.Safe.start_any_variant p lb with
-    | `Edgy_bracket ->
-      (match Yojson.Safe.read_ident p lb with
-      | "Self" ->
-        Yojson.Safe.read_space p lb;
-        Yojson.Safe.read_gt p lb;
-        `Self
-      | "Company" ->
-        Atdgen_runtime.Oj_run.read_until_field_value p lb;
-        let x = read_company p lb in
-        Yojson.Safe.read_space p lb;
-        Yojson.Safe.read_gt p lb;
-        `Company x
-      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
-    | `Double_quote ->
-      (match Yojson.Safe.finish_string p lb with
-      | "Self" -> `Self
-      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
-    | `Square_bracket ->
-      (match Atdgen_runtime.Oj_run.read_string p lb with
-      | "Company" ->
-        Yojson.Safe.read_space p lb;
-        Yojson.Safe.read_comma p lb;
-        Yojson.Safe.read_space p lb;
-        let x = read_company p lb in
-        Yojson.Safe.read_space p lb;
-        Yojson.Safe.read_rbr p lb;
-        `Company x
-      | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+    | `Edgy_bracket -> (
+        match Yojson.Safe.read_ident p lb with
+        | "Self" ->
+            Yojson.Safe.read_space p lb;
+            Yojson.Safe.read_gt p lb;
+            `Self
+        | "Company" ->
+            Atdgen_runtime.Oj_run.read_until_field_value p lb;
+            let x = read_company p lb in
+            Yojson.Safe.read_space p lb;
+            Yojson.Safe.read_gt p lb;
+            `Company x
+        | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+    | `Double_quote -> (
+        match Yojson.Safe.finish_string p lb with
+        | "Self" -> `Self
+        | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
+    | `Square_bracket -> (
+        match Atdgen_runtime.Oj_run.read_string p lb with
+        | "Company" ->
+            Yojson.Safe.read_space p lb;
+            Yojson.Safe.read_comma p lb;
+            Yojson.Safe.read_space p lb;
+            let x = read_company p lb in
+            Yojson.Safe.read_space p lb;
+            Yojson.Safe.read_rbr p lb;
+            `Company x
+        | x -> Atdgen_runtime.Oj_run.invalid_variant_tag p x)
   
   let employer_of_string s =
     read_employer (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
@@ -337,7 +332,7 @@
            Yojson.Safe.read_tuple_sep2 p std_tuple lb
          done
        with Yojson.End_of_tuple -> ());
-      x0, x1
+      (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
@@ -407,53 +402,53 @@
           invalid_arg "out-of-bounds substring position or length";
         match len with
         | 3 ->
-          if
-            String.unsafe_get s pos = 'a'
-            && String.unsafe_get s (pos + 1) = 'g'
-            && String.unsafe_get s (pos + 2) = 'e'
-          then 1
-          else -1
+            if
+              String.unsafe_get s pos = 'a'
+              && String.unsafe_get s (pos + 1) = 'g'
+              && String.unsafe_get s (pos + 2) = 'e'
+            then 1
+            else -1
         | 4 ->
-          if
-            String.unsafe_get s pos = 'n'
-            && String.unsafe_get s (pos + 1) = 'a'
-            && String.unsafe_get s (pos + 2) = 'm'
-            && String.unsafe_get s (pos + 3) = 'e'
-          then 0
-          else -1
+            if
+              String.unsafe_get s pos = 'n'
+              && String.unsafe_get s (pos + 1) = 'a'
+              && String.unsafe_get s (pos + 2) = 'm'
+              && String.unsafe_get s (pos + 3) = 'e'
+            then 0
+            else -1
         | 6 ->
-          if
-            String.unsafe_get s pos = 's'
-            && String.unsafe_get s (pos + 1) = 'k'
-            && String.unsafe_get s (pos + 2) = 'i'
-            && String.unsafe_get s (pos + 3) = 'l'
-            && String.unsafe_get s (pos + 4) = 'l'
-            && String.unsafe_get s (pos + 5) = 's'
-          then 4
-          else -1
+            if
+              String.unsafe_get s pos = 's'
+              && String.unsafe_get s (pos + 1) = 'k'
+              && String.unsafe_get s (pos + 2) = 'i'
+              && String.unsafe_get s (pos + 3) = 'l'
+              && String.unsafe_get s (pos + 4) = 'l'
+              && String.unsafe_get s (pos + 5) = 's'
+            then 4
+            else -1
         | 7 ->
-          if
-            String.unsafe_get s pos = 'v'
-            && String.unsafe_get s (pos + 1) = 'e'
-            && String.unsafe_get s (pos + 2) = 'r'
-            && String.unsafe_get s (pos + 3) = 's'
-            && String.unsafe_get s (pos + 4) = 'i'
-            && String.unsafe_get s (pos + 5) = 'o'
-            && String.unsafe_get s (pos + 6) = 'n'
-          then 3
-          else -1
+            if
+              String.unsafe_get s pos = 'v'
+              && String.unsafe_get s (pos + 1) = 'e'
+              && String.unsafe_get s (pos + 2) = 'r'
+              && String.unsafe_get s (pos + 3) = 's'
+              && String.unsafe_get s (pos + 4) = 'i'
+              && String.unsafe_get s (pos + 5) = 'o'
+              && String.unsafe_get s (pos + 6) = 'n'
+            then 3
+            else -1
         | 8 ->
-          if
-            String.unsafe_get s pos = 'p'
-            && String.unsafe_get s (pos + 1) = 'o'
-            && String.unsafe_get s (pos + 2) = 's'
-            && String.unsafe_get s (pos + 3) = 'i'
-            && String.unsafe_get s (pos + 4) = 't'
-            && String.unsafe_get s (pos + 5) = 'i'
-            && String.unsafe_get s (pos + 6) = 'o'
-            && String.unsafe_get s (pos + 7) = 'n'
-          then 2
-          else -1
+            if
+              String.unsafe_get s pos = 'p'
+              && String.unsafe_get s (pos + 1) = 'o'
+              && String.unsafe_get s (pos + 2) = 's'
+              && String.unsafe_get s (pos + 3) = 'i'
+              && String.unsafe_get s (pos + 4) = 't'
+              && String.unsafe_get s (pos + 5) = 'i'
+              && String.unsafe_get s (pos + 6) = 'o'
+              && String.unsafe_get s (pos + 7) = 'n'
+            then 2
+            else -1
         | _ -> -1
       in
       let i = Yojson.Safe.map_ident p f lb in
@@ -474,53 +469,53 @@
             invalid_arg "out-of-bounds substring position or length";
           match len with
           | 3 ->
-            if
-              String.unsafe_get s pos = 'a'
-              && String.unsafe_get s (pos + 1) = 'g'
-              && String.unsafe_get s (pos + 2) = 'e'
-            then 1
-            else -1
+              if
+                String.unsafe_get s pos = 'a'
+                && String.unsafe_get s (pos + 1) = 'g'
+                && String.unsafe_get s (pos + 2) = 'e'
+              then 1
+              else -1
           | 4 ->
-            if
-              String.unsafe_get s pos = 'n'
-              && String.unsafe_get s (pos + 1) = 'a'
-              && String.unsafe_get s (pos + 2) = 'm'
-              && String.unsafe_get s (pos + 3) = 'e'
-            then 0
-            else -1
+              if
+                String.unsafe_get s pos = 'n'
+                && String.unsafe_get s (pos + 1) = 'a'
+                && String.unsafe_get s (pos + 2) = 'm'
+                && String.unsafe_get s (pos + 3) = 'e'
+              then 0
+              else -1
           | 6 ->
-            if
-              String.unsafe_get s pos = 's'
-              && String.unsafe_get s (pos + 1) = 'k'
-              && String.unsafe_get s (pos + 2) = 'i'
-              && String.unsafe_get s (pos + 3) = 'l'
-              && String.unsafe_get s (pos + 4) = 'l'
-              && String.unsafe_get s (pos + 5) = 's'
-            then 4
-            else -1
+              if
+                String.unsafe_get s pos = 's'
+                && String.unsafe_get s (pos + 1) = 'k'
+                && String.unsafe_get s (pos + 2) = 'i'
+                && String.unsafe_get s (pos + 3) = 'l'
+                && String.unsafe_get s (pos + 4) = 'l'
+                && String.unsafe_get s (pos + 5) = 's'
+              then 4
+              else -1
           | 7 ->
-            if
-              String.unsafe_get s pos = 'v'
-              && String.unsafe_get s (pos + 1) = 'e'
-              && String.unsafe_get s (pos + 2) = 'r'
-              && String.unsafe_get s (pos + 3) = 's'
-              && String.unsafe_get s (pos + 4) = 'i'
-              && String.unsafe_get s (pos + 5) = 'o'
-              && String.unsafe_get s (pos + 6) = 'n'
-            then 3
-            else -1
+              if
+                String.unsafe_get s pos = 'v'
+                && String.unsafe_get s (pos + 1) = 'e'
+                && String.unsafe_get s (pos + 2) = 'r'
+                && String.unsafe_get s (pos + 3) = 's'
+                && String.unsafe_get s (pos + 4) = 'i'
+                && String.unsafe_get s (pos + 5) = 'o'
+                && String.unsafe_get s (pos + 6) = 'n'
+              then 3
+              else -1
           | 8 ->
-            if
-              String.unsafe_get s pos = 'p'
-              && String.unsafe_get s (pos + 1) = 'o'
-              && String.unsafe_get s (pos + 2) = 's'
-              && String.unsafe_get s (pos + 3) = 'i'
-              && String.unsafe_get s (pos + 4) = 't'
-              && String.unsafe_get s (pos + 5) = 'i'
-              && String.unsafe_get s (pos + 6) = 'o'
-              && String.unsafe_get s (pos + 7) = 'n'
-            then 2
-            else -1
+              if
+                String.unsafe_get s pos = 'p'
+                && String.unsafe_get s (pos + 1) = 'o'
+                && String.unsafe_get s (pos + 2) = 's'
+                && String.unsafe_get s (pos + 3) = 'i'
+                && String.unsafe_get s (pos + 4) = 't'
+                && String.unsafe_get s (pos + 5) = 'i'
+                && String.unsafe_get s (pos + 6) = 'o'
+                && String.unsafe_get s (pos + 7) = 'n'
+              then 2
+              else -1
           | _ -> -1
         in
         let i = Yojson.Safe.map_ident p f lb in

@@ -6,16 +6,8 @@
   
   type 'b tuple_2 = string * 'b
   type skill = string tuple_2
-  
-  type company = {
-    name : string;
-    address : string;
-  }
-  
-  type employer =
-    | Self
-    | Company of company
-  
+  type company = { name : string; address : string }
+  type employer = Self | Company of company
   type employment = employer tuple_2
   
   type employee = {

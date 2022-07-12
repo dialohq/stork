@@ -10,8 +10,8 @@ homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
   "astring" {= "0.8.5" & dev}
-  "atd" {= "2.4.1"}
-  "atdgen" {= "2.4.1"}
+  "atd" {= "2.9.1"}
+  "atdgen" {= "2.9.1"}
   "atdgen-runtime" {= "2.9.1"}
   "base" {= "v0.15.0" & dev}
   "base-bigarray" {= "base"}
@@ -68,7 +68,7 @@ depends: [
   "ocaml_intrinsics" {= "v0.15.2" & dev}
   "ocamlbuild" {= "0.14.1"}
   "ocamlfind" {= "1.9.5"}
-  "ocamlformat" {= "0.21.0" & dev}
+  "ocamlformat" {= "0.23.0" & dev}
   "ocamlformat-rpc-lib" {= "0.23.0" & dev}
   "ocp-indent" {= "1.8.1" & dev}
   "ocplib-endian" {= "1.2"}

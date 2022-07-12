@@ -6,16 +6,8 @@
   
   type 'b tuple_2 = 'b Rescript_simple_1_t.tuple_2
   type skill = Rescript_simple_1_t.skill
-  
-  type company = Rescript_simple_1_t.company = {
-    name : string;
-    address : string;
-  }
-  
-  type employer = Rescript_simple_1_t.employer =
-    | Self
-    | Company of company
-  
+  type company = Rescript_simple_1_t.company = { name : string; address : string }
+  type employer = Rescript_simple_1_t.employer = Self | Company of company
   type employment = Rescript_simple_1_t.employment
   
   type employee = Rescript_simple_1_t.employee = {
@@ -27,13 +19,11 @@
     skills : skill Atdgen_runtime.Util.ocaml_array;
   }
   
-  val read_tuple_2
-    :  'b Atdgen_codec_runtime.Decode.t ->
-    'b tuple_2 Atdgen_codec_runtime.Decode.t
+  val read_tuple_2 :
+    'b Atdgen_codec_runtime.Decode.t -> 'b tuple_2 Atdgen_codec_runtime.Decode.t
   
-  val write_tuple_2
-    :  'b Atdgen_codec_runtime.Encode.t ->
-    'b tuple_2 Atdgen_codec_runtime.Encode.t
+  val write_tuple_2 :
+    'b Atdgen_codec_runtime.Encode.t -> 'b tuple_2 Atdgen_codec_runtime.Encode.t
   
   val read_skill : skill Atdgen_codec_runtime.Decode.t
   val write_skill : skill Atdgen_codec_runtime.Encode.t

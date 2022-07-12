@@ -30,20 +30,15 @@
   cmdliner
   logs
   fmt
-  (atd
-   (= 2.4.1))
-  (atdgen
-   (= 2.4.1))
+  atd
+  atdgen
   biniou
   logs
   ppx_deriving
   (ppx_string_interpolation :build)
   yojson
   (ocaml-lsp-server :dev)
-  (ocamlformat
-   (and
-    :dev
-    (= 0.21.0)))
+  (ocamlformat :dev)
   (patdiff :dev)
   (utop :dev)
   (odoc :with-doc)))
