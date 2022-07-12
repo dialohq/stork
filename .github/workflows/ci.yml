@@ -49,7 +49,8 @@ jobs:
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.tags[1] }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{github.event.number}}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=inline
 
