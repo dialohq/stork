@@ -51,10 +51,11 @@ jobs:
           load: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
+          # apparently the order has to be reversed
           cache-from: |
-            type=registry,ref=${{ env.TEST_IMAGE }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{github.event.number}}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{github.event.number}}
+            type=registry,ref=${{ env.TEST_IMAGE }}
           cache-to: type=inline
 
       - name: Check formatting
