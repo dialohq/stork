@@ -24,7 +24,7 @@ depends: [
   "ppx_string_interpolation" {build}
   "yojson"
   "ocaml-lsp-server" {dev}
-  "ocamlformat" {dev}
+  "ocamlformat"
   "patdiff" {dev}
   "utop" {dev}
   "odoc" {with-doc}
