@@ -7,7 +7,7 @@ You need Opam, you can install it by following [Opam's documentation](https://op
 With Opam installed, you can install the dependencies in a new local switch with:
 
 ```bash
-opam switch create . --locked --with-test --with-doc
+opam switch create . --locked --lock-suffix=dev.locked --with-test --with-doc
 ```
 
 Then, build the project with:
@@ -34,7 +34,7 @@ opam reinstall --working-dir --with-doc --with-test .
 to sync the dependencies with your switch and finally
 
 ```bash
-opam lock .
+opam lock --lock-suffix=dev.locked .
 ```
 
 to update the lock file.
@@ -93,6 +93,6 @@ The following snippet describes Stork's repository structure.
 |   Opam package definition.
 |   To know more about creating and publishing opam packages, see https://opam.ocaml.org/doc/Packaging.html
 |
-└── stork.opam.locked
-    Opam lock file.
+└── stork.opam.dev.locked
+    Opam lock file, to be used for development only.
 ```
