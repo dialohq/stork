@@ -9,11 +9,11 @@ license: "MIT"
 homepage: "https://github.com/dialohq/stork"
 bug-reports: "https://github.com/dialohq/stork/issues"
 depends: [
-  "astring" {= "0.8.5" & dev}
+  "astring" {= "0.8.5"}
   "atd" {= "2.9.1"}
   "atdgen" {= "2.9.1"}
   "atdgen-runtime" {= "2.9.1"}
-  "base" {= "v0.15.0" & dev}
+  "base" {= "v0.15.0"}
   "base-bigarray" {= "base"}
   "base-bytes" {= "base"}
   "base-threads" {= "base"}
@@ -32,18 +32,18 @@ depends: [
   "cppo" {= "1.6.9"}
   "csexp" {= "1.5.1"}
   "dune" {= "3.3.1"}
-  "dune-build-info" {= "3.3.1" & dev}
+  "dune-build-info" {= "3.3.1"}
   "dune-configurator" {= "3.3.1"}
   "dune-rpc" {= "3.3.1" & dev}
   "dyn" {= "3.3.1" & dev}
   "easy-format" {= "1.3.4"}
-  "either" {= "1.0.0" & dev}
+  "either" {= "1.0.0"}
   "expect_test_helpers_core" {= "v0.15.0" & dev}
   "fiber" {= "3.3.1" & dev}
   "fieldslib" {= "v0.15.0" & dev}
-  "fix" {= "20220121" & dev}
+  "fix" {= "20220121"}
   "fmt" {= "0.9.0"}
-  "fpath" {= "0.7.3" & dev}
+  "fpath" {= "0.7.3"}
   "gen" {= "1.0"}
   "int_repr" {= "v0.15.0" & dev}
   "jane-street-headers" {= "v0.15.0" & dev}
@@ -64,17 +64,17 @@ depends: [
   "ocaml-config" {= "2"}
   "ocaml-lsp-server" {= "1.12.2" & dev}
   "ocaml-options-vanilla" {= "1"}
-  "ocaml-version" {= "3.4.0" & dev}
+  "ocaml-version" {= "3.4.0"}
   "ocaml_intrinsics" {= "v0.15.2" & dev}
   "ocamlbuild" {= "0.14.1"}
   "ocamlfind" {= "1.9.5"}
-  "ocamlformat" {= "0.23.0" & dev}
+  "ocamlformat" {= "0.23.0"}
   "ocamlformat-rpc-lib" {= "0.23.0" & dev}
-  "ocp-indent" {= "1.8.1" & dev}
+  "ocp-indent" {= "1.8.1"}
   "ocplib-endian" {= "1.2"}
   "octavius" {= "1.2.2" & dev}
   "odoc" {= "2.1.1" & with-doc}
-  "odoc-parser" {= "1.0.1" & dev}
+  "odoc-parser" {= "1.0.1"}
   "omd" {= "1.3.1" & dev}
   "ordering" {= "3.3.1" & dev}
   "parsexp" {= "v0.15.0" & dev}
@@ -127,7 +127,7 @@ depends: [
   "sexplib0" {= "v0.15.1"}
   "spawn" {= "v0.15.1" & dev}
   "splittable_random" {= "v0.15.0" & dev}
-  "stdio" {= "v0.15.0" & dev}
+  "stdio" {= "v0.15.0"}
   "stdlib-shims" {= "0.3.0"}
   "stdune" {= "3.3.1" & dev}
   "time_now" {= "v0.15.0" & dev}
@@ -138,9 +138,9 @@ depends: [
   "tyxml" {= "4.5.0" & with-doc}
   "uchar" {= "0.0.2"}
   "utop" {= "2.10.0" & dev}
-  "uucp" {= "14.0.0" & dev}
-  "uuseg" {= "14.0.0" & dev}
-  "uutf" {= "1.0.3" & dev}
+  "uucp" {= "14.0.0"}
+  "uuseg" {= "14.0.0"}
+  "uutf" {= "1.0.3"}
   "variantslib" {= "v0.15.0" & dev}
   "xdg" {= "3.3.1" & dev}
   "yojson" {= "1.7.0"}

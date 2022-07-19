@@ -38,7 +38,7 @@
   (ppx_string_interpolation :build)
   yojson
   (ocaml-lsp-server :dev)
-  (ocamlformat :dev)
+  ocamlformat ;; todo use :dev once https://github.com/ocaml/opam/issues/5177 is fixed
   (patdiff :dev)
   (utop :dev)
   (odoc :with-doc)))
