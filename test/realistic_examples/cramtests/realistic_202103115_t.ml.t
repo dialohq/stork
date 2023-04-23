@@ -1,7 +1,7 @@
   $ cd ..
   $ dune exec -- stork gen *.atd
   $ cat realistic_202103115_t.ml  | ocamlformat --impl -
-  File <standard input>
+  File "<standard input>", line 1:
   Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../../../../../.sandbox)
   (* Auto-generated from "realistic_202103115.atd" *)
   [@@@ocaml.warning "-27-32-33-35-39"]

@@ -55,10 +55,10 @@
               json;
         })
   
-  let write__1 =
+  let write__int_option =
     Atdgen_codec_runtime.Encode.option_as_constr Atdgen_codec_runtime.Encode.int
   
-  let read__1 =
+  let read__int_option =
     Atdgen_codec_runtime.Decode.option_as_constr Atdgen_codec_runtime.Decode.int
   
   let write_company =
@@ -103,20 +103,24 @@
             |> Atdgen_codec_runtime.Decode.map (fun x : employer -> Company x)) );
       ]
   
-  let write__2 =
+  let write__employer_tuple_2 =
     Atdgen_codec_runtime.Encode.tuple2 Atdgen_codec_runtime.Encode.string
       write_employer
   
-  let read__2 =
+  let read__employer_tuple_2 =
     Atdgen_codec_runtime.Decode.tuple2 Atdgen_codec_runtime.Decode.string
       read_employer
   
-  let write_employment = write__2
-  let read_employment = read__2
-  let write__4 = Atdgen_codec_runtime.Encode.array write_skill
-  let read__4 = Atdgen_codec_runtime.Decode.array read_skill
-  let write__3 = Atdgen_codec_runtime.Encode.nullable write_employment
-  let read__3 = Atdgen_codec_runtime.Decode.nullable read_employment
+  let write_employment = write__employer_tuple_2
+  let read_employment = read__employer_tuple_2
+  let write__x_ff9d2e2 = Atdgen_codec_runtime.Encode.array write_skill
+  let read__x_ff9d2e2 = Atdgen_codec_runtime.Decode.array read_skill
+  
+  let write__employment_nullable =
+    Atdgen_codec_runtime.Encode.nullable write_employment
+  
+  let read__employment_nullable =
+    Atdgen_codec_runtime.Decode.nullable read_employment
   
   let write_employee =
     Atdgen_codec_runtime.Encode.make (fun (t : employee) ->
@@ -128,11 +132,12 @@
               ~name:"age" t.age;
             Atdgen_codec_runtime.Encode.field write_employment ~name:"position"
               t.position;
-            Atdgen_codec_runtime.Encode.field write__3 ~name:"prev_position"
-              t.prev_position;
+            Atdgen_codec_runtime.Encode.field write__employment_nullable
+              ~name:"prev_position" t.prev_position;
             Atdgen_codec_runtime.Encode.field Atdgen_codec_runtime.Encode.int
               ~name:"version" t.version;
-            Atdgen_codec_runtime.Encode.field write__4 ~name:"skills" t.skills;
+            Atdgen_codec_runtime.Encode.field write__x_ff9d2e2 ~name:"skills"
+              t.skills;
           ])
   
   let read_employee =
@@ -154,7 +159,8 @@
               json;
           prev_position =
             Atdgen_codec_runtime.Decode.decode
-              (read__3 |> Atdgen_codec_runtime.Decode.field "prev_position")
+              (read__employment_nullable
+              |> Atdgen_codec_runtime.Decode.field "prev_position")
               json;
           version =
             Atdgen_codec_runtime.Decode.decode
@@ -163,6 +169,6 @@
               json;
           skills =
             Atdgen_codec_runtime.Decode.decode
-              (read__4 |> Atdgen_codec_runtime.Decode.field "skills")
+              (read__x_ff9d2e2 |> Atdgen_codec_runtime.Decode.field "skills")
               json;
         })

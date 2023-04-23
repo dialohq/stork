@@ -1,7 +1,7 @@
   $ cd ..
   $ dune exec -- stork gen *.atd
   $ cat realistic_upgrader_t.mli  | ocamlformat --intf -
-  File <standard input>
+  File "<standard input>", line 1:
   Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../../../../../.sandbox)
   module From_202008241_to_202103001 : sig
   module OldVersion : (module type of Realistic_202008241_t)

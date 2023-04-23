@@ -13,12 +13,12 @@
   }
   
   let write_variant : _ -> variant -> _ =
-   fun ob x -> match x with Field -> Bi_outbuf.add_string ob "\"Field\""
+   fun ob x -> match x with Field -> Buffer.add_string ob "\"Field\""
   
   let string_of_variant ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_variant ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_variant p lb =
     Yojson.Safe.read_space p lb;
@@ -43,23 +43,23 @@
   
   let write_json : _ -> json -> _ =
    fun ob (x : json) ->
-    Bi_outbuf.add_char ob '{';
+    Buffer.add_char ob '{';
     let is_first = ref true in
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"variant\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"variant\":";
     write_variant ob x.variant;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"field1\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"field1\":";
     Yojson.Safe.write_string ob x.field1;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"version\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"version\":";
     Yojson.Safe.write_int ob x.version;
-    Bi_outbuf.add_char ob '}'
+    Buffer.add_char ob '}'
   
   let string_of_json ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_json ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_json p lb =
     Yojson.Safe.read_space p lb;
@@ -73,7 +73,11 @@
       Yojson.Safe.read_space p lb;
       let f s pos len =
         if pos < 0 || len < 0 || pos + len > String.length s then
-          invalid_arg "out-of-bounds substring position or length";
+          invalid_arg
+            (Printf.sprintf
+               "out-of-bounds substring position or length: string = %S, \
+                requested position = %i, requested length = %i"
+               s pos len);
         match len with
         | 6 ->
             if
@@ -123,7 +127,11 @@
         Yojson.Safe.read_space p lb;
         let f s pos len =
           if pos < 0 || len < 0 || pos + len > String.length s then
-            invalid_arg "out-of-bounds substring position or length";
+            invalid_arg
+              (Printf.sprintf
+                 "out-of-bounds substring position or length: string = %S, \
+                  requested position = %i, requested length = %i"
+                 s pos len);
           match len with
           | 6 ->
               if

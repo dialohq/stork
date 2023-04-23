@@ -263,7 +263,7 @@ let make_write_main ~impl_kind ~latest_version main_type =
     impl, intf
   | Config.Native ->
     let intf =
-      [%string "val write_$main_type: Bi_outbuf.t -> Types.$main_type -> unit"]
+      [%string "val write_$main_type: Buffer.t -> Types.$main_type -> unit"]
     in
     let impl =
       [%string

@@ -1,7 +1,7 @@
   $ cd ..
   $ dune exec -- stork gen *.atd
   $ cat realistic.ml  | ocamlformat --impl -
-  File <standard input>
+  File "<standard input>", line 1:
   Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../../../../../.sandbox)
   [@@@ocaml.warning "-32-33-44"]
   open StdLabels

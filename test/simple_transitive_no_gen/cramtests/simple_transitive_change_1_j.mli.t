@@ -26,12 +26,11 @@
     skills : skill Atdgen_runtime.Util.ocaml_array;
   }
   
-  val write_tuple_2 :
-    (Bi_outbuf.t -> 'b -> unit) -> Bi_outbuf.t -> 'b tuple_2 -> unit
+  val write_tuple_2 : (Buffer.t -> 'b -> unit) -> Buffer.t -> 'b tuple_2 -> unit
   (** Output a JSON value of type {!type:tuple_2}. *)
   
   val string_of_tuple_2 :
-    (Bi_outbuf.t -> 'b -> unit) -> ?len:int -> 'b tuple_2 -> string
+    (Buffer.t -> 'b -> unit) -> ?len:int -> 'b tuple_2 -> string
   (** Serialize a value of type {!type:tuple_2}
         into a JSON string.
         @param len specifies the initial length
@@ -49,7 +48,7 @@
     (Yojson.Safe.lexer_state -> Lexing.lexbuf -> 'b) -> string -> 'b tuple_2
   (** Deserialize JSON data of type {!type:tuple_2}. *)
   
-  val write_skill : Bi_outbuf.t -> skill -> unit
+  val write_skill : Buffer.t -> skill -> unit
   (** Output a JSON value of type {!type:skill}. *)
   
   val string_of_skill : ?len:int -> skill -> string
@@ -65,7 +64,7 @@
   val skill_of_string : string -> skill
   (** Deserialize JSON data of type {!type:skill}. *)
   
-  val write_company : Bi_outbuf.t -> company -> unit
+  val write_company : Buffer.t -> company -> unit
   (** Output a JSON value of type {!type:company}. *)
   
   val string_of_company : ?len:int -> company -> string
@@ -81,7 +80,7 @@
   val company_of_string : string -> company
   (** Deserialize JSON data of type {!type:company}. *)
   
-  val write_employer : Bi_outbuf.t -> employer -> unit
+  val write_employer : Buffer.t -> employer -> unit
   (** Output a JSON value of type {!type:employer}. *)
   
   val string_of_employer : ?len:int -> employer -> string
@@ -97,7 +96,7 @@
   val employer_of_string : string -> employer
   (** Deserialize JSON data of type {!type:employer}. *)
   
-  val write_employment : Bi_outbuf.t -> employment -> unit
+  val write_employment : Buffer.t -> employment -> unit
   (** Output a JSON value of type {!type:employment}. *)
   
   val string_of_employment : ?len:int -> employment -> string
@@ -113,7 +112,7 @@
   val employment_of_string : string -> employment
   (** Deserialize JSON data of type {!type:employment}. *)
   
-  val write_employee : Bi_outbuf.t -> employee -> unit
+  val write_employee : Buffer.t -> employee -> unit
   (** Output a JSON value of type {!type:employee}. *)
   
   val string_of_employee : ?len:int -> employee -> string

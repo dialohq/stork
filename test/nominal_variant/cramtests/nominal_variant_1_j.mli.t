@@ -12,7 +12,7 @@
     version : int;
   }
   
-  val write_variant : Bi_outbuf.t -> variant -> unit
+  val write_variant : Buffer.t -> variant -> unit
   (** Output a JSON value of type {!type:variant}. *)
   
   val string_of_variant : ?len:int -> variant -> string
@@ -28,7 +28,7 @@
   val variant_of_string : string -> variant
   (** Deserialize JSON data of type {!type:variant}. *)
   
-  val write_json : Bi_outbuf.t -> json -> unit
+  val write_json : Buffer.t -> json -> unit
   (** Output a JSON value of type {!type:json}. *)
   
   val string_of_json : ?len:int -> json -> string

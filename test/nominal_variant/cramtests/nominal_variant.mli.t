@@ -7,7 +7,7 @@
   val json_of_string : string -> Types.json
   val string_of_json : ?len:int -> Types.json -> string
   val read_json_from_file : string -> Types.json
-  val write_json : Bi_outbuf.t -> Types.json -> unit
+  val write_json : Buffer.t -> Types.json -> unit
   
   module From_1_to_2 : sig
     module OldVersion : module type of Nominal_variant_1_t

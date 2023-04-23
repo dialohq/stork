@@ -7,7 +7,7 @@
   val employee_of_string : string -> Types.employee
   val string_of_employee : ?len:int -> Types.employee -> string
   val read_employee_from_file : string -> Types.employee
-  val write_employee : Bi_outbuf.t -> Types.employee -> unit
+  val write_employee : Buffer.t -> Types.employee -> unit
   
   module From_1_to_2 : sig
     module OldVersion : module type of Simple_transitive_change_1_t

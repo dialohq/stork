@@ -19,18 +19,18 @@
   }
   
   let write_tuple_2 write__b ob x =
-    Bi_outbuf.add_char ob '[';
+    Buffer.add_char ob '[';
     (let x, _ = x in
      Yojson.Safe.write_string ob x);
-    Bi_outbuf.add_char ob ',';
+    Buffer.add_char ob ',';
     (let _, x = x in
      write__b ob x);
-    Bi_outbuf.add_char ob ']'
+    Buffer.add_char ob ']'
   
   let string_of_tuple_2 write__b ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_tuple_2 write__b ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_tuple_2 read__b p lb =
     Yojson.Safe.read_space p lb;
@@ -55,13 +55,13 @@
         x
       in
       (if not !end_of_tuple then
-       try
-         while true do
-           Yojson.Safe.skip_json p lb;
-           Yojson.Safe.read_space p lb;
-           Yojson.Safe.read_tuple_sep2 p std_tuple lb
-         done
-       with Yojson.End_of_tuple -> ());
+         try
+           while true do
+             Yojson.Safe.skip_json p lb;
+             Yojson.Safe.read_space p lb;
+             Yojson.Safe.read_tuple_sep2 p std_tuple lb
+           done
+         with Yojson.End_of_tuple -> ());
       (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
@@ -69,21 +69,21 @@
   let tuple_2_of_string read__b s =
     read_tuple_2 read__b (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
-  let write__2 ob x =
-    Bi_outbuf.add_char ob '[';
+  let write__string_tuple_2 ob x =
+    Buffer.add_char ob '[';
     (let x, _ = x in
      Yojson.Safe.write_string ob x);
-    Bi_outbuf.add_char ob ',';
+    Buffer.add_char ob ',';
     (let _, x = x in
      Yojson.Safe.write_string ob x);
-    Bi_outbuf.add_char ob ']'
+    Buffer.add_char ob ']'
   
-  let string_of__2 ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
-    write__2 ob x;
-    Bi_outbuf.contents ob
+  let string_of__string_tuple_2 ?(len = 1024) x =
+    let ob = Buffer.create len in
+    write__string_tuple_2 ob x;
+    Buffer.contents ob
   
-  let read__2 p lb =
+  let read__string_tuple_2 p lb =
     Yojson.Safe.read_space p lb;
     let std_tuple = Yojson.Safe.start_any_tuple p lb in
     let len = ref 0 in
@@ -106,46 +106,48 @@
         x
       in
       (if not !end_of_tuple then
-       try
-         while true do
-           Yojson.Safe.skip_json p lb;
-           Yojson.Safe.read_space p lb;
-           Yojson.Safe.read_tuple_sep2 p std_tuple lb
-         done
-       with Yojson.End_of_tuple -> ());
+         try
+           while true do
+             Yojson.Safe.skip_json p lb;
+             Yojson.Safe.read_space p lb;
+             Yojson.Safe.read_tuple_sep2 p std_tuple lb
+           done
+         with Yojson.End_of_tuple -> ());
       (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
-  let _2_of_string s = read__2 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
-  let write_skill = write__2
+  let _string_tuple_2_of_string s =
+    read__string_tuple_2 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
+  
+  let write_skill = write__string_tuple_2
   
   let string_of_skill ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_skill ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
-  let read_skill = read__2
+  let read_skill = read__string_tuple_2
   
   let skill_of_string s =
     read_skill (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
   let write_company : _ -> company -> _ =
    fun ob (x : company) ->
-    Bi_outbuf.add_char ob '{';
+    Buffer.add_char ob '{';
     let is_first = ref true in
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"name\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"name\":";
     Yojson.Safe.write_string ob x.name;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"address\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"address\":";
     Yojson.Safe.write_string ob x.address;
-    Bi_outbuf.add_char ob '}'
+    Buffer.add_char ob '}'
   
   let string_of_company ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_company ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_company p lb =
     Yojson.Safe.read_space p lb;
@@ -158,7 +160,11 @@
       Yojson.Safe.read_space p lb;
       let f s pos len =
         if pos < 0 || len < 0 || pos + len > String.length s then
-          invalid_arg "out-of-bounds substring position or length";
+          invalid_arg
+            (Printf.sprintf
+               "out-of-bounds substring position or length: string = %S, \
+                requested position = %i, requested length = %i"
+               s pos len);
         match len with
         | 4 ->
             if
@@ -193,7 +199,11 @@
         Yojson.Safe.read_space p lb;
         let f s pos len =
           if pos < 0 || len < 0 || pos + len > String.length s then
-            invalid_arg "out-of-bounds substring position or length";
+            invalid_arg
+              (Printf.sprintf
+                 "out-of-bounds substring position or length: string = %S, \
+                  requested position = %i, requested length = %i"
+                 s pos len);
           match len with
           | 4 ->
               if
@@ -242,16 +252,16 @@
   
   let write_employer ob x =
     match x with
-    | `Self -> Bi_outbuf.add_string ob "\"Self\""
+    | `Self -> Buffer.add_string ob "\"Self\""
     | `Company x ->
-        Bi_outbuf.add_string ob "[\"Company\",";
+        Buffer.add_string ob "[\"Company\",";
         write_company ob x;
-        Bi_outbuf.add_char ob ']'
+        Buffer.add_char ob ']'
   
   let string_of_employer ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_employer ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_employer p lb =
     Yojson.Safe.read_space p lb;
@@ -288,21 +298,21 @@
   let employer_of_string s =
     read_employer (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
-  let write__1 ob x =
-    Bi_outbuf.add_char ob '[';
+  let write__employer_tuple_2 ob x =
+    Buffer.add_char ob '[';
     (let x, _ = x in
      Yojson.Safe.write_string ob x);
-    Bi_outbuf.add_char ob ',';
+    Buffer.add_char ob ',';
     (let _, x = x in
      write_employer ob x);
-    Bi_outbuf.add_char ob ']'
+    Buffer.add_char ob ']'
   
-  let string_of__1 ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
-    write__1 ob x;
-    Bi_outbuf.contents ob
+  let string_of__employer_tuple_2 ?(len = 1024) x =
+    let ob = Buffer.create len in
+    write__employer_tuple_2 ob x;
+    Buffer.contents ob
   
-  let read__1 p lb =
+  let read__employer_tuple_2 p lb =
     Yojson.Safe.read_space p lb;
     let std_tuple = Yojson.Safe.start_any_tuple p lb in
     let len = ref 0 in
@@ -325,65 +335,69 @@
         x
       in
       (if not !end_of_tuple then
-       try
-         while true do
-           Yojson.Safe.skip_json p lb;
-           Yojson.Safe.read_space p lb;
-           Yojson.Safe.read_tuple_sep2 p std_tuple lb
-         done
-       with Yojson.End_of_tuple -> ());
+         try
+           while true do
+             Yojson.Safe.skip_json p lb;
+             Yojson.Safe.read_space p lb;
+             Yojson.Safe.read_tuple_sep2 p std_tuple lb
+           done
+         with Yojson.End_of_tuple -> ());
       (x0, x1)
     with Yojson.End_of_tuple ->
       Atdgen_runtime.Oj_run.missing_tuple_fields p !len [ 0; 1 ]
   
-  let _1_of_string s = read__1 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
-  let write_employment = write__1
+  let _employer_tuple_2_of_string s =
+    read__employer_tuple_2 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
+  
+  let write_employment = write__employer_tuple_2
   
   let string_of_employment ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_employment ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
-  let read_employment = read__1
+  let read_employment = read__employer_tuple_2
   
   let employment_of_string s =
     read_employment (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
-  let write__3 = Atdgen_runtime.Oj_run.write_list write_skill
+  let write__skill_list = Atdgen_runtime.Oj_run.write_list write_skill
   
-  let string_of__3 ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
-    write__3 ob x;
-    Bi_outbuf.contents ob
+  let string_of__skill_list ?(len = 1024) x =
+    let ob = Buffer.create len in
+    write__skill_list ob x;
+    Buffer.contents ob
   
-  let read__3 = Atdgen_runtime.Oj_run.read_list read_skill
-  let _3_of_string s = read__3 (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
+  let read__skill_list = Atdgen_runtime.Oj_run.read_list read_skill
+  
+  let _skill_list_of_string s =
+    read__skill_list (Yojson.Safe.init_lexer ()) (Lexing.from_string s)
   
   let write_employee : _ -> employee -> _ =
    fun ob (x : employee) ->
-    Bi_outbuf.add_char ob '{';
+    Buffer.add_char ob '{';
     let is_first = ref true in
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"name\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"name\":";
     Yojson.Safe.write_string ob x.name;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"age\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"age\":";
     Yojson.Safe.write_int ob x.age;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"position\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"position\":";
     write_employment ob x.position;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"version\":";
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"version\":";
     Yojson.Safe.write_int ob x.version;
-    if !is_first then is_first := false else Bi_outbuf.add_char ob ',';
-    Bi_outbuf.add_string ob "\"skills\":";
-    write__3 ob x.skills;
-    Bi_outbuf.add_char ob '}'
+    if !is_first then is_first := false else Buffer.add_char ob ',';
+    Buffer.add_string ob "\"skills\":";
+    write__skill_list ob x.skills;
+    Buffer.add_char ob '}'
   
   let string_of_employee ?(len = 1024) x =
-    let ob = Bi_outbuf.create len in
+    let ob = Buffer.create len in
     write_employee ob x;
-    Bi_outbuf.contents ob
+    Buffer.contents ob
   
   let read_employee p lb =
     Yojson.Safe.read_space p lb;
@@ -399,7 +413,11 @@
       Yojson.Safe.read_space p lb;
       let f s pos len =
         if pos < 0 || len < 0 || pos + len > String.length s then
-          invalid_arg "out-of-bounds substring position or length";
+          invalid_arg
+            (Printf.sprintf
+               "out-of-bounds substring position or length: string = %S, \
+                requested position = %i, requested length = %i"
+               s pos len);
         match len with
         | 3 ->
             if
@@ -458,7 +476,7 @@
       | 1 -> field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
       | 2 -> field_position := Some (read_employment p lb)
       | 3 -> field_version := Some (Atdgen_runtime.Oj_run.read_int p lb)
-      | 4 -> field_skills := Some (read__3 p lb)
+      | 4 -> field_skills := Some (read__skill_list p lb)
       | _ -> Yojson.Safe.skip_json p lb);
       while true do
         Yojson.Safe.read_space p lb;
@@ -466,7 +484,11 @@
         Yojson.Safe.read_space p lb;
         let f s pos len =
           if pos < 0 || len < 0 || pos + len > String.length s then
-            invalid_arg "out-of-bounds substring position or length";
+            invalid_arg
+              (Printf.sprintf
+                 "out-of-bounds substring position or length: string = %S, \
+                  requested position = %i, requested length = %i"
+                 s pos len);
           match len with
           | 3 ->
               if
@@ -525,7 +547,7 @@
         | 1 -> field_age := Some (Atdgen_runtime.Oj_run.read_int p lb)
         | 2 -> field_position := Some (read_employment p lb)
         | 3 -> field_version := Some (Atdgen_runtime.Oj_run.read_int p lb)
-        | 4 -> field_skills := Some (read__3 p lb)
+        | 4 -> field_skills := Some (read__skill_list p lb)
         | _ -> Yojson.Safe.skip_json p lb
       done;
       assert false
